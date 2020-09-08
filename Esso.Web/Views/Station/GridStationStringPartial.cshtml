@@ -1,0 +1,63 @@
+﻿@using System.Web.UI.WebControls;
+
+@model List<Esso.Web.ViewModels.StationStringDTO>
+
+
+@{
+
+	var grid = Html.DevExpress().GridView(
+	 settings =>
+	 {
+		 settings.Name = "gvStationStr";
+		 settings.KeyFieldName = "STRING_ID";
+		 settings.Width = Unit.Percentage(100);
+		 settings.CallbackRouteValues = new { Controller = "Station", Action = "GridStationStringPartial", stationId = ViewData["stationId"] };
+		 settings.ClientSideEvents.BeginCallback = "OnStringBeginCallback";
+		 settings.ClientSideEvents.EndCallback = "OnStringEndCallback";
+		 //settings.ClientSideEvents.EndCallback = "OnUserCompEndCallback";
+		 settings.SettingsEditing.BatchUpdateRouteValues = new { Controller = "Station", Action = "UpdateStationStrings", stationId = ViewData["stationId"] };
+
+		 settings.Settings.ShowFilterRow = true;
+
+		 settings.SettingsEditing.Mode = GridViewEditingMode.Batch;
+		 settings.SettingsEditing.BatchEditSettings.EditMode = GridViewBatchEditMode.Cell;
+		 settings.SettingsEditing.BatchEditSettings.StartEditAction = GridViewBatchStartEditAction.Click;
+
+		 settings.Settings.VerticalScrollBarMode = ScrollBarMode.Visible;
+		 settings.Settings.VerticalScrollableHeight = 200;
+
+		 //Column info
+		 settings.Columns.Add(c => {
+			 c.FieldName = "STR_TAG_NAME";
+			 c.Caption = "String";
+			 c.Settings.AllowCellMerge = DefaultBoolean.True;
+			 c.EditFormSettings.Visible = DefaultBoolean.False;
+			 c.Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+		 });
+
+		 settings.Columns.Add(c =>
+		 {
+			 c.FieldName = "DISPLAY_NAME";
+			 c.Caption = "String Name";
+			 c.ColumnType = MVCxGridViewColumnType.TextBox;
+			 c.EditFormSettings.Visible = DefaultBoolean.True;
+			 c.Width = 200;
+
+		 });
+
+
+
+		 settings.Columns.Add(c =>
+		 {
+			 c.FieldName = "IS_SELECTED";
+			 c.Caption = "String";
+			 c.ColumnType = MVCxGridViewColumnType.CheckBox;
+			 c.Width = 50;
+			 c.Caption = " ";
+		 });
+
+	 });
+
+}
+
+@grid.Bind(Model).GetHtml()

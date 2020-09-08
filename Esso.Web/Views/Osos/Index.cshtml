@@ -1,0 +1,492 @@
+﻿
+@using language
+
+@{
+    ViewBag.Title = Resources.Osos_Recording_List;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Partial("MenuPartial")
+<style>
+    /*table.dataTable tbody tr.mycolumnred {
+        color: #ff0000;
+    }
+
+    table.dataTable tbody tr.mycolumngreen {
+        color: #2b421c;
+    }*/
+    table.dataTable tbody td.mycolumnred {
+        color: #d9534f;
+    }
+
+    table.dataTable tbody td.mycolumngreen {
+        color: #26B99A;
+    }
+    /*mycolumnred {
+        color: #ff0000;
+    }
+    mycolumngreen {
+        color: #2b421c;
+    }*/
+    .progress-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: #000;
+        margin: 0 0 10px;
+    }
+
+    .progress-outer {
+        background: #fff;
+        padding: 5px 60px 5px 5px;
+        border: 5px solid #bebfbf;
+        border-radius: 45px;
+        margin-bottom: 20px;
+        position: relative;
+        width: 300px;
+        /*float:left;*/
+    }
+
+    .progress {
+        background: #bebfbf;
+        border-radius: 20px;
+        margin: 0;
+    }
+
+        .progress .progress-bar {
+            border-radius: 20px;
+            box-shadow: none;
+            animation: animate-positive 2s;
+        }
+
+        .progress .progress-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #6b7880;
+            position: absolute;
+            top: 3px;
+            right: 10px;
+        }
+
+    keyframes animate-positive {
+        0%
+
+    {
+        width: 0;
+    }
+
+    }
+</style>
+<style>
+    table.dataTable tbody tr.myeven {
+        color: #ff0000;
+    }
+
+    table.dataTable tbody tr.myodd {
+        color: #ffd800;
+    }
+
+    #OsosKayitTable tbody > tr > td {
+        white-space: nowrap;
+    }
+</style>
+
+
+@section scripts{
+
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script src="~/Scripts/bootstrap-datepicker.min.js"></script>
+    <script src="~/Scripts/jquery.inputmask.min.js"></script>
+    <link src="https://cdn.datatables.net/plug-ins/1.10.19/dataRender/percentageBars.js" rel="stylesheet" />
+
+    <link href="  https://cdn.datatables.net/select/1.2.7/css/select.dataTables.min.css" rel="stylesheet" />
+    <link href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" rel="stylesheet" />
+    <link href="https://editor.datatables.net/extensions/Editor/css/editor.dataTables.min.css" rel="stylesheet" />
+
+    <script src="https://cdn.datatables.net/select/1.2.7/js/dataTables.select.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.10/jquery.mask.js"></script>
+    <script src="https://cdn.datatables.net/select/1.2.7/js/dataTables.select.min.js"></script>
+    <link href="~/css/bootstrap-datepicker.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker.css" rel="stylesheet" />
+    <script src="https://cdn.datatables.net/plug-ins/1.10.19/dataRender/percentageBars.js"></script>
+
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+    <script src="//cdn.datatables.net/plug-ins/1.10.19/dataRender/percentageBars.js"></script>
+    <script src="//cdn.datatables.net/plug-ins/1.10.19/dataRender/percentageBars.js"></script>
+
+}
+
+    <h2>@Resources.Osos_Recording_List</h2>
+
+
+
+<div style="overflow-x:auto;">
+
+
+
+    <div class="container">
+        <div style="float:left">
+            @Resources.From
+            <input name="inpHour" id="inpHour" type="text" style="padding: 6px;border-radius: 4px;" />&nbsp;&nbsp;
+        </div>
+        <div style="float:left">
+            @Resources.To
+            <input name="inpHour2" id="inpHour2" type="text" style="padding: 6px;border-radius: 4px;" />&nbsp;&nbsp;
+        </div>
+        <div style="float:left">
+
+            <input type="button" class="btn btn-info" style="float:left" id="button2" value="@Resources.Show" />
+            <input type="button" class="btn btn-info" style="float:left" id="buttonExcel" value="Excel" />
+            &nbsp;&nbsp;
+        </div>
+
+
+
+
+
+
+
+        <div style="float:left">
+            <div style="float:left">
+                <div class="progress-outer">
+
+                    <div class="progress">
+
+                        <div id="bar1" class="progress-bar progress-bar-striped progress-bar-danger" style="width:50%;"></div>
+                        <div class="progress-value"><span id="span1"></span>%</div>
+
+                    </div>
+                </div>
+                <code style=" background: linear-gradient(to right,#337ab7,#ffe8cc);color:black">@Resources.Monthly_Inductive_Reactive_Rate</code>
+
+            </div>
+
+            <div style="float:left;margin-left:20px;">
+
+
+                <div class="progress-outer">
+
+                    <div class="progress">
+
+                        <div id="bar2" class="progress-bar progress-bar-striped progress-bar-success" style="width:75%;"></div>
+                        <div class="progress-value"><span id="span2"></span>%</div>
+                    </div>
+                </div>
+                <code style=" background: linear-gradient(to right,#337ab7,#ffe8cc); color:black">@Resources.Monthly_Capacitive_Reactive_Rate</code>
+
+            </div>
+        </div>
+    </div>
+
+
+    <table id="OsosKayitTable" class="table table-striped table-bordered" width="100%" style="border-top:4px solid #bebfbf;border-right:4px solid #bebfbf;border-top:4px solid #bebfbf;border-radius: 4px;">
+        <thead style="background-color:#337ab7;color:#E7E7E7">
+            <tr>
+                <th>ID</th>
+                <th>STATION_ID</th>
+                <th>@Resources.Date</th>
+                <th>Demand</th>
+                <th>-P(2.8.0)</th>
+                <th>+Rc(7.8.0)</th>
+                <th>-Ri(6.8.0)</th>
+                <th>+P(1.8.0)</th>
+                <th>+Ri(5.8.0)</th>
+                <th>-Rc(8.8.0)</th>
+                <th>@Resources.Inductive_Reactive_Rate</th>
+                <th>@Resources.Capacitive_Reactive_Rate</th>
+                <th>INSERT_DATE</th>
+                @*<th>Rate1</th>
+                    <th>Rate2</th>*@
+
+            </tr>
+        </thead>
+    </table>
+</div>
+<script>
+
+        $(document).ready(function () {
+
+            GetProgress();
+            function GetProgress() {
+
+                var url_string = document.URL;
+                var url = new URL(url_string);
+                var stationId = url.searchParams.get("stationId");
+
+                $.ajax({
+                    url: "/Osos/GetProgress",
+                    type: "POST",
+                    dataType: "json",
+                    data: {
+                        "stationId": stationId
+                    },
+                    success:function (data) {
+
+                        $("#span1").text(data.Progress1);
+                        $("#span2").text(data.Progress2);
+                        $("#bar1").css("width", data.Progress1+"%");
+                        $("#bar2").css("width", data.Progress2 + "%");
+
+                        $('.progress-value>span').each(function () {
+
+                            $(this).prop('Counter', 0).animate({
+                                Counter: $(this).text()
+                            }, {
+                                    duration: 1500,
+                                    easing: 'swing',
+                                    step: function (now) {
+                                        $(this).text(Math.ceil(now));
+                                    }
+                                });
+                        });
+                    }
+                });
+            }
+
+            $('#inpHour').daterangepicker({
+
+                singleDatePicker: true,
+                showDropdowns: true,
+                startDate:moment().startOf('month'),
+                //startDate: moment(),
+                //minDate: moment(),
+                locale: {
+                    format: 'DD/MM/YYYY'
+                }
+            });
+
+            $('#inpHour2').daterangepicker({
+                singleDatePicker: true,
+                showDropdowns: true,
+                //startDate: moment().endOf('month'),
+                startDate: moment(),
+                //minDate: moment(),
+                locale: {
+                    format: 'DD/MM/YYYY'
+                }
+            });
+            GetOsosTable();
+
+            $("#buttonExcel").on("click", function () {
+
+                var url_string = document.URL;
+                var url = new URL(url_string);
+                var stationId = url.searchParams.get("stationId");
+                var startDate = $('input[name="inpHour"]').val();
+                var endDate = $('input[name="inpHour2"]').val();
+                if (!startDate || startDate.length == 0) {
+                    startDate = new Date().toISOString();
+                }
+                if (!endDate || endDate.length == 0) {
+                    endDate = new Date().toISOString();
+                }
+                var searchValue = $('input[type="search"]').val();
+                window.location.href = '/Osos/ExportExcel?stationId=' + stationId + "&startDate=" + startDate + "&endDate=" + endDate ;
+                });
+            $('#OsosKayitTable').hide();
+            $('#OsosKayitTable').fadeIn(1000);
+        });
+
+            $("#button2").on("click", function () {
+
+                var url_string = document.URL;
+                var url = new URL(url_string);
+                var stationId = url.searchParams.get("stationId");
+
+                var startDate = $('input[name="inpHour"]').val();
+                var endDate = $('input[name="inpHour2"]').val();
+
+
+
+                //$(endDate).datepicker('setDate', null);
+                if (!startDate || startDate.length == 0) {
+                    startDate = new Date().toISOString();
+                }
+                if (!endDate || endDate.length == 0) {
+                    endDate = new Date().toISOString();
+                }
+                $("#OsosKayitTable").DataTable().destroy();
+                $("#OsosKayitTable").DataTable({
+       "language": {
+            "decimal": ",",
+            "thousands": "."
+        },
+                "pageLength": 50,
+                "searching": false,
+                "processing": true,
+                "serverSide": true,
+                "order": [2, "asc"],
+                "ajax": {
+                    "url": "/Osos/GetData",
+                    "type": "POST",
+                    "data": {
+                        "stationId": stationId,
+                        "startDate": startDate,
+                        "endDate": endDate
+                    },
+                    "datatype": "json"
+                },
+                    "columns": [
+                        { "data": "ID" },
+                        { "data": "STATION_ID" },
+                        { "data": "CREATED_DATE" },
+                        { "data": "DEMAND", render: $.fn.dataTable.render.number('.', ',', 2, '') },
+                        { "data": "P_280", render: $.fn.dataTable.render.number('.', ',', 2, '') },
+                        { "data": "RC_780", render: $.fn.dataTable.render.number('.', ',', 2, '') },
+                        { "data": "RI_680", render: $.fn.dataTable.render.number('.', ',', 2, '') },
+                        { "data": "P_180", render: $.fn.dataTable.render.number('.', ',', 2, '') },
+                        { "data": "RI_580", render: $.fn.dataTable.render.number('.', ',', 2, '') },
+                        { "data": "RC_880", render: $.fn.dataTable.render.number('.', ',', 2, '') },
+                        { "data": "INDUCTIVE_REAKTIF_RATE", render: $.fn.dataTable.render.number('.', ',', 2, '') },
+                        { "data": "CAPACITIVE_REAKTIF_RATE", render: $.fn.dataTable.render.number('.', ',', 2, '') },
+                        { "data": "INSERT_DATE" },
+                    ],
+
+                    "columnDefs": [
+                        { "visible": false, "targets": 0 },
+                        { "visible": false, "targets": 1 },
+                        { "visible": false, "targets": 12 },
+                        { className: "mycolumnred", "targets": [10] },
+                        { className: "mycolumngreen", "targets": [11] }
+
+                    ],
+
+                "language": {
+                    "decimal": ",",
+                    "thousands": ".",
+                    "emptyTable": "@Resources.emptyTable",
+                        "decimal": "",
+                        "info": "@Resources.Showing_START_to_END_of_TOTAL_entries",
+                        "infoEmpty": "@Resources.Showing_0_to_0_of_0_entries",
+                        "infoFiltered": "@Resources.filtered_from_MAX_total_entries",
+                        "infoPostFix": "",
+                        "thousands": ",",
+                        "lengthMenu": "@Resources.Show_MENU_entries",
+                        "loadingRecords": "@Resources.loadingRecords",
+                        "processing": "@Resources.processing",
+                        "search": "@Resources.Search",
+                        "zeroRecords": "@Resources.No_matching_records_found",
+                        "paginate": {
+                            "first": "@Resources.First",
+                            "last": "@Resources.Last",
+                            "next": "@Resources.Next",
+                            "previous": "@Resources.Previous"
+                        },
+                        "aria": {
+                            "sortAscending": "@Resources.activate_to_sort_column_ascending",
+                            "sortDescending": "@Resources.activate_to_sort_column_descending"
+                        },
+                },
+
+            });
+
+
+        });
+
+        var Popup;
+
+        function GetOsosTable() {
+
+            var url_string = document.URL;
+            var url = new URL(url_string);
+            var stationId = url.searchParams.get("stationId");
+            var startDate = $('input[name="inpHour"]').val();
+            var endDate = $('input[name="inpHour2"]').val();
+
+            if (!startDate || startDate.length == 0) {
+                startDate = new Date().toISOString();
+            }
+
+            if (!endDate || endDate.length == 0) {
+                endDate = new Date().toISOString();
+            }
+
+
+            var dataTable = $(document).ready(function () {
+                $("#OsosKayitTable").DataTable().destroy();
+                $("#OsosKayitTable").DataTable({
+
+                    "pageLength": 50,
+                    "searching": false,
+                    "processing": true,
+                    "serverSide": true,
+                    "order": [2, "asc"],
+                    "ajax": {
+                        "url": "/Osos/GetData",
+                        "type": "POST",
+                        "data": {
+                            "stationId": stationId,
+                            "startDate": startDate,
+                            "endDate": endDate
+                        },
+                        "datatype": "json"
+                    },
+                    "columns": [
+                        { "data": "ID" },
+                        { "data": "STATION_ID" },
+                        { "data": "CREATED_DATE" },
+                        { "data": "DEMAND", render: $.fn.dataTable.render.number('.', ',', 2, '') },
+                        { "data": "P_280", render: $.fn.dataTable.render.number('.', ',', 2, '') },
+                        { "data": "RC_780", render: $.fn.dataTable.render.number('.', ',', 2, '')  },
+                        { "data": "RI_680", render: $.fn.dataTable.render.number('.', ',', 2, '')  },
+                        { "data": "P_180", render: $.fn.dataTable.render.number('.', ',', 2, '')  },
+                        { "data": "RI_580", render: $.fn.dataTable.render.number('.', ',', 2, '')  },
+                        { "data": "RC_880", render: $.fn.dataTable.render.number('.', ',', 2, '')  },
+                        { "data": "INDUCTIVE_REAKTIF_RATE", render: $.fn.dataTable.render.number('.', ',', 2, '') },
+                        { "data": "CAPACITIVE_REAKTIF_RATE", render: $.fn.dataTable.render.number('.', ',', 2, '') },
+                        { "data": "INSERT_DATE" },
+                    ],
+
+                    "columnDefs": [
+                        { "visible": false, "targets": 0 },
+                        { "visible": false, "targets": 1 },
+                        { "visible": false, "targets": 12 },
+                        { className: "mycolumnred", "targets": [10] },
+                        { className: "mycolumngreen", "targets": [11] },
+                         {
+                            data: 'DEMAND',
+                            render: $.fn.dataTable.render.number(',', '.', 2)
+                        },
+                    ],
+
+                    "language": {
+                        "decimal": ",",
+                        "thousands": ".",
+                        "emptyTable": "@Resources.emptyTable",
+                        //"decimal": "",
+                        "info": "@Resources.Showing_START_to_END_of_TOTAL_entries",
+                        "infoEmpty": "@Resources.Showing_0_to_0_of_0_entries",
+                        "infoFiltered": "@Resources.filtered_from_MAX_total_entries",
+                        "infoPostFix": "",
+                        //"thousands": ",",
+                        "lengthMenu": "@Resources.Show_MENU_entries",
+                        "loadingRecords": "@Resources.loadingRecords",
+                        "processing": "@Resources.processing",
+                        "search": "@Resources.Search",
+                        "zeroRecords": "@Resources.No_matching_records_found",
+                        "paginate": {
+                            "first": "@Resources.First",
+                            "last": "@Resources.Last",
+                            "next": "@Resources.Next",
+                            "previous": "@Resources.Previous"
+                        },
+                        "aria": {
+                            "sortAscending": "@Resources.activate_to_sort_column_ascending",
+                            "sortDescending": "@Resources.activate_to_sort_column_descending"
+                        },
+                    },
+
+                });
+
+            });
+        }
+
+</script>
+
+
+
+
+

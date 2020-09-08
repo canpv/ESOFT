@@ -1,0 +1,181 @@
+﻿@using Microsoft.AspNet.Identity.EntityFramework;
+@using Microsoft.AspNet.Identity;
+@using System.Web.UI.WebControls;
+@using Esso.Models;
+@using System.Linq;
+@using Esso.Web;
+@using Esso.Data;
+@using Esso.Web.ViewModels;
+@using Microsoft.AspNet.Identity.Owin;
+@model List<FtpDTO>
+
+
+@{
+	Html.EnableClientValidation();
+	Html.EnableUnobtrusiveJavaScript();
+
+	EssoEntities DB = new EssoEntities();
+
+	string curUserId = User.Identity.GetUserId();
+
+
+}
+
+
+@Html.DevExpress().GridView(settings =>
+{
+	settings.Name = "FtpGrid";
+	settings.KeyFieldName = "ID";
+	settings.CallbackRouteValues = new { Controller = "Ftp", Action = "FtpGridPartial" };
+
+	settings.SettingsEditing.AddNewRowRouteValues = new { Controller = "Ftp", Action = "InsertFtp" };
+	settings.SettingsEditing.UpdateRowRouteValues = new { Controller = "Ftp", Action = "UpdateFtp" };
+	settings.SettingsEditing.DeleteRowRouteValues = new { Controller = "Ftp", Action = "DeleteFtp" };
+	settings.SettingsEditing.Mode = GridViewEditingMode.EditFormAndDisplayRow;
+	settings.Width = Unit.Percentage(100);
+
+
+	//settings.Settings.ShowGroupPanel = true;
+	settings.Settings.ShowFilterRowMenu = true;
+	settings.Settings.AutoFilterCondition = AutoFilterCondition.Contains;
+
+	//settings.Settings.ShowFooter = true;
+	settings.SettingsPager.PageSize = 20;
+
+	settings.CommandColumn.ButtonRenderMode = GridCommandButtonRenderMode.Image;
+	settings.SettingsCommandButton.NewButton.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ActionsAdd16x16;
+	settings.SettingsCommandButton.EditButton.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ActionsEditname16x16;
+	settings.SettingsCommandButton.UpdateButton.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ActionsApply32x32;
+	settings.SettingsCommandButton.CancelButton.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ActionsCancel32x32;
+	settings.SettingsCommandButton.DeleteButton.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ActionsTrash16x16;
+
+	settings.CommandColumn.Width = Unit.Point(80);
+
+	settings.SettingsBehavior.AllowSort = true;
+	settings.Settings.ShowFilterRow = true;
+	settings.SettingsBehavior.AllowFocusedRow = true;
+
+
+	settings.EditFormLayoutProperties.SettingsAdaptivity.AdaptivityMode = FormLayoutAdaptivityMode.SingleColumnWindowLimit;
+	settings.EditFormLayoutProperties.SettingsAdaptivity.SwitchToSingleColumnAtWindowInnerWidth = 700;
+
+	settings.CommandColumn.Visible = true;
+	settings.CommandColumn.ShowNewButtonInHeader = true;
+	settings.CommandColumn.ShowDeleteButton = true;
+	settings.SettingsBehavior.ConfirmDelete = true;
+	settings.SettingsText.ConfirmDelete = "Kaydı silmek istediğinize emin misiniz?";
+	settings.CommandColumn.ShowEditButton = true;
+	
+
+	settings.Styles.Header.ForeColor = System.Drawing.Color.FromArgb(1, 0, 98, 158);
+	settings.Styles.FilterBar.ForeColor = System.Drawing.Color.FromArgb(1, 0, 98, 158);
+	settings.Styles.PagerBottomPanel.ForeColor = System.Drawing.Color.FromArgb(1, 0, 98, 158);
+	settings.ControlStyle.Border.BorderColor = System.Drawing.Color.White;
+	settings.Styles.Table.Border.BorderColor = System.Drawing.Color.FromArgb(1, 84, 130, 175);
+	settings.Styles.DetailCell.BackColor = System.Drawing.Color.White;
+	settings.Styles.Header.BackColor = System.Drawing.Color.White;
+	settings.Styles.PagerBottomPanel.BackColor = System.Drawing.Color.White;
+	settings.Styles.PagerBottomPanel.BorderBottom.BorderColor = System.Drawing.Color.FromArgb(1, 84, 130, 175);
+	settings.Styles.GroupPanel.BorderBottom.BorderColor = System.Drawing.Color.FromArgb(1, 84, 130, 175);
+	settings.Styles.Header.Border.BorderColor = System.Drawing.Color.LightGray;
+	settings.Styles.Header.Border.BorderStyle = BorderStyle.Solid;
+	settings.Styles.PagerTopPanel.BackColor = System.Drawing.Color.White;
+	settings.Styles.Table.BackColor = System.Drawing.Color.White;
+	settings.Styles.Table.ForeColor = System.Drawing.Color.FromArgb(1, 0, 98, 158);
+	settings.Styles.EditFormColumnCaption.ForeColor = System.Drawing.Color.FromArgb(1, 0, 98, 158);
+	settings.Styles.CommandColumnItem.BackColor = System.Drawing.Color.White;
+	settings.Styles.GroupPanel.BackColor = System.Drawing.Color.White;
+	settings.Styles.FilterRow.BackColor = System.Drawing.Color.White;
+	settings.Styles.CommandColumn.BackColor = System.Drawing.Color.White;
+	settings.Settings.GridLines = System.Web.UI.WebControls.GridLines.Horizontal;
+	settings.Styles.FocusedRow.BackColor = System.Drawing.Color.FromArgb(1, 99, 169, 212);
+	settings.Styles.EditForm.BackColor = System.Drawing.Color.FromArgb(1, 227, 239, 247);
+
+
+	settings.Columns.Add(c =>
+	{
+		c.FieldName = "STATION_ID";
+		c.Caption = "Station Name";
+		c.EditFormSettings.Visible = DefaultBoolean.True;
+		c.Visible = true;
+
+		c.EditorProperties().ComboBox(p =>
+		{
+			p.ValueField = "ID";
+			p.TextField = "NAME";
+			p.DataSource = (from t in DB.Stations
+							select new
+							{
+								ID = t.ID,
+								NAME = t.NAME
+							}).ToList();
+		});
+
+	});
+
+
+
+	settings.Columns.Add(c =>
+	{
+		c.FieldName = "IP_ADDRESS";
+		c.Caption = "IP Address";
+		c.Visible = true;
+		c.EditFormSettings.Visible = DefaultBoolean.False;
+		c.ColumnType = MVCxGridViewColumnType.TextBox;
+
+	});
+	settings.Columns.Add(c =>
+	{
+		c.FieldName = "PORT_NO";
+		c.Caption = "Port No";
+		c.Visible = true;
+		c.EditFormSettings.Visible = DefaultBoolean.True;
+		c.ColumnType = MVCxGridViewColumnType.TextBox;
+
+	});
+
+
+
+	settings.Columns.Add(c =>
+	{
+		c.FieldName = "USER_NAME";
+		c.Caption = "User Name";
+		c.ColumnType = MVCxGridViewColumnType.TextBox;
+
+
+	});
+
+	settings.Columns.Add(c =>
+	{
+		c.FieldName = "PASSWORD";
+		c.Caption = "Password";
+		c.Visible = false;
+		c.EditFormSettings.Visible = DefaultBoolean.True;
+		c.ColumnType = MVCxGridViewColumnType.TextBox;
+
+	});
+
+
+
+	settings.EditFormLayoutProperties.ColCount = 2;
+	settings.EditFormLayoutProperties.Items.Add("STATION_ID");
+	settings.EditFormLayoutProperties.Items.Add("IP_ADDRESS");
+	settings.EditFormLayoutProperties.Items.Add("PORT_NO");
+	settings.EditFormLayoutProperties.Items.Add("USER_NAME");
+	settings.EditFormLayoutProperties.Items.Add("PASSWORD");
+
+
+	settings.EditFormLayoutProperties.Items.AddCommandItem(i =>
+	{
+
+		i.ColSpan = 2;
+		i.ShowUpdateButton = true;
+		i.ShowCancelButton = true;
+		i.HorizontalAlign = FormLayoutHorizontalAlign.Right;
+	});
+
+
+
+}).SetEditErrorText(ViewData["EditError"] as string).BindToLINQ(string.Empty, string.Empty, (s, e) =>
+{
+}).Bind(Model).GetHtml()

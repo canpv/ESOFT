@@ -1,0 +1,693 @@
+﻿@using System.Web.UI.WebControls;
+@model int
+@using Esso.ViewModels
+@using Esso.Data;
+@using Esso.Models;
+@using Microsoft.AspNet.Identity
+@using language
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@{
+    EssoEntities DB = new EssoEntities();
+
+    #region User yetkileri kontrol
+    TBL_STATION stat = new TBL_STATION();
+    stat = null;
+
+    var userId = User.Identity.GetUserId();
+
+    int? money;
+    var user_money = DB.UserEntity.Where(x => x.USER_ID == userId).FirstOrDefault();
+
+    if (user_money != null)
+    {
+        money = DB.UserEntity.Where(x => x.USER_ID == userId).Select(x => new { x = x.SHOW_MONEY }).FirstOrDefault().x;
+    }
+    else
+    {
+        money = null;
+    }
+
+
+    //User yetkileri kontrol ediliyor
+    try
+    {
+
+        if (User.IsInRole("M_ADMIN"))
+        {
+            stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+        }
+        else if (User.IsInRole("COMP_ADMIN"))
+        {
+            int cmpId = DB.Stations.Where(a => a.ID == Model && a.IS_DELETED == false).FirstOrDefault().COMPANY_ID;
+
+            if (DB.CompanyUsers.Any(a => a.COMPANY_ID == cmpId && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+        else if (User.IsInRole("COMP_USER"))
+        {
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+        else if (User.IsInRole("DEMO"))
+        {
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+
+    }
+    catch (Exception)
+    {
+
+    }
+    #endregion
+
+}
+
+@{
+    if (stat == null)
+    {
+        @Html.Partial("_ErrorPagePartial")
+    }
+    else
+    {
+        var _stationDetail = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+        <style>
+            tfoot {
+                color: black;
+                background: #9c9c9c;
+            }
+        </style>
+
+        <div class="page-title">
+            <div class="title_left">
+                @if (User.IsInRole("DEMO"))
+                {
+                    <h3>@_stationDetail.DEMO_NAME</h3>
+                }
+                else
+                {
+                    <h3>@_stationDetail.NAME</h3>
+                }
+            </div>
+        </div>
+
+        <input type="hidden" value="@Resources.Daily_Production" id="hdn_daily_production" />
+        <input type="hidden" value="@Resources.Irradiation" id="hdn_irradiation" />
+        <input type="hidden" value="@Resources.Energy" id="hdn_energy" />
+        <input type="hidden" value="@Resources.Maximum" id="hdn_maximum" />
+        <input type="hidden" value="@Resources.Production" id="hdn_production" />
+        <input type="hidden" value="@Resources.Target" id="hdn_target" />
+        <input type="hidden" value="@Resources.Total" id="hdn_total" />
+        <input type="hidden" value="@Resources.January" id="hdn_january" />
+        <input type="hidden" value="@Resources.February" id="hdn_february" />
+        <input type="hidden" value="@Resources.March" id="hdn_march" />
+        <input type="hidden" value="@Resources.April" id="hdn_april" />
+        <input type="hidden" value="@Resources.May" id="hdn_may" />
+        <input type="hidden" value="@Resources.June" id="hdn_june" />
+        <input type="hidden" value="@Resources.July" id="hdn_july" />
+        <input type="hidden" value="@Resources.August" id="hdn_august" />
+        <input type="hidden" value="@Resources.September" id="hdn_september" />
+        <input type="hidden" value="@Resources.October" id="hdn_october" />
+        <input type="hidden" value="@Resources.November" id="hdn_november" />
+        <input type="hidden" value="@Resources.December" id="hdn_december" />
+
+        <input type="hidden" value="@Resources.Monday" id="hdn_monday" />
+        <input type="hidden" value="@Resources.Tuesday" id="hdn_tuesday" />
+        <input type="hidden" value="@Resources.Wednesday" id="hdn_wednesday" />
+        <input type="hidden" value="@Resources.Thursday" id="hdn_thursday" />
+        <input type="hidden" value="@Resources.Friday" id="hdn_friday" />
+        <input type="hidden" value="@Resources.Saturday" id="hdn_saturday" />
+        <input type="hidden" value="@Resources.Sunday" id="hdn_sunday" />
+
+        <div class="clearfix"></div>
+
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <h2>@Resources.Production</h2>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                        <div id="echart_line" style="height:500px;"></div>
+                        <div class="well" style="overflow: auto">
+                            <div class="col-md-6">
+                                <div class="btn-group">
+                                    <h4 id="bakisTarih"></h4>
+                                </div>
+                                <div class="btn-group">
+                                    <input name="beginDaily" id="single_cal4" class="form-control has-feedback-left" type="text" />
+                                </div>
+                                <div class="btn-group">
+                                    <input type="button" class="btn btn-info" id="btnListDaily" value="@Resources.Show" />
+                                </div>
+                                <div class="btn-group">
+                                    <button id="btnInvTblDetail" type="button" class="btn btn-info" data-toggle="modal" data-target="#DataTableModal">@Resources.Data_Table</button>
+                                </div>
+                            </div>
+                            
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="DataTableModal" role="dialog">
+                <div class="modal-dialog modal-lg">
+                    <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-body">
+                            <div class="x_title">
+                                <h2>@Resources.Data_Table</h2>
+                                <div class="clearfix"></div>
+                            </div>
+                            <table id="datatable" class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>@Resources.Date</th>
+                                        <th>AC @Resources.Power</th>
+                                      
+                                    </tr>
+                                </thead>
+                                <tbody id="DataTableDetail"></tbody>
+                            </table>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">@Resources.Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <script>
+
+            function NumberConvert(nStr) {
+                if (nStr != null) {
+                    nStr = nStr.toFixed(2);
+                    nStr += '';
+                    x = nStr.split('.');
+                    x1 = x[0];
+                    x2 = x.length > 1 ? ',' + x[1] : '';
+                    var rgx = /(\d+)(\d{3})/;
+                    while (rgx.test(x1)) {
+                        x1 = x1.replace(rgx, '$1' + '.' + '$2');
+                    }
+                    return x1 + x2;
+                }
+                else {
+                    return "-";
+                }
+            }
+            function NumberConvert2(nStr) {
+                if (nStr != null) {
+                    nStr += '';
+                    x = nStr.split('.');
+                    x1 = x[0];
+                    x2 = x.length > 1 ? ',' + x[1] : '';
+                    var rgx = /(\d+)(\d{3})/;
+                    while (rgx.test(x1)) {
+                        x1 = x1.replace(rgx, '$1' + '.' + '$2');
+                    }
+                    return x1 + x2;
+                }
+                else {
+                    return "-";
+                }
+            }
+            function ConvertDay(vl) {
+                var value = new Date
+                    (
+                    parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+                    );
+                return value.getDate()
+            }
+
+            function ConvertDateMonth(vl) {
+                var value = new Date
+                    (
+                    parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+                    );
+                var ay = (value.getMonth() + 1);
+                if (ay == 1) { sonuc = 31; }
+                else if (ay == 2) { sonuc = 28; }
+                else if (ay == 3) { sonuc = 31; }
+                else if (ay == 4) { sonuc = 30; }
+                else if (ay == 5) { sonuc = 31; }
+                else if (ay == 6) { sonuc = 30; }
+                else if (ay == 7) { sonuc = 31; }
+                else if (ay == 8) { sonuc = 31; }
+                else if (ay == 9) { sonuc = 30; }
+                else if (ay == 10) { sonuc = 31; }
+                else if (ay == 11) { sonuc = 30; }
+                else if (ay == 12) { sonuc = 31; }
+                return sonuc;
+            }
+            function ConvertNumberMonth(vln) {
+
+                if (vln == 1) { sonuc2 = 31; }
+                else if (vln == 2) { sonuc2 = 28; }
+                else if (vln == 3) { sonuc2 = 31; }
+                else if (vln == 4) { sonuc2 = 30; }
+                else if (vln == 5) { sonuc2 = 31; }
+                else if (vln == 6) { sonuc2 = 30; }
+                else if (vln == 7) { sonuc2 = 31; }
+                else if (vln == 8) { sonuc2 = 31; }
+                else if (vln == 9) { sonuc2 = 30; }
+                else if (vln == 10) { sonuc2 = 31; }
+                else if (vln == 11) { sonuc2 = 30; }
+                else if (vln == 12) { sonuc2 = 31; }
+                return sonuc2;
+            }
+
+
+            function ConvertTicksToTime(vl) {
+                vl = vl.replace("Date", "");
+                vl = vl.replace("/", "");
+                vl = vl.replace("(", "");
+                vl = vl.replace(")", "");
+                vl = vl.replace("/", "").trim();
+
+                var vlDate = new Date(parseInt(vl));
+                return vlDate.toLocaleTimeString();
+            }
+            function DateFormat2(vl) {
+                var value = new Date
+                    (
+                    parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+                    );
+                var dat = value.getDate() +
+                    "/" +
+                    (value.getMonth() + 1) +
+                    "/" +
+                    value.getFullYear();
+
+                var time = value.getHours() +
+                    ":" +
+                    value.getMinutes() + "0"
+                return time.toString();
+            }
+            function ConvertTicksToDate(vl) {
+                vl = vl.replace("Date", "");
+                vl = vl.replace("/", "");
+                vl = vl.replace("(", "");
+                vl = vl.replace(")", "");
+                vl = vl.replace("/", "").trim();
+
+                var vlDate = new Date(parseInt(vl));
+                return vlDate.toLocaleDateString();
+            }
+            //DailyChartData();
+        </script>
+        <script>
+
+                var theme = {
+                     //renkler
+                    color: [
+                        '#23e600', '#052ec7', '#fea80c', '#d400a5',
+                        '#9B59B6', '#8abb6f', '#759c6a', '#bfd3b7'
+                    ],
+
+
+                    title: {
+                        itemGap: 8,
+                        textStyle: {
+                            fontWeight: 'normal',
+                            color: '#408829'
+                        }
+                    },
+
+                    dataRange: {
+                        color: ['#1f610a', '#97b58d']
+                    },
+
+                    toolbox: {
+                        color: ['#408829', '#408829', '#408829', '#408829']
+                    },
+
+                    tooltip: {
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        axisPointer: {
+                            type: 'line',
+                            lineStyle: {
+                                color: '#408829',
+                                type: 'dashed'
+                            },
+                            crossStyle: {
+                                color: '#408829'
+                            },
+                            shadowStyle: {
+                                color: 'rgba(200,200,200,0.3)'
+                            }
+                        }
+                    },
+
+                    dataZoom: {
+                        dataBackgroundColor: '#eee',
+                        fillerColor: 'rgba(64,136,41,0.2)',
+                        handleColor: '#408829'
+                    },
+                    grid: {
+                        borderWidth: 0
+                    },
+
+                    categoryAxis: {
+                        axisLine: {
+                            lineStyle: {
+                                color: '#408829'
+                            }
+                        },
+                        splitLine: {
+                            lineStyle: {
+                                color: ['#eee']
+                            }
+                        }
+                    },
+
+                    valueAxis: {
+                        axisLine: {
+                            lineStyle: {
+                                color: '#408829'
+                            }
+                        },
+                        splitArea: {
+                            show: true,
+                            areaStyle: {
+                                color: ['rgba(250,250,250,0.1)', 'rgba(200,200,200,0.1)']
+                            }
+                        },
+                        splitLine: {
+                            lineStyle: {
+                                color: ['#eee']
+                            }
+                        }
+                    },
+                    timeline: {
+                        lineStyle: {
+                            color: '#408829'
+                        },
+                        controlStyle: {
+                            normal: { color: '#408829' },
+                            emphasis: { color: '#408829' }
+                        }
+                    },
+
+
+                    textStyle: {
+                        fontFamily: 'Arial, Verdana, sans-serif'
+                    }
+            };
+
+                $(document).ready(function () {
+
+
+
+               //Üretim Grafik bas
+
+                function DateFormat(vl) {
+
+                    var value = new Date
+                        (
+                        parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+                        );
+                    var dat = value.getDate() +
+                        "/" +
+                        (value.getMonth() + 1) +
+                        "/" +
+                        value.getFullYear();
+
+                    var dk;
+                    var dkUzunluk = value.getMinutes().toString().length;
+                    if (dkUzunluk == 1) {
+                        dk = "0" + value.getMinutes();
+                    }
+                    else {
+                        dk = value.getMinutes();
+                    }
+                    var saat;
+                    var dkUzunluk = value.getHours().toString().length;
+                    if (dkUzunluk == 1) {
+                        saat = "0" + value.getHours()
+                    }
+                    else {
+                        saat = value.getHours()
+                    }
+
+                    var time = saat + ":" + dk
+                    return time.toString();
+                }
+
+                $('#btnListDaily').click(function () {
+                    $(this).button('loading');
+                    DailyChartData();
+                });
+                DailyChartData();
+                function DailyChartData() {
+
+                    var beginDate = $('input[name="beginDaily"]').val();
+
+
+                    if (!beginDate || beginDate.length == 0) {
+                        beginDate = new Date().toISOString();
+                    }
+
+                    $.ajax({
+                        type: "get",
+                        url: "/EKK_STATION/GetLineChart",
+                        dataType: "json",
+                        contentType: "application/json; charset=utf-8",
+                        data: { beginDate: beginDate, stationId: @Model },
+                        success: function (data) {
+                            debugger;
+                            $('#btnListDaily').button('reset');
+                            var echartLine = echarts.init(document.getElementById('echart_line'), theme);
+
+                            var _dailyProductionText = $('#hdn_daily_production').val();
+                            var _irradiation = $('#hdn_irradiation').val();
+                            var _energy = $('#hdn_energy').val();
+                            var _maxsimum = $('#hdn_maximum').val();
+
+                            $("#DataTableDetail").empty();
+                            $.each(data.listTableOzet, function (i, item) {
+                              
+                                $("#DataTableDetail").append("<tr><td>" + ConvertTicksToDate(item._tarih) + " / " + ConvertTicksToTime(item._tarih) + "</td><td>" + (item._gunlukUretim) + " W" + "</td></tr>");
+                            });
+
+                            echartLine.setOption({
+                                tooltip: {
+                                    trigger: 'axis',
+                                    axisPointer: {
+                                        animation: true
+                                    },
+                                    formatter: function (params) {
+                                        var colorSpan = color => '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background-color:' + color + '"></span>';
+                                        var ItemsArray = [];
+                                        ItemsArray.push({ unitName: 0, Item: 'kW' });
+                                        ItemsArray.push({ unitName: 1, Item: 'W/m²' });
+                                        ItemsArray.push({ unitName: 2, Item: 'MWh' });
+                                        ItemsArray.push({ unitName: 3, Item: 'kW' });
+
+                                        var tooltipText="";
+                                        tooltipText += params[0].name;
+                                        for (var i = 0; i < params.length; i++) {
+                                            tooltipText += "<br/>" + colorSpan(params[i].color) + params[i].seriesName + " : " + NumberConvert(params[i].value) +" "+ ItemsArray[i].Item;
+                                        }
+                                        return tooltipText;
+
+                                    }
+                                },
+                                lineStyle: {
+                                    normal: {
+                                        type: 'solid'
+                                    }
+                                },
+                                legend: {
+                                    x: 350,
+                                    y: 20,
+
+                                    data: [_dailyProductionText]
+                                },
+                                toolbox: {
+                                    show: true,
+                                    feature: {
+                                        mark: { show: false },
+                                        dataZoom: { show: false },
+                                        dataView: { show: false },
+                                        magicType: {
+                                            show: true,
+                                            title: {
+                                                line: 'Line',
+                                                bar: 'Bar',
+                                                stack: 'Stack',
+                                                tiled: 'Tiled'
+                                            },
+                                            type: ['line', 'bar', 'stack', 'tiled']
+                                        },
+                                        restore: {
+                                            show: true,
+                                            title: "Restore"
+                                        },
+                                        saveAsImage: {
+                                            show: true,
+                                            title: "Save Image"
+                                        }
+                                    }
+                                },
+                                calculable: true,
+                                dataZoom: [
+                                    {
+                                        show: true,
+                                        realtime: true,
+                                        start: 0,
+                                        end: 100
+                                    },
+                                    {
+                                        type: 'inside',
+                                        realtime: true,
+                                        start: 0,
+                                        end: 100
+                                    }
+                                ],
+
+                                xAxis: [{
+                                    type: 'category',
+                                    boundaryGap: false,
+                                    scale: true,
+                                    axisLabel: {
+                                        formatter: function (value, index) {
+
+                                            var date = new Date(value);
+                                            var time = value.split(':');
+                                            return time[0].toString()+':00             ';
+
+                                        }
+
+                                    },
+
+
+                                    data: data.listChartOzet.map(function (a) { return DateFormat(a._tarih); })
+                                }],
+                                yAxis: [
+                                    {
+                                        type: 'value',
+                                        name: _dailyProductionText,
+                                        axisLabel: {
+                                            formatter: '{value} kW'
+                                        },
+                                        beginAtZero: true,
+                                        steps: 100,
+                                        stepValue: 100,
+                                        max: 1700
+
+                                    }
+                                ],
+                                series: [{
+                                    name: _dailyProductionText,
+                                    type: 'line',
+                                    smooth: true,
+                                    itemStyle: {
+                                        normal: {
+                                            areaStyle: {
+                                                type: 'default'
+                                            }
+                                        }
+                                    },
+                                    data: data.listChartOzet.map(function (a) { return a._gunlukUretim; }),
+
+                                    markPoint: {
+                                        symbol: 'pin',
+                                        //symbolSize:80,
+                                        label: {
+                                            normal: {
+                                                textStyle: {
+                                                    color: '#000',
+                                                    fontWeight: 'bold',
+                                                    fontSize: 10
+                                                }
+                                            }
+                                        },
+                                        data: [{
+                                            type: 'max',
+                                            name: 'Maximum Production (kW)'
+                                        }]
+                                    }
+                                }]
+
+                            });
+
+
+                        }
+                    });
+                }
+               //Üretim Grafik bit.
+
+
+
+
+
+            //DateTimePicker bas.
+                $('#single_cal4').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+                $('#single_cal5').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+
+                $('#inpHour').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+
+                $('#inpAkim').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+
+                $('#inpHour').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+               //DateTimePicker bit.
+                });
+
+        </script>
+
+    }
+}
+
+
+

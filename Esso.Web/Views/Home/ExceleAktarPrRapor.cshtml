@@ -1,0 +1,32 @@
+﻿
+@{
+    Layout = null;
+}
+@using Esso.Web.ViewModels
+@model IEnumerable<PRListModel>
+@{
+    Layout = null;
+    Response.AddHeader("Content-disposition", "attachment; filename=PrReport.xls");
+    Response.ContentType = "application/octet-stream";
+    var taglar = Model;
+    var ilkSatir = taglar.FirstOrDefault();
+}
+<table style="border: 1px solid black;">
+    <tr style="font-weight: bold">
+        @foreach (var ozellik in ilkSatir.GetType().GetProperties())
+        {
+            <td style="border: 1px solid #a59f9f;">@ozellik.Name</td>
+        }
+    </tr>
+    @foreach (var tag in taglar)
+    {
+        <tr>
+            @foreach (var urunOzelligi in tag.GetType().GetProperties())
+            {
+                <td style="border: 1px solid black;">@urunOzelligi.GetValue(tag, null)</td>
+            }
+        </tr>
+    }
+
+
+</table>

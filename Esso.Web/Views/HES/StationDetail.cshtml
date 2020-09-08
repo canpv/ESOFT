@@ -1,0 +1,1201 @@
+﻿@using Esso.Models
+@model int
+@using Esso.Data
+@using Microsoft.AspNet.Identity
+@using language
+@{
+    ViewBag.Title = "StationDetail";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{
+    EssoEntities DB = new EssoEntities();
+
+    #region User yetkileri kontrol
+    TBL_STATION stat = new TBL_STATION();
+    stat = null;
+
+    var userId = User.Identity.GetUserId();
+
+    int? money;
+    var user_money = DB.UserEntity.Where(x => x.USER_ID == userId).FirstOrDefault();
+
+    if (user_money != null)
+    {
+        money = DB.UserEntity.Where(x => x.USER_ID == userId).Select(x => new { x = x.SHOW_MONEY }).FirstOrDefault().x;
+    }
+    else
+    {
+        money = null;
+    }
+    var photo = "";
+
+
+    //User yetkileri kontrol ediliyor
+    try
+    {
+        if (User.IsInRole("M_ADMIN"))
+        {
+            photo = Model + ".png";
+            stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+        }
+        else if (User.IsInRole("COMP_ADMIN"))
+        {
+            int cmpId = DB.Stations.Where(a => a.ID == Model && a.IS_DELETED == false).FirstOrDefault().COMPANY_ID;
+            photo = Model + ".png";
+            if (DB.CompanyUsers.Any(a => a.COMPANY_ID == cmpId && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+        else if (User.IsInRole("COMP_USER"))
+        {
+            photo = Model + ".png";
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+        else if (User.IsInRole("DEMO"))
+        {
+            photo = "0.png";
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+    }
+    catch (Exception)
+    {
+
+    }
+    #endregion
+
+
+}
+
+@{
+    if (stat == null)
+    {
+        @Html.Partial("_ErrorPagePartial")
+    }
+    else
+    {
+        var stationDetail = stat;
+        string[] coor = stationDetail.COORDINATE_INFORMATION.Split(',');
+        var coorX = coor[0];
+        var coorY = coor[1];
+
+        var insAC = stat.AC_INSTALLED_POWER;
+        var insDC = stat.DC_INSTALLED_POWER;
+        var DC_AC = Math.Round((float)insDC / (float)insAC, 2);
+        var InverterCount = DB.Inverters.Where(x => x.STATION_ID == Model).Count();
+
+        <div class="">
+            @Html.Partial("MenuPartial")
+
+            <!-- The Modal -->
+            <div id="myModal" class="modal">
+                <span class="close">&times;</span>
+                <img class="modal-content" id="img01">
+                <div id="caption"></div>
+            </div>
+            <div class="clearfix"></div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="x_panel" style="background:#F7F7F7">
+                        <div class="x_content">
+                            <section class="content invoice">
+                                <!-- title row -->
+                                <div class="row">
+                                    <div class="col-xs-12 invoice-header">
+                                        <h1>
+                                            @if (User.IsInRole("DEMO"))
+                                            {
+                                                <i class="fa fa-globe"></i> @stationDetail.DEMO_NAME
+                                            }
+                                            else
+                                            {
+                                                <i class="fa fa-globe"></i> @stationDetail.NAME
+                                            }
+
+                                        </h1>
+                                    </div>
+                                    <!-- /.col -->
+                                </div>
+                                <!-- info row -->
+
+                                <div class="row invoice-info">
+                                    <div class="animated flipInX col-sm-4 invoice-col">
+
+                                        <img src="~/images/StationImages/@photo" class="img-responsive" alt="@stationDetail.NAME" width="90%" height="90%">
+                                    </div>
+                                    <div class="col-sm-6 invoice-col">
+                                        <div class="table-responsive">
+                                            <table class="table">
+                                                <tbody>
+                                                    <tr>
+                                                        <td width="10%"><img src="~/images/solarpanel.png" style=" height: 70%" /></td>
+                                                        <th>@Resources.Daily_Production:</th>
+                                                        <td id="gunlukEnerji"></td>
+                                                    </tr>
+                                                    @if (money == null)
+                                                    {
+                                                        <tr>
+                                                            <td width="10%"><img src="~/images/money.png" style=" height: 70%" /></td>
+                                                            <th>@Resources.Daily_Financial_Income:</th>
+                                                            <td id="gunlukGelir"></td>
+                                                        </tr>
+                                                    }
+                                                    <tr>
+                                                        <td width="10%"><img src="~/images/solarpanel.png" style=" height: 70%" /></td>
+                                                        <th>@Resources.Monthly_Production:</th>
+                                                        <td id="aylikEnerji"></td>
+                                                    </tr>
+                                                    @if (money == null)
+                                                    {
+                                                        <tr>
+                                                            <td width="10%"><img src="~/images/money.png" style=" height: 70%" /></td>
+                                                            <th>@Resources.Monthly_Financial_Income:</th>
+                                                            <td id="aylikGelir"></td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                    </div>
+                                    <div class="col-sm-2 invoice-col">
+                                        <a id="btnTargetDetail" class="btn btn-app" data-toggle="modal" data-target="#trgtModal">
+                                            <i class="fa fa-dashboard"></i> @Resources.Target
+                                        </a>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 col-sm-6 col-xs-12">
+                    <div class="x_panel" style="background:#F7F7F7">
+                        <div class="x_content">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <tbody>
+                                        <tr>
+                                            <th>Inverter @Resources.Count :</th>
+                                            <td>@InverterCount</td>
+                                        </tr>
+                                        <tr>
+                                            <th>@Resources.Installed_Power AC :</th>
+                                            <td>@stationDetail.AC_INSTALLED_POWER kWe</td>
+                                        </tr>
+                                        <tr>
+                                            <th>@Resources.Installed_Power DC :</th>
+                                            <td>@stationDetail.DC_INSTALLED_POWER kWp</td>
+                                        </tr>
+                                        <tr>
+                                            <th>DC / AC</th>
+                                            <td>@DC_AC</td>
+                                        </tr>
+                                        <tr>
+                                            <th>@Resources.Tilt :</th>
+                                            <td>@stationDetail.PITCH_DETAIL</td>
+                                        </tr>
+                                        <tr>
+                                            <th>@Resources.Azimuth :</th>
+                                            <td>@stationDetail.ORIENTATION °</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Inverter @Resources.Manufacturer :</th>
+                                            <td>@stationDetail.INVERTER_MODEL </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Module @Resources.Manufacturer:</th>
+                                            <td>@stationDetail.PANEL_BRAND </td>
+                                        </tr>
+                                        <tr>
+                                            <th>@Resources.Module_Type:</th>
+                                            <td>@stationDetail.PANEL_TYPE </td>
+                                        </tr>
+                                        <tr>
+                                            <th>@Resources.Start_Date:</th>
+                                            <td>@stationDetail.START_DATE.Value.ToShortDateString()</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-sm-6 col-xs-12">
+                    <div class="x_panel" style="background:#F7F7F7">
+
+                        <div class="x_content">
+                            <div class="col-md-12 col-sm-12 col-xs-12">
+                                <p class="lead">@Resources.Location:</p>
+
+                                @{ if (User.IsInRole("DEMO"))
+                                    {
+                                        <p class="text-muted well well-sm no-shadow" style="margin-top: 10px;">
+                                            DEMO ADDRESS
+                                        </p>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-muted well well-sm no-shadow" style="margin-top: 10px;">
+                                            @stationDetail.ADDRESS
+                                        </p>
+                                    }
+                                }
+
+
+                            </div>
+                            <div class="col-md-12 col-sm-12 col-xs-12">
+                                <p class="lead">@Resources.Coordinate</p>
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <tbody>
+                                            <tr>
+                                                <th>@Resources.Latitude:</th>
+                                                <td>@coorX °</td>
+                                            </tr>
+                                            <tr>
+                                                <th>@Resources.Longitude:</th>
+                                                <td>@coorY °</td>
+                                            </tr>
+                                            <tr>
+                                                <th>@Resources.Meteorology:</th>
+                                                <td>
+                                                    @{
+                                                        if (stationDetail.IS_METEOROLOGY == true)
+                                                        {
+                                                            <label>
+                                                                <input type="checkbox" class="flat" disabled="disabled" checked="checked">
+                                                            </label>
+                                                        }
+                                                        else
+                                                        {
+                                                            <label>
+                                                                <input type="checkbox" class="flat" disabled="disabled">
+                                                            </label>
+                                                        }
+                                                    }
+
+                                                </td>
+                                            </tr>
+                                            @*<tr>
+                                                <th>@Resources.Pyranometer :</th>
+                                                <td>
+                                                    @{
+                                                        if (stationDetail.IS_PYRANOMETER == true)
+                                                        {
+                                                            <label>
+                                                                <input type="checkbox" class="flat" disabled="disabled" checked="checked">
+                                                            </label>
+                                                        }
+                                                        else
+                                                        {
+                                                            <label>
+                                                                <input type="checkbox" class="flat" disabled="disabled">
+                                                            </label>
+                                                        }
+                                                    }
+
+                                                </td>
+                                            </tr>*@
+                                            <tr>
+                                                <th>EKK:</th>
+                                                <td>
+                                                    @{
+                                                        if (stationDetail.IS_EKK == true)
+                                                        {
+                                                            <label>
+                                                                <input type="checkbox" disabled="disabled" checked="checked">
+                                                            </label>
+                                                        }
+                                                        else
+                                                        {
+                                                            <label>
+                                                                <input type="checkbox" class="flat" disabled="disabled">
+                                                            </label>
+                                                        }
+                                                    }
+
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 col-sm-6 col-xs-12">
+                    <div class="x_panel" style="background:#F7F7F7">
+                        <div class="x_title">
+                            <h2>@Resources.Weather<small id="CityCountry">@Resources.City , @Resources.Country</small></h2>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="x_content">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="temperature">
+                                        <b id="dt">Monday</b>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="weather-icon">
+                                        <img class="hava1" />
+                                    </div>
+                                </div>
+                                <div class="col-sm-8">
+                                    <div class="weather-text">
+                                        <h2 id="City"></h2>
+                                        <h2><i id="durum1">@Resources.Weather</i></h2>
+                                        <h6 id="w1"></h6>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-12">
+                                <div class="weather-text pull-right">
+                                    <h1 class="degrees" id="b1"></h1>
+                                </div>
+                            </div>
+                            <div class="clearfix"></div>
+                            <div class="row weather-days">
+                                <div class="col-sm-2">
+                                    <div class="daily-weather">
+                                        <h2 class="day" id="dt2">Mon</h2>
+                                        <h3 class="degrees" id="b2"></h3>
+                                        <img class="hava2" height="38" width="38" />
+                                        <h6 id="w2"></h6>
+
+                                    </div>
+                                </div>
+                                <div class="col-sm-2">
+                                    <div class="daily-weather">
+                                        <h2 class="day" id="dt3">Tue</h2>
+                                        <h3 class="degrees" id="b3"></h3>
+                                        <img class="hava3" height="38" width="38" />
+                                        <h6 id="w3"></h6>
+                                    </div>
+                                </div>
+                                <div class="col-sm-2">
+                                    <div class="daily-weather">
+                                        <h2 class="day" id="dt4">Wed</h2>
+                                        <h3 class="degrees" id="b4"></h3>
+                                        <img class="hava4" height="38" width="38" />
+                                        <h6 id="w4"></h6>
+                                    </div>
+                                </div>
+                                <div class="col-sm-2">
+                                    <div class="daily-weather">
+                                        <h2 class="day" id="dt5">Thu</h2>
+                                        <h3 class="degrees" id="b5"></h3>
+                                        <img class="hava5" height="38" width="38" />
+                                        <h6 id="w5"></h6>
+                                    </div>
+                                </div>
+                                <div class="col-sm-2">
+                                    <div class="daily-weather">
+                                        <h2 class="day" id="dt6">Fri</h2>
+                                        <h3 class="degrees" id="b6"></h3>
+                                        <img class="hava6" height="38" width="38" />
+                                        <h6 id="w6"></h6>
+                                    </div>
+                                </div>
+                                <div class="col-sm-2">
+                                    <div class="daily-weather">
+                                        <h2 class="day" id="dt7">Sat</h2>
+                                        <h3 class="degrees" id="b7"></h3>
+                                        <img class="hava7" height="38" width="38" />
+                                        <h6 id="w7"></h6>
+                                    </div>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-sm-6 col-xs-12">
+                    <div class="x_panel" style="background:#F7F7F7">
+                        <div class="x_title">
+                            <h2>@Resources.Maps<small>@stationDetail.ADDRESS</small></h2>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="x_content" style="height:330px">
+                            <div id="map"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="trgtModal" role="dialog">
+            <div class="modal-dialog">
+
+                <!-- Modal content-->
+                <div class="modal-content">
+
+                    <div class="modal-body">
+
+                        <div class="x_title">
+                            <h2>@Resources.Target</h2>
+                            <div class="clearfix"></div>
+
+                        </div>
+
+                        <table id="datatable" class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>@Resources.Month</th>
+                                    <th>@Resources.Target @Resources.Production</th>
+                                    @*<th>@Resources.Target @Resources.Irradiation</th>*@
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <tr>
+                                    <td>@Resources.January :</td>
+                                    <td id="jan_pro"></td>
+                                    @*<td id="jan_irr"></td>*@
+                                </tr>
+                                <tr>
+                                    <td>@Resources.February :</td>
+                                    <td id="feb_pro"></td>
+                                    @*<td id="feb_irr"></td>*@
+                                </tr>
+                                <tr>
+                                    <td>@Resources.March :</td>
+                                    <td id="march_pro"></td>
+                                    @*<td id="march_irr"></td>*@
+                                </tr>
+                                <tr>
+                                    <td>@Resources.April :</td>
+                                    <td id="april_pro"></td>
+                                    @*<td id="april_irr"></td>*@
+                                </tr>
+                                <tr>
+                                    <td>@Resources.May :</td>
+                                    <td id="may_pro"></td>
+                                    @*<td id="may_irr"></td>*@
+                                </tr>
+                                <tr>
+                                    <td>@Resources.June :</td>
+                                    <td id="june_pro"></td>
+                                    @*<td id="june_irr"></td>*@
+                                </tr>
+                                <tr>
+                                    <td>@Resources.July :</td>
+                                    <td id="july_pro"></td>
+                                    @*<td id="july_irr"></td>*@
+                                </tr>
+                                <tr>
+                                    <td>@Resources.August :</td>
+                                    <td id="aug_pro"></td>
+                                    @*<td id="aug_irr"></td>*@
+                                </tr>
+                                <tr>
+                                    <td>@Resources.September :</td>
+                                    <td id="sep_pro"></td>
+                                    @*<td id="sep_irr"></td>*@
+                                </tr>
+                                <tr>
+                                    <td>@Resources.October :</td>
+                                    <td id="oct_pro"></td>
+                                    @*<td id="oct_irr"></td>*@
+                                </tr>
+                                <tr>
+                                    <td>@Resources.November :</td>
+                                    <td id="nov_pro"></td>
+                                    @*<td id="nov_irr"></td>*@
+                                </tr>
+                                <tr>
+                                    <td>@Resources.December :</td>
+                                    <td id="dec_pro"></td>
+                                    @*<td id="dec_irr"></td>*@
+                                </tr>
+                                <tr>
+                                    <td>@Resources.Yearly_Target_Production :</td>
+                                    <td id="year_pro"></td>
+                                    @*<td id="year_irr"></td>*@
+                                </tr>
+                            </tbody>
+                        </table>
+
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">@Resources.Close</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <script>
+            $(document).ready(function () {
+
+                EndData();
+                function EndData() {
+
+                    $.ajax({
+                        url: "/Home/ProductionInf?stationId=@Model",
+                        type: "POST",
+                        dataType: "json",
+                        success: function (data) {
+
+                            //gunluk
+                            $("#gunlukEnerji").html(data._dailyProduction.toFixed(2).replace(".", ",") + " MWh");
+                            $("#gunlukGelir").html((data._dailyIncome).toFixed(2).replace(".", ",") + " $");
+
+                            //aylik
+                            $("#aylikEnerji").html(data._monthlyProduction.toFixed(2).replace(".", ",") + " MWh");
+                            $("#aylikGelir").html((data._monthlyIncome).toFixed(2).replace(".", ",")+ " $");
+
+
+                        }
+                    });
+                }
+
+                var timer, delay = 300000;
+                timer = setInterval(function () {
+                    EndData();
+                }, delay);
+
+
+                 //Target Bas.
+                $('#btnTargetDetail').click(function () {
+                    TargetTable();
+                });
+                function TargetTable() {
+					var toplamPro = 0;
+                    $.ajax({
+                        url: "/Home/GetMonthlyTarget?stationId=@Model",
+                        type: "POST",
+                        dataType: "json",
+						success: function (data) {
+                            $("#jan_pro").empty(); $("#jan_irr").empty(); $("#jan_pr").empty();
+                            $("#feb_pro").empty(); $("#feb_irr").empty(); $("#feb_pr").empty();
+                            $("#march_pro").empty(); $("#march_irr").empty(); $("#march_pr").empty();
+                            $("#april_pro").empty(); $("#april_irr").empty(); $("#april_pr").empty();
+                            $("#may_pro").empty(); $("#may_irr").empty(); $("#may_pr").empty();
+                            $("#june_pro").empty(); $("#june_irr").empty(); $("#june_pr").empty();
+                            $("#july_pro").empty(); $("#july_irr").empty(); $("#july_pr").empty();
+                            $("#aug_pro").empty(); $("#aug_irr").empty(); $("#aug_pr").empty();
+                            $("#sep_pro").empty(); $("#sep_irr").empty(); $("#sep_pr").empty();
+                            $("#oct_pro").empty(); $("#oct_irr").empty(); $("#oct_pr").empty();
+                            $("#nov_pro").empty(); $("#nov_irr").empty(); $("#nov_pr").empty();
+                            $("#dec_pro").empty(); $("#dec_irr").empty(); $("#dec_pr").empty();
+                            $("#year_pro").empty(); $("#year_irr").empty(); $("#year_pr").empty();
+
+							toplamPro = data._januaryProduction + data._februaryProduction + data._marchProduction + data._aprilProduction +
+								data._mayProduction + data._juneProduction + data._julyProduction + data._augustProduction +
+								data._septemberProduction + data._octoberProduction + data._novemberProduction + data._decemberProduction;
+
+							toplamIrr = data._januaryIrradition + data._februaryIrradition + data._marchIrradition + data._aprilIrradition +
+								data._mayIrradition + data._juneIrradition + data._julyIrradition + data._augustIrradition +
+								data._septemberIrradition + data._octoberIrradition + data._novemberIrradition + data._decemberIrradition;
+
+                            $("#jan_pro").append(data._januaryProduction.toFixed(1).replace(".", ",") + " MWh");
+                            //$("#jan_irr").append(data._januaryIrradition.toFixed(1).replace(".", ",") + " kWh/m²");
+                            $("#feb_pro").append(data._februaryProduction.toFixed(1).replace(".", ",") + " MWh");
+                            //$("#feb_irr").append(data._februaryIrradition.toFixed(1).replace(".", ",") + " kWh/m²");
+                            $("#march_pro").append(data._marchProduction.toFixed(1).replace(".", ",") + " MWh");
+                            //$("#march_irr").append(data._marchIrradition.toFixed(1).replace(".", ",") + " kWh/m²");
+                            $("#april_pro").append(data._aprilProduction.toFixed(1).replace(".", ",") + " MWh");
+                            //$("#april_irr").append(data._aprilIrradition.toFixed(1).replace(".", ",") + " kWh/m²");
+                            $("#may_pro").append(data._mayProduction.toFixed(1).replace(".", ",") + " MWh");
+                            //$("#may_irr").append(data._mayIrradition.toFixed(1).replace(".", ",") + " kWh/m²");
+                            $("#june_pro").append(data._juneProduction.toFixed(1).replace(".", ",") + " MWh");
+                            //$("#june_irr").append(data._juneIrradition.toFixed(1).replace(".", ",") + " kWh/m²");
+                            $("#july_pro").append(data._julyProduction.toFixed(1).replace(".", ",") + " MWh");
+                            //$("#july_irr").append(data._julyIrradition.toFixed(1).replace(".", ",") + " kWh/m²");
+                            $("#aug_pro").append(data._augustProduction.toFixed(1).replace(".", ",") + " MWh");
+                            //$("#aug_irr").append(data._augustIrradition.toFixed(1).replace(".", ",") + " kWh/m²");
+                            $("#sep_pro").append(data._septemberProduction.toFixed(1).replace(".", ",") + " MWh");
+                            //$("#sep_irr").append(data._septemberIrradition.toFixed(1).replace(".", ",") + " kWh/m²");
+                            $("#oct_pro").append(data._octoberProduction.toFixed(1).replace(".", ",") + " MWh");
+                            //$("#oct_irr").append(data._octoberIrradition.toFixed(1).replace(".", ",") + " kWh/m²");
+                            $("#nov_pro").append(data._novemberProduction.toFixed(1).replace(".", ",") + " MWh");
+                            //$("#nov_irr").append(data._novemberIrradition.toFixed(1).replace(".", ",") + " kWh/m²");
+                            $("#dec_pro").append(data._decemberProduction.toFixed(1).replace(".", ",") + " MWh");
+                            //$("#dec_irr").append(data._decemberIrradition.toFixed(1).replace(".", ",") + " kWh/m²");
+							$("#year_pro").append(toplamPro.toFixed(1).replace(".", ",") + " MWh");
+							//$("#year_irr").append(toplamIrr.toFixed(1).replace(".", ",") + " kWh/m²");
+
+                        }
+                    });
+                }
+                //Target Bit.
+
+            });
+        </script>
+
+
+
+
+        <style>
+            /* Always set the map height explicitly to define the size of the div
+                * element that contains the map. */
+            #map {
+                height: 100%;
+            }
+            /* Optional: Makes the sample page fill the window. */
+        </style>
+
+
+        <script>
+            function initMap() {
+                        var myLatlng = [{ lat: @coorX, lng: @coorY }];
+                        var map = new google.maps.Map(document.getElementById('map'), {
+                            zoom: 7,
+                            center: { lat: @coorX, lng: @coorY }
+                        });
+
+                            var data = myLatlng[0],
+                                latLng = new google.maps.LatLng(data.lat, data.lng);
+
+                            var marker = new google.maps.Marker({
+                                position: latLng,
+                                map: map,
+                                title: 'Click to zoom'
+                            });
+            }
+        </script>
+        <script async defer
+                src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCl_zXhq0Qz4_hKotMC4H64zNo6KGPlDCY&callback=initMap">
+        </script>
+
+        <script>
+			// Get the modal
+			var modal = document.getElementById('myModal');
+
+			// Get the image and insert it inside the modal - use its "alt" text as a caption
+			var img = document.getElementById('myImg');
+			var modalImg = document.getElementById("img01");
+			var captionText = document.getElementById("caption");
+			img.onclick = function () {
+				modal.style.display = "block";
+				modalImg.src = this.src;
+				captionText.innerHTML = this.alt;
+			}
+
+			// Get the <span> element that closes the modal
+			var span = document.getElementsByClassName("close")[0];
+
+			// When the user clicks on <span> (x), close the modal
+			span.onclick = function () {
+				modal.style.display = "none";
+			}
+        </script>
+        <script src="~/Content/weather/date.js"></script>
+        <script>
+            var openWeatherAppId = 'b7204938043031ab1c7e0eb6df69baef',
+                openWeatherUrl = 'http://api.openweathermap.org/data/2.5/forecast'
+
+            var prepareData = function (units) {
+                // Replace loading image
+                var cityName = $('#city-name').val()
+                // Make ajax call, callback
+
+                getData(openWeatherUrl, cityName, openWeatherAppId, units)
+
+            }
+
+            $(document).ready(function () {
+
+                prepareData('metric')
+
+                $('.btn-imperial').click(function () {
+                    prepareData('imperial')
+                });
+
+            })
+
+            function getData(url, cityName, appId, units) {
+                var request = $.ajax({
+                    url: url,
+                    dataType: "jsonp",
+                    data: { q: '@stationDetail.WEATHER_LOCATION', appid: appId, units: units },
+                    jsonpCallback: "fetchData",
+                    type: "GET"
+                }).fail(function (error) {
+                    console.error(error)
+                    alert('Error sending request')
+                })
+            }
+            function fetchData(forecast) {
+                console.log(forecast)
+                var cityCountry = '', city = '',
+                    cityName = forecast.city.name,
+                    country = forecast.city.country, bugun1 = '', bugun2 = '', bugun3 = '', bugun4 = '', bugun5 = '', bugun6 = '', bugun7 = '', bugun8 = '', bugun9 = '', bugun10 = '', date = '', date1 = '', date2 = '', date3 = '', date4 = '', date5 = '', date6 = '', date7 = '', date8 = '', date9 = '', date10 = '', drm1 = '', wind1 = '', wind2 = '', wind3 = '', wind4 = '', wind5 = '', wind6 = '', wind7 = ''
+
+                cityCountry += cityName + ', ' + country
+                city += cityName
+                var value = new Date(Date.parse(forecast.list[1].dt_txt))
+                bugun1 += forecast.list[0].main.temp
+                bugun2 += forecast.list[1].main.temp
+                bugun3 += forecast.list[2].main.temp
+                bugun4 += forecast.list[3].main.temp
+                bugun5 += forecast.list[4].main.temp
+                bugun6 += forecast.list[5].main.temp
+                bugun7 += forecast.list[6].main.temp
+                bugun8 += forecast.list[7].main.temp
+                bugun9 += forecast.list[8].main.temp
+                bugun10 += forecast.list[9].main.temp
+
+                date += forecast.list[1].dt_txt
+                date1 += new Date(Date.parse(forecast.list[1].dt_txt)).getTimeOfDay()
+                date2 += new Date(Date.parse(forecast.list[2].dt_txt)).getTimeOfDay()
+                date3 += new Date(Date.parse(forecast.list[3].dt_txt)).getTimeOfDay()
+                date4 += new Date(Date.parse(forecast.list[4].dt_txt)).getTimeOfDay()
+                date5 += new Date(Date.parse(forecast.list[5].dt_txt)).getTimeOfDay()
+                date6 += new Date(Date.parse(forecast.list[6].dt_txt)).getTimeOfDay()
+                date7 += new Date(Date.parse(forecast.list[7].dt_txt)).getTimeOfDay()
+                date8 += new Date(Date.parse(forecast.list[8].dt_txt)).getTimeOfDay()
+                date9 += new Date(Date.parse(forecast.list[9].dt_txt)).getTimeOfDay()
+                date10 += new Date(Date.parse(forecast.list[10].dt_txt)).getTimeOfDay()
+
+                drm1 += forecast.list[0].weather[0].description
+                wind1 += forecast.list[0].wind.speed + ' <i>km/h</i>'
+                wind2 += forecast.list[1].wind.speed + ' <i>km/h</i>'
+                wind3 += forecast.list[2].wind.speed + ' <i>km/h</i>'
+                wind4 += forecast.list[3].wind.speed + ' <i>km/h</i>'
+                wind5 += forecast.list[4].wind.speed + ' <i>km/h</i>'
+                wind6 += forecast.list[5].wind.speed + ' <i>km/h</i>'
+                wind7 += forecast.list[6].wind.speed + ' <i>km/h</i>'
+                //forecast.list.forEach(function (forecastEntry, index, list) {
+                //    html += '<p>' + forecastEntry.dt_txt + ': ' + forecastEntry.main.temp + '</p>'
+                //})
+                function zamanGoster(a) {
+                    var value = new Date(parseInt(a.replace(/(^.*\()|([+-].*$)/g, ''))
+                    );
+                    var dat = value.getDate() + "/" + (value.getMonth() + 1) + "/" + value.getFullYear();
+                    var time = value.getHours() + ":" + value.getMinutes() + ":" + value.getSeconds();
+                    var ss = new Date(parseInt(dat + time));
+
+                    return ss.toLocaleDateString();
+                }
+
+                function ConvertTicksToTime(vl) {
+                    vl = vl.replace("Date", "");
+                    vl = vl.replace("/", "");
+                    vl = vl.replace("(", "");
+                    vl = vl.replace(")", "");
+                    vl = vl.replace("/", "").trim();
+
+                    var vlDate = new Date(parseInt(vl));
+                    return vlDate.toLocaleTimeString();
+                }
+                function ConvertTicksToDate(vl) {
+                    vl = vl.replace("Date", "");
+                    vl = vl.replace("/", "");
+                    vl = vl.replace("(", "");
+                    vl = vl.replace(")", "");
+                    vl = vl.replace("/", "").trim();
+
+                    var vlDate = new Date(parseInt(vl));
+                    return vlDate.toLocaleDateString();
+                }
+
+                $('#b1').html(bugun1)
+                $('#b2').html(bugun2)
+                $('#b3').html(bugun3)
+                $('#b4').html(bugun4)
+                $('#b5').html(bugun5)
+                $('#b6').html(bugun6)
+                $('#b7').html(bugun7)
+
+                $('#dt').html(date)
+                $('#dt1').html(date1)
+                $('#dt2').html(date2)
+                $('#dt3').html(date3)
+                $('#dt4').html(date4)
+                $('#dt5').html(date5)
+                $('#dt6').html(date6)
+                $('#dt7').html(date7)
+
+                $('#w1').html(wind1)
+                $('#w2').html(wind2)
+                $('#w3').html(wind3)
+                $('#w4').html(wind4)
+                $('#w5').html(wind5)
+                $('#w6').html(wind6)
+                $('#w7').html(wind7)
+
+                $('#dt1').html(date1)
+                $('#dt2').html(date2)
+                $('#dt3').html(date3)
+                $('#dt4').html(date4)
+                $('#dt5').html(date5)
+                $('#dt6').html(date6)
+                $('#dt7').html(date7)
+                $('#durum1').html(drm1)
+                $('#CityCountry').html(cityCountry)
+                $('#City').html(city)
+
+                if (forecast.list[0].weather[0].icon == "01d") {
+                    $('.hava1').attr('src', "/images/WeatherImages/Gunesli.png")
+                }
+                else if (forecast.list[0].weather[0].icon == "02d") {
+                    $('.hava1').attr('src', "/images/WeatherImages/ParcaliBulutlu.png")
+                }
+                else if (forecast.list[0].weather[0].icon == "03d") {
+                    $('.hava1').attr('src', "/images/WeatherImages/Bulutlu.png")
+                }
+                else if (forecast.list[0].weather[0].icon == "04d") {
+                    $('.hava1').attr('src', "/images/WeatherImages/CokBulutlu.png")
+                }
+                else if (forecast.list[0].weather[0].icon == "09d") {
+                    $('.hava1').attr('src', "/images/WeatherImages/CokYagmurlu.png")
+                }
+                else if (forecast.list[0].weather[0].icon == "10d") {
+                    $('.hava1').attr('src', "/images/WeatherImages/Yagmurlu.png")
+                }
+                else if (forecast.list[0].weather[0].icon == "11d") {
+                    $('.hava1').attr('src', "/images/WeatherImages/Yildirim.png")
+                }
+                else if (forecast.list[0].weather[0].icon == "13d") {
+                    $('.hava1').attr('src', "/images/WeatherImages/Karli.png")
+                }
+                else if (forecast.list[0].weather[0].icon == "01n") {
+                    $('.hava1').attr('src', "/images/WeatherImages/AyAcik.png")
+                }
+                else if (forecast.list[0].weather[0].icon == "02n") {
+                    $('.hava1').attr('src', "/images/WeatherImages/AyBulutlu.png")
+                }
+                else if (forecast.list[0].weather[0].icon == "03n") {
+                    $('.hava1').attr('src', "/images/WeatherImages/AyBulutlu.png")
+                }
+                else if (forecast.list[0].weather[0].icon == "04n") {
+                    $('.hava1').attr('src', "/images/WeatherImages/AyCokBulutlu.png")
+                }
+                else if (forecast.list[0].weather[0].icon == "09n") {
+                    $('.hava1').attr('src', "/images/WeatherImages/CokYagmurlu.png")
+                }
+                else if (forecast.list[0].weather[0].icon == "10n") {
+                    $('.hava1').attr('src', "/images/WeatherImages/AyYagmurlu.png")
+                }
+                else if (forecast.list[0].weather[0].icon == "11n") {
+                    $('.hava1').attr('src', "/images/WeatherImages/AyYildirim.png")
+                }
+                else if (forecast.list[0].weather[0].icon == "13n") {
+                    $('.hava1').attr('src', "/images/WeatherImages/AyKarli.png")
+                }
+
+
+                if (forecast.list[1].weather[0].icon == "01d") {
+                    $('.hava2').attr('src', "/images/WeatherImages/Gunesli.png")
+                }
+                else if (forecast.list[1].weather[0].icon == "02d") {
+                    $('.hava2').attr('src', "/images/WeatherImages/ParcaliBulutlu.png")
+                }
+                else if (forecast.list[1].weather[0].icon == "03d") {
+                    $('.hava2').attr('src', "/images/WeatherImages/Bulutlu.png")
+                }
+                else if (forecast.list[1].weather[0].icon == "04d") {
+                    $('.hava2').attr('src', "/images/WeatherImages/CokBulutlu.png")
+                }
+                else if (forecast.list[1].weather[0].icon == "09d") {
+                    $('.hava2').attr('src', "/images/WeatherImages/CokYagmurlu.png")
+                }
+                else if (forecast.list[1].weather[0].icon == "10d") {
+                    $('.hava2').attr('src', "/images/WeatherImages/Yagmurlu.png")
+                }
+                else if (forecast.list[1].weather[0].icon == "11d") {
+                    $('.hava2').attr('src', "/images/WeatherImages/Yildirim.png")
+                }
+                else if (forecast.list[1].weather[0].icon == "13d") {
+                    $('.hava2').attr('src', "/images/WeatherImages/Karli.png")
+                }
+                else if (forecast.list[1].weather[0].icon == "01n") {
+                    $('.hava2').attr('src', "/images/WeatherImages/AyAcik.png")
+                }
+                else if (forecast.list[1].weather[0].icon == "02n") {
+                    $('.hava2').attr('src', "/images/WeatherImages/AyBulutlu.png")
+                }
+                else if (forecast.list[1].weather[0].icon == "03n") {
+                    $('.hava2').attr('src', "/images/WeatherImages/AyBulutlu.png")
+                }
+                else if (forecast.list[1].weather[0].icon == "04n") {
+                    $('.hava2').attr('src', "/images/WeatherImages/AyCokBulutlu.png")
+                }
+                else if (forecast.list[1].weather[0].icon == "09n") {
+                    $('.hava2').attr('src', "/images/WeatherImages/CokYagmurlu.png")
+                }
+                else if (forecast.list[1].weather[0].icon == "10n") {
+                    $('.hava2').attr('src', "/images/WeatherImages/AyYagmurlu.png")
+                }
+                else if (forecast.list[1].weather[0].icon == "11n") {
+                    $('.hava2').attr('src', "/images/WeatherImages/AyYildirim.png")
+                }
+                else if (forecast.list[1].weather[0].icon == "13n") {
+                    $('.hava2').attr('src', "/images/WeatherImages/AyKarli.png")
+                }
+
+
+
+                if (forecast.list[2].weather[0].icon == "01d") {
+                    $('.hava3').attr('src', "/images/WeatherImages/Gunesli.png")
+                }
+                else if (forecast.list[2].weather[0].icon == "02d") {
+                    $('.hava3').attr('src', "/images/WeatherImages/ParcaliBulutlu.png")
+                }
+                else if (forecast.list[2].weather[0].icon == "03d") {
+                    $('.hava3').attr('src', "/images/WeatherImages/Bulutlu.png")
+                }
+                else if (forecast.list[2].weather[0].icon == "04d") {
+                    $('.hava3').attr('src', "/images/WeatherImages/CokBulutlu.png")
+                }
+                else if (forecast.list[2].weather[0].icon == "09d") {
+                    $('.hava3').attr('src', "/images/WeatherImages/CokYagmurlu.png")
+                }
+                else if (forecast.list[2].weather[0].icon == "10d") {
+                    $('.hava3').attr('src', "/images/WeatherImages/Yagmurlu.png")
+                }
+                else if (forecast.list[2].weather[0].icon == "11d") {
+                    $('.hava3').attr('src', "/images/WeatherImages/Yildirim.png")
+                }
+                else if (forecast.list[2].weather[0].icon == "13d") {
+                    $('.hava3').attr('src', "/images/WeatherImages/Karli.png")
+                }
+                else if (forecast.list[2].weather[0].icon == "01n") {
+                    $('.hava3').attr('src', "/images/WeatherImages/AyAcik.png")
+                }
+                else if (forecast.list[2].weather[0].icon == "02n") {
+                    $('.hava3').attr('src', "/images/WeatherImages/AyBulutlu.png")
+                }
+                else if (forecast.list[2].weather[0].icon == "03n") {
+                    $('.hava3').attr('src', "/images/WeatherImages/AyBulutlu.png")
+                }
+                else if (forecast.list[2].weather[0].icon == "04n") {
+                    $('.hava3').attr('src', "/images/WeatherImages/AyCokBulutlu.png")
+                }
+                else if (forecast.list[2].weather[0].icon == "09n") {
+                    $('.hava3').attr('src', "/images/WeatherImages/CokYagmurlu.png")
+                }
+                else if (forecast.list[2].weather[0].icon == "10n") {
+                    $('.hava3').attr('src', "/images/WeatherImages/AyYagmurlu.png")
+                }
+                else if (forecast.list[2].weather[0].icon == "11n") {
+                    $('.hava3').attr('src', "/images/WeatherImages/AyYildirim.png")
+                }
+                else if (forecast.list[2].weather[0].icon == "13n") {
+                    $('.hava3').attr('src', "/images/WeatherImages/AyKarli.png")
+                }
+
+
+
+                if (forecast.list[3].weather[0].icon == "01d") {
+                    $('.hava4').attr('src', "/images/WeatherImages/Gunesli.png")
+                }
+                else if (forecast.list[3].weather[0].icon == "02d") {
+                    $('.hava4').attr('src', "/images/WeatherImages/ParcaliBulutlu.png")
+                }
+                else if (forecast.list[3].weather[0].icon == "03d") {
+                    $('.hava4').attr('src', "/images/WeatherImages/Bulutlu.png")
+                }
+                else if (forecast.list[3].weather[0].icon == "04d") {
+                    $('.hava4').attr('src', "/images/WeatherImages/CokBulutlu.png")
+                }
+                else if (forecast.list[3].weather[0].icon == "09d") {
+                    $('.hava4').attr('src', "/images/WeatherImages/CokYagmurlu.png")
+                }
+                else if (forecast.list[3].weather[0].icon == "10d") {
+                    $('.hava4').attr('src', "/images/WeatherImages/Yagmurlu.png")
+                }
+                else if (forecast.list[3].weather[0].icon == "11d") {
+                    $('.hava4').attr('src', "/images/WeatherImages/Yildirim.png")
+                }
+                else if (forecast.list[3].weather[0].icon == "13d") {
+                    $('.hava4').attr('src', "/images/WeatherImages/Karli.png")
+                }
+                else if (forecast.list[3].weather[0].icon == "01n") {
+                    $('.hava4').attr('src', "/images/WeatherImages/AyAcik.png")
+                }
+                else if (forecast.list[3].weather[0].icon == "02n") {
+                    $('.hava4').attr('src', "/images/WeatherImages/AyBulutlu.png")
+                }
+                else if (forecast.list[3].weather[0].icon == "03n") {
+                    $('.hava4').attr('src', "/images/WeatherImages/AyBulutlu.png")
+                }
+                else if (forecast.list[3].weather[0].icon == "04n") {
+                    $('.hava4').attr('src', "/images/WeatherImages/AyCokBulutlu.png")
+                }
+                else if (forecast.list[3].weather[0].icon == "09n") {
+                    $('.hava4').attr('src', "/images/WeatherImages/CokYagmurlu.png")
+                }
+                else if (forecast.list[3].weather[0].icon == "10n") {
+                    $('.hava4').attr('src', "/images/WeatherImages/AyYagmurlu.png")
+                }
+                else if (forecast.list[3].weather[0].icon == "11n") {
+                    $('.hava4').attr('src', "/images/WeatherImages/AyYildirim.png")
+                }
+                else if (forecast.list[3].weather[0].icon == "13n") {
+                    $('.hava4').attr('src', "/images/WeatherImages/AyKarli.png")
+                }
+
+
+
+                if (forecast.list[4].weather[0].icon == "01d") {
+                    $('.hava5').attr('src', "/images/WeatherImages/Gunesli.png")
+                }
+                else if (forecast.list[4].weather[0].icon == "02d") {
+                    $('.hava5').attr('src', "/images/WeatherImages/ParcaliBulutlu.png")
+                }
+                else if (forecast.list[4].weather[0].icon == "03d") {
+                    $('.hava5').attr('src', "/images/WeatherImages/Bulutlu.png")
+                }
+                else if (forecast.list[4].weather[0].icon == "04d") {
+                    $('.hava5').attr('src', "/images/WeatherImages/CokBulutlu.png")
+                }
+                else if (forecast.list[4].weather[0].icon == "09d") {
+                    $('.hava5').attr('src', "/images/WeatherImages/CokYagmurlu.png")
+                }
+                else if (forecast.list[4].weather[0].icon == "10d") {
+                    $('.hava5').attr('src', "/images/WeatherImages/Yagmurlu.png")
+                }
+                else if (forecast.list[4].weather[0].icon == "11d") {
+                    $('.hava5').attr('src', "/images/WeatherImages/Yildirim.png")
+                }
+                else if (forecast.list[4].weather[0].icon == "13d") {
+                    $('.hava5').attr('src', "/images/WeatherImages/Karli.png")
+                }
+                else if (forecast.list[4].weather[0].icon == "01n") {
+                    $('.hava5').attr('src', "/images/WeatherImages/AyAcik.png")
+                }
+                else if (forecast.list[4].weather[0].icon == "02n") {
+                    $('.hava5').attr('src', "/images/WeatherImages/AyBulutlu.png")
+                }
+                else if (forecast.list[4].weather[0].icon == "03n") {
+                    $('.hava5').attr('src', "/images/WeatherImages/AyBulutlu.png")
+                }
+                else if (forecast.list[4].weather[0].icon == "04n") {
+                    $('.hava5').attr('src', "/images/WeatherImages/AyCokBulutlu.png")
+                }
+                else if (forecast.list[4].weather[0].icon == "09n") {
+                    $('.hava5').attr('src', "/images/WeatherImages/CokYagmurlu.png")
+                }
+                else if (forecast.list[4].weather[0].icon == "10n") {
+                    $('.hava5').attr('src', "/images/WeatherImages/AyYagmurlu.png")
+                }
+                else if (forecast.list[4].weather[0].icon == "11n") {
+                    $('.hava5').attr('src', "/images/WeatherImages/AyYildirim.png")
+                }
+                else if (forecast.list[4].weather[0].icon == "13n") {
+                    $('.hava5').attr('src', "/images/WeatherImages/AyKarli.png")
+                }
+
+
+                if (forecast.list[5].weather[0].icon == "01d") {
+                    $('.hava6').attr('src', "/images/WeatherImages/Gunesli.png")
+                }
+                else if (forecast.list[5].weather[0].icon == "02d") {
+                    $('.hava6').attr('src', "/images/WeatherImages/ParcaliBulutlu.png")
+                }
+                else if (forecast.list[5].weather[0].icon == "03d") {
+                    $('.hava6').attr('src', "/images/WeatherImages/Bulutlu.png")
+                }
+                else if (forecast.list[5].weather[0].icon == "04d") {
+                    $('.hava6').attr('src', "/images/WeatherImages/CokBulutlu.png")
+                }
+                else if (forecast.list[5].weather[0].icon == "09d") {
+                    $('.hava6').attr('src', "/images/WeatherImages/CokYagmurlu.png")
+                }
+                else if (forecast.list[5].weather[0].icon == "10d") {
+                    $('.hava6').attr('src', "/images/WeatherImages/Yagmurlu.png")
+                }
+                else if (forecast.list[5].weather[0].icon == "11d") {
+                    $('.hava6').attr('src', "/images/WeatherImages/Yildirim.png")
+                }
+                else if (forecast.list[5].weather[0].icon == "13d") {
+                    $('.hava6').attr('src', "/images/WeatherImages/Karli.png")
+                }
+                else if (forecast.list[5].weather[0].icon == "01n") {
+                    $('.hava6').attr('src', "/images/WeatherImages/AyAcik.png")
+                }
+                else if (forecast.list[5].weather[0].icon == "02n") {
+                    $('.hava6').attr('src', "/images/WeatherImages/AyBulutlu.png")
+                }
+                else if (forecast.list[5].weather[0].icon == "03n") {
+                    $('.hava6').attr('src', "/images/WeatherImages/AyBulutlu.png")
+                }
+                else if (forecast.list[5].weather[0].icon == "04n") {
+                    $('.hava6').attr('src', "/images/WeatherImages/AyCokBulutlu.png")
+                }
+                else if (forecast.list[5].weather[0].icon == "09n") {
+                    $('.hava6').attr('src', "/images/WeatherImages/CokYagmurlu.png")
+                }
+                else if (forecast.list[5].weather[0].icon == "10n") {
+                    $('.hava6').attr('src', "/images/WeatherImages/AyYagmurlu.png")
+                }
+                else if (forecast.list[5].weather[0].icon == "11n") {
+                    $('.hava6').attr('src', "/images/WeatherImages/AyYildirim.png")
+                }
+                else if (forecast.list[5].weather[0].icon == "13n") {
+                    $('.hava6').attr('src', "/images/WeatherImages/AyKarli.png")
+                }
+
+
+
+                if (forecast.list[6].weather[0].icon == "01d") {
+                    $('.hava7').attr('src', "/images/WeatherImages/Gunesli.png")
+                }
+                else if (forecast.list[6].weather[0].icon == "02d") {
+                    $('.hava7').attr('src', "/images/WeatherImages/ParcaliBulutlu.png")
+                }
+                else if (forecast.list[6].weather[0].icon == "03d") {
+                    $('.hava7').attr('src', "/images/WeatherImages/Bulutlu.png")
+                }
+                else if (forecast.list[6].weather[0].icon == "04d") {
+                    $('.hava7').attr('src', "/images/WeatherImages/CokBulutlu.png")
+                }
+                else if (forecast.list[6].weather[0].icon == "09d") {
+                    $('.hava7').attr('src', "/images/WeatherImages/CokYagmurlu.png")
+                }
+                else if (forecast.list[6].weather[0].icon == "10d") {
+                    $('.hava7').attr('src', "/images/WeatherImages/Yagmurlu.png")
+                }
+                else if (forecast.list[6].weather[0].icon == "11d") {
+                    $('.hava7').attr('src', "/images/WeatherImages/Yildirim.png")
+                }
+                else if (forecast.list[6].weather[0].icon == "13d") {
+                    $('.hava7').attr('src', "/images/WeatherImages/Karli.png")
+                }
+                else if (forecast.list[6].weather[0].icon == "01n") {
+                    $('.hava7').attr('src', "/images/WeatherImages/AyAcik.png")
+                }
+                else if (forecast.list[6].weather[0].icon == "02n") {
+                    $('.hava7').attr('src', "/images/WeatherImages/AyBulutlu.png")
+                }
+                else if (forecast.list[6].weather[0].icon == "03n") {
+                    $('.hava7').attr('src', "/images/WeatherImages/AyBulutlu.png")
+                }
+                else if (forecast.list[6].weather[0].icon == "04n") {
+                    $('.hava7').attr('src', "/images/WeatherImages/AyCokBulutlu.png")
+                }
+                else if (forecast.list[6].weather[0].icon == "09n") {
+                    $('.hava7').attr('src', "/images/WeatherImages/CokYagmurlu.png")
+                }
+                else if (forecast.list[6].weather[0].icon == "10n") {
+                    $('.hava7').attr('src', "/images/WeatherImages/AyYagmurlu.png")
+                }
+                else if (forecast.list[6].weather[0].icon == "11n") {
+                    $('.hava7').attr('src', "/images/WeatherImages/AyYildirim.png")
+                }
+                else if (forecast.list[6].weather[0].icon == "13n") {
+                    $('.hava7').attr('src', "/images/WeatherImages/AyKarli.png")
+                }
+            }
+        </script>
+
+    }
+
+}

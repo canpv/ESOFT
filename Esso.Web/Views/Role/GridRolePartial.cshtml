@@ -1,0 +1,19 @@
+﻿@using Microsoft.AspNet.Identity.EntityFramework;
+@using Microsoft.AspNet.Identity;
+@using Esso.Web.Models
+
+@{
+    var roleManager = new RoleManager<IdentityRole>(new RoleStore<IdentityRole>(new ApplicationDbContext()));
+    GridViewSettings gridSettings = Esso.Web.Controllers.RoleController.GridRoleSettings;
+
+    var grid = @Html.DevExpress().GridView(gridSettings);
+
+    if (ViewData["EditError"] != null)
+        grid.SetEditErrorText((string)ViewData["EditError"]);
+}
+
+@grid.BindToLINQ(string.Empty, string.Empty, (s, e) =>
+{
+    e.KeyExpression = "Id";
+    e.QueryableSource = roleManager.Roles.OrderByDescending(x => x.Name); //Esso.Service.CompanyService.GetCompaniesAsQuery().OrderByDescending(x => x.NAME);
+}).GetHtml()

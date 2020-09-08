@@ -1,0 +1,503 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutNonMenu.cshtml";
+}
+@using language
+
+    <link href="~/Content/DataTables/DataTables-1.10.18/css/jquery.dataTables.min.css" rel="stylesheet" />
+    <style>
+        tr.group,
+        tr.group:hover {
+            background-color: #b3cce4 !important;
+        }
+
+        tr.group {
+            background-color: #fffecf;
+        }
+
+        tr > td {
+            font-size: 11px;
+        }
+
+        tfoot tr, thead {
+            background: #3b6792;
+        }
+
+        thead {
+            font-size: 10px;
+            color: white;
+        }
+
+        #stationNameCss {
+            color: #00629e;
+        }
+
+        #example_info {
+            color: #00629e;
+        }
+    </style>
+    <style>
+
+        .progress-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #000;
+            margin: 0 0 10px;
+        }
+
+        .progress-outer {
+            background: #fff;
+            padding: 5px 60px 5px 5px;
+            border: 5px solid #bebfbf;
+            border-radius: 45px;
+            margin-bottom: 20px;
+            position: relative;
+            width: 300px;
+            /*float:left;*/
+        }
+
+        .progress {
+            background: #bebfbf;
+            border-radius: 20px;
+            margin: 0;
+        }
+
+            .progress .progress-bar {
+                border-radius: 20px;
+                box-shadow: none;
+                animation: animate-positive 2s;
+            }
+
+            .progress .progress-value {
+                font-size: 20px;
+                font-weight: 700;
+                color: #6b7880;
+                position: absolute;
+                top: 3px;
+                right: 10px;
+            }
+    </style>
+    <style type="text/css">
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial;
+            font-size: 14px;
+        }
+
+        #panel {
+            float: left;
+            width: 300px;
+            height: 500px;
+        }
+
+        #map-container {
+            margin-left: 300px;
+        }
+
+        #map {
+            width: 100%;
+            height: 90vh;
+        }
+
+        #markerlist {
+            height: 80vh;
+            margin: 10px 5px 0 10px;
+            overflow: auto;
+        }
+
+        .title {
+            border-bottom: 1px solid #dde2f1;
+            overflow: hidden;
+            width: 256px;
+            cursor: pointer;
+            padding: 2px 0;
+            display: block;
+            color: #0064c5;
+            text-decoration: none;
+            font-weight: bolder;
+        }
+
+            .title:visited {
+                color: #3b6792;
+            }
+
+            .title:hover {
+                background: #e0ecff;
+            }
+
+        #timetaken {
+            color: #f00;
+        }
+
+        .info {
+            width: 200px;
+        }
+
+            .info img {
+                border: 0;
+            }
+
+        .info-body {
+            width: 200px;
+            height: 140px;
+            line-height: 200px;
+            margin: 2px 0;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .info-img {
+            height: 220px;
+            width: 200px;
+        }
+
+
+    </style>
+    @*<script src="~/js/jquery.min.js"></script>*@
+    <script src="https://maps.googleapis.com/maps/api/js?v=3&amp;sensor=false"></script>
+    <script type="~/markerclustererplus/src/markerclusterer_packed.js"></script>
+    <script src="~/markerclustererplus/src/markerclusterer.js"></script>
+
+    <script>
+        function NumberConvert(nStr) {
+            if (nStr != null) {
+                nStr = nStr.toFixed(2);
+                nStr += '';
+                x = nStr.split('.');
+                x1 = x[0];
+                x2 = x.length > 1 ? ',' + x[1] : '';
+                var rgx = /(\d+)(\d{3})/;
+                while (rgx.test(x1)) {
+                    x1 = x1.replace(rgx, '$1' + '.' + '$2');
+                }
+                return x1 + x2;
+            }
+            else {
+                return "-";
+            }
+        }
+        function DateFormat(vl) {
+            var value = new Date
+                (
+                parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+                );
+            var gun;
+            var gunUzunluk = value.getDate().toString().length;
+            if (gunUzunluk == 1) {
+                gun = "0" + value.getDate();
+            }
+            else {
+                gun = value.getDate();
+            }
+            var ay;
+
+            var month = (value.getMonth() + 1);
+            var ayUzunluk = month.toString().length;
+            if (ayUzunluk == 1) {
+                ay = "0" + month;
+            }
+            else {
+                ay = month;
+            }
+
+            var dat = gun +
+                "/" +
+                ay +
+                "/" +
+                value.getFullYear().toString().substring(2, 4);
+
+            var dk;
+            var dkUzunluk = value.getMinutes().toString().length;
+            if (dkUzunluk == 1) {
+                dk = "0" + value.getMinutes();
+            }
+            else {
+                dk = value.getMinutes();
+            }
+            var saat;
+            var dkUzunluk = value.getHours().toString().length;
+            if (dkUzunluk == 1) {
+                saat = "0" + value.getHours()
+            }
+            else {
+                saat = value.getHours()
+            }
+
+            var time = saat + ":" + dk
+            return dat.toString() + " " + time.toString();
+        }
+
+        var data = [];
+        var speedTest = {};
+        var mapDiv = document.getElementById('map');
+        var stationCount;
+        var status = "";
+
+        function initMap() {
+            //var ddate = "today";
+            GetDataTable("today");
+
+            var timer, delay = 400000;
+            timer = setInterval(function () {
+                GetDataTable("today");
+            }, delay);
+
+            function GetDataTable(ddate) {
+                $("#loading").show();
+            $.ajax({
+                url: "/Map/GetStationMapData",
+                type: "POST",
+                dataType: "json",
+                data: { date: "today" },
+                success: function (dataA) {
+                    $("#loading").hide();
+                    var aarA = [];
+                    var disconnect = '<span class="label label-danger">@Resources.Connection_Fail</span>';
+                    var connected = '<span class="label label-success">@Resources.Connected</span>';
+
+                    $.each(dataA, function (i, item) {
+                        var x = parseFloat(item.COORDINANT.split(",")[0]);
+                        var y = parseFloat(item.COORDINANT.split(",")[1]);
+                        if (dataA[i].CON_STATUS == true) {
+                            status = connected;
+                        }
+                        else {
+                            status = disconnect;
+                        }
+    
+                        var aar = {
+                            longitude: y,
+                            latitude: x,
+                            photo_url: "/Home/Detail?stationId=" + item.STATION_ID,
+                            photo_file_url: "/images/StationImages/" + item.STATION_ID + ".png",
+                            stationId: item.STATION_ID,
+                            connection: status,
+                            stationName: item.STATION_NAME,
+                            energy: item.ENERGY,
+                            pr: item.PR
+                        };
+
+                        aarA.push(aar);
+
+                    })
+                    data = {
+                        //count: 10785236,
+                        photos: aarA
+                    };
+                    stationCount = dataA.length;
+                    speedTest.init();
+                  
+                }
+            });
+        }
+        }
+   
+        function AA(bb) {
+            return document.getElementById(bb);
+        }
+
+        speedTest.pics = null;
+        speedTest.map = null;
+        speedTest.markerClusterer = null;
+        speedTest.markers = [];
+        speedTest.infoWindow = null;
+
+        speedTest.init = function () {
+
+            var latlng = new google.maps.LatLng(39.2, 34.6);
+            var options = {
+                'zoom': 6,
+                'center': latlng,
+                'mapTypeId': google.maps.MapTypeId.HYBRID,
+                gestureHandling: 'greedy'
+            };
+
+            speedTest.map = new google.maps.Map(AA('map'), options);
+            speedTest.pics = data.photos;
+
+            var useGmm = document.getElementById('usegmm');
+            google.maps.event.addDomListener(useGmm, 'click', speedTest.change);
+
+            //var numMarkers = document.getElementById('nummarkers');
+            //google.maps.event.addDomListener(numMarkers, 'change', speedTest.change);
+
+            speedTest.infoWindow = new google.maps.InfoWindow();
+
+            speedTest.showMarkers();
+        };
+
+
+        speedTest.showMarkers = function () {
+
+            speedTest.markers = [];
+
+            var type = 1;
+            if (AA('usegmm').checked) {
+                type = 0;
+            }
+
+            if (speedTest.markerClusterer) {
+                speedTest.markerClusterer.clearMarkers();
+            }
+
+            var panel = AA('markerlist');
+            panel.innerHTML = '';
+            var numMarkers = stationCount;// AA('nummarkers').value;
+
+            for (var i = 0; i < numMarkers; i++) {
+                
+                var titleText = speedTest.pics[i].stationName;
+                if (titleText == '') {
+                    titleText = 'No title';
+                }
+
+                var item = document.createElement('DIV');
+                var title = document.createElement('A');
+                title.href = '#';
+                title.className = 'title';
+                title.innerHTML = titleText;
+
+                item.appendChild(title);
+                panel.appendChild(item);
+
+
+                var latLng = new google.maps.LatLng(speedTest.pics[i].latitude,
+                    speedTest.pics[i].longitude);
+
+                var imageUrl = 'http://chart.apis.google.com/chart?cht=mm&chs=24x32&chco=' +
+                    'FFFFFF,008CFF,000000&ext=.png';
+                var markerImage = new google.maps.MarkerImage(imageUrl,
+                    new google.maps.Size(24, 32));
+
+                var marker = new google.maps.Marker({
+                    'position': latLng,
+                    'icon': markerImage
+                });
+
+                var fn = speedTest.markerClickFunction(speedTest.pics[i], latLng);
+                google.maps.event.addListener(marker, 'click', fn);
+                google.maps.event.addDomListener(title, 'click', fn);
+                speedTest.markers.push(marker);
+            }
+
+            window.setTimeout(speedTest.time, 0);
+        };
+
+        speedTest.markerClickFunction = function (pic, latlng) {
+            var _energy = $('#hdn_energy').val();
+
+            return function (e) {
+                e.cancelBubble = true;
+                e.returnValue = false;
+                if (e.stopPropagation) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                }
+                var title = pic.stationName;
+                var url = pic.photo_url;
+                var fileurl = pic.photo_file_url;
+
+                var infoHtml = '<div class="info"><h4>' + title +
+                    '</h4><div class="info-body">' +
+                    '<a href="' + url + '" target="_blank"><img src="' +
+                    fileurl + '" class="info-img"/></a></div>' +
+                    '<b>' + _energy + ': </b>' + pic.energy.toFixed(2).replace(".", ",") + ' MWh <br/>' +
+                    '<b>PR: </b>' + pic.pr.toFixed(1).replace(".", ",") + ' % <br/>' +
+                    pic.connection + '</div> ';
+        
+                speedTest.infoWindow.setContent(infoHtml);
+                speedTest.infoWindow.setPosition(latlng);
+                speedTest.infoWindow.open(speedTest.map);
+            };
+        };
+
+        speedTest.clear = function () {
+
+            $('timetaken').innerHTML = 'cleaning...';
+            for (var i = 0, marker; marker = speedTest.markers[i]; i++) {
+                marker.setMap(null);
+            }
+        };
+
+        speedTest.change = function () {
+
+            speedTest.clear();
+            speedTest.showMarkers();
+        };
+
+        speedTest.time = function () {
+
+            $('timetaken').innerHTML = 'timing...';
+            var start = new Date();
+            if (AA('usegmm').checked) {
+                speedTest.markerClusterer = new MarkerClusterer(speedTest.map, speedTest.markers);
+            } else {
+                for (var i = 0, marker; marker = speedTest.markers[i]; i++) {
+                    marker.setMap(speedTest.map);
+                }
+            }
+
+            var end = new Date();
+            $('timetaken').innerHTML = end - start;
+        };
+
+    </script>
+    <script async defer
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCl_zXhq0Qz4_hKotMC4H64zNo6KGPlDCY&callback=initMap">
+    </script>
+
+    <div style="text-align: center">
+        <img id="loading" src="~/images/loader.gif" />
+    </div>
+    <input type="hidden" value="@Resources.Station" id="hdn_station" />
+    <input type="hidden" value="@Resources.Irradiation" id="hdn_irradiation" />
+    <input type="hidden" value="AC @Resources.Power" id="hdn_acPower" />
+    <input type="hidden" value="@Resources.Energy" id="hdn_energy" />
+    <input type="hidden" value="@Resources.Active / @Resources.Total Inv " id="hdn_actSumInv" />
+    <input type="hidden" value="@Resources.Specific_Yield" id="hdn_specific" />
+    <input type="hidden" value="@Resources.Communication" id="hdn_communication" />
+    <input type="hidden" value="@Resources.Installed_Power" id="hdn_installedPower" />
+    <input type="hidden" value="" id="hdn_buttonState" />
+    <input type="hidden" value="@Resources.Financial_Income" id="hdn_financialincome" />
+    <input type="hidden" value="@Resources.Alerts" id="hdn_alerts" />
+    <input type="hidden" value="@Resources.Instant" id="hdn_instantPR" />
+    <input type="hidden" value="@Resources.Maps" id="hdn_maps" />
+    <input type="hidden" value="@Resources.Production" id="hdn_production" />
+    <input type="hidden" value="@Resources.Image" id="hdn_image" />
+    <input type="hidden" value="@Resources.Download_As_Excel" id="hdn_export" />
+    <div class="modal fade bs-example-modal-sm" id="trgtModal" role="dialog">
+        <div class="modal-dialog modal-sm">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h2 id="stName"></h2>
+                </div>
+                <div class="modal-body">
+                    <img id="stationImages" width="100%" src="" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="panel">
+        <h4>@Resources.Maps</h4>
+        <div>
+            <input type="checkbox" checked="checked" id="usegmm" />
+            <span>@Resources.Location_Grouping</span>
+        </div>
+        <strong>@Resources.Station</strong>
+        <div class="clearfix"></div>
+        <div id="markerlist">
+        </div>
+    </div>
+    <div id="map-container">
+        <div id="map"></div>
+    </div>
+    
+

@@ -1,0 +1,40 @@
+﻿@using Esso.Data;
+@using Esso.Models;
+@using Microsoft.AspNet.Identity;
+
+
+@{
+	ViewBag.Title = "Index";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{
+	
+
+	//@Html.Partial("MenuPartial")
+	<table style="width:100%;">
+		<tr>
+			<td style="text-align:center">
+				<a style="font-size:20pt; font-weight:bold" id="grandSum"></a>
+			</td>
+		</tr>
+	</table>
+
+
+
+	<div class="col-md-12 col-sm-12 col-xs-12">
+		<div class="x_panel">
+			<div class="x_title">
+				<h2>FTP List</h2>
+				<div class="clearfix"></div>
+			</div>
+			<div class="x_content">
+				@Html.Action("FtpGridPartial")
+			</div>
+		</div>
+	</div>
+}
+
+
+
+

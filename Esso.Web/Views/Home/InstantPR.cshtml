@@ -1,0 +1,232 @@
+﻿@model int
+@using Esso.Data;
+@using Microsoft.AspNet.Identity;
+@using language
+@{
+    ViewBag.Title = "InstantPR";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{
+	EssoEntities DB = new EssoEntities();
+	var companyName = DB.Companies.Where(x => x.ID == Model).FirstOrDefault().NAME;
+	var companyName2 = DB.Companies.Where(x => x.ID == Model).FirstOrDefault().ID;
+	var userId = User.Identity.GetUserId();
+	
+}
+
+<style>
+    tfoot {
+        color: black;
+        background: #9c9c9c;
+    }
+</style>
+
+<div class="page-title">
+    <div class="title_left">
+        @if (User.IsInRole("DEMO"))
+        {
+            <h3>Company @companyName2</h3>
+        }
+        else
+        {
+            <h3>@companyName</h3>
+        }
+    </div>
+</div>
+<div class="clearfix"></div>
+<div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12">
+        <div class="x_panel">
+            <img id="LoadingImage" src="~/images/loader.gif" />
+            <div class="x_content">
+                <div class="table-responsive">
+                    <table class="table table-striped jambo_table bulk_action" style=" background-color: rgba(111, 126, 141, 0.05);">
+                        <thead>
+							<tr>
+								<th>@Resources.Station</th>
+								<th>@Resources.Power AC</th>
+								<th>@Resources.Irradiation</th>
+								<th>@Resources.Active_Inverters</th>
+								<th>@Resources.Instant PR</th>
+								<th>@Resources.Daily_Production</th>
+								<th>@Resources.Production_Detail</th>
+							</tr>
+                        </thead>
+                        <tbody id="ProductionDetail"></tbody>
+                        <tfoot id="totalFooter"></tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<br />
+
+<script>
+    function ConvertDay(vl) {
+        var value = new Date
+            (
+            parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+            );
+        return value.getDate()
+    }
+    function ConvertDateMonth(vl) {
+        var value = new Date
+            (
+            parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+            );
+        var ay = (value.getMonth() + 1);
+        if (ay == 1) { sonuc = 31; }
+        else if (ay == 2) { sonuc = 28; }
+        else if (ay == 3) { sonuc = 31; }
+        else if (ay == 4) { sonuc = 30; }
+        else if (ay == 5) { sonuc = 31; }
+        else if (ay == 6) { sonuc = 30; }
+        else if (ay == 7) { sonuc = 31; }
+        else if (ay == 8) { sonuc = 31; }
+        else if (ay == 9) { sonuc = 30; }
+        else if (ay == 10) { sonuc = 31; }
+        else if (ay == 11) { sonuc = 30; }
+        else if (ay == 12) { sonuc = 31; }
+        return sonuc;
+    }
+    function ConvertNumberMonth(vln) {
+
+        if (vln == 1) { sonuc = 31; }
+        else if (vln == 2) { sonuc2 = 28; }
+        else if (vln == 3) { sonuc2 = 31; }
+        else if (vln == 4) { sonuc2 = 30; }
+        else if (vln == 5) { sonuc2 = 31; }
+        else if (vln == 6) { sonuc2 = 30; }
+        else if (vln == 7) { sonuc2 = 31; }
+        else if (vln == 8) { sonuc2 = 31; }
+        else if (vln == 9) { sonuc2 = 30; }
+        else if (vln == 10) { sonuc2 = 31; }
+        else if (vln == 11) { sonuc2 = 30; }
+        else if (vln == 12) { sonuc2 = 31; }
+        return sonuc2;
+    }
+    function ConvertTicksToTime(vl) {
+        vl = vl.replace("Date", "");
+        vl = vl.replace("/", "");
+        vl = vl.replace("(", "");
+        vl = vl.replace(")", "");
+        vl = vl.replace("/", "").trim();
+
+        var vlDate = new Date(parseInt(vl));
+        return vlDate.toLocaleTimeString();
+    }
+    function DateFormat(vl) {
+        var value = new Date
+            (
+            parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+            );
+        var dat = value.getDate() +
+            "/" +
+            (value.getMonth() + 1) +
+            "/" +
+            value.getFullYear();
+
+        var time = value.getHours() +
+            ":" +
+            value.getMinutes()
+        return time.toString();
+    }
+    function ConvertTicksToDate(vl) {
+        vl = vl.replace("Date", "");
+        vl = vl.replace("/", "");
+        vl = vl.replace("(", "");
+        vl = vl.replace(")", "");
+        vl = vl.replace("/", "").trim();
+
+        var vlDate = new Date(parseInt(vl));
+        return vlDate.toLocaleDateString();
+    }
+    function getMonth(vl) {
+        var value = new Date
+            (
+            parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+            );
+        var ay = (value.getMonth() + 1);
+        return ay;
+    }
+    function getDay(vl) {
+        var value = new Date
+            (
+            parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+            );
+        var gun = (value.getDate());
+
+        return gun;
+    }
+</script>
+<script src="~/js/other/bootstrap-progressbar.min.js"></script>
+<script>
+    $(document).ready(function () {
+        StationBar();
+
+        function StationBar() {
+            var beginDate = $('input[name="selectDate"]').val();
+            if (!beginDate || beginDate.length == 0) {
+                beginDate = new Date().toISOString();
+            }
+            $("#LoadingImage").show();
+            $.ajax({
+                url: "/Home/AnlikPR?companyId",
+                type: "POST",
+                data: { beginDate: beginDate, companyId: @Model },
+                dataType: "json",
+                success: function (data) {
+                    $.getScript("/js/other/bootstrap-progressbar.min.js");
+                    $("#LoadingImage").hide();
+                    $("#ProductionDetail").empty();
+                    $("#totalFooter").empty();
+                    var totalPro = 0;
+                    var totalIncome = 0;
+                    var listProd = [];
+                    var listStation = [];
+                    var listIncome = [];
+                    var listPR = [];
+                    var listPAC = [];
+                    var listPDC = [];
+					var barColor = "";
+
+                    for (var i = 0; i < data.length; i++) {
+                        if (data[i].PR >= 0 && data[i].PR <= 50) {
+                            barColor = "progress-bar-danger";
+                        }
+                        else if(data[i].PR > 50 && data[i].PR < 100) {
+                            barColor = "progress-bar-info";
+                        }
+                        else {
+                            barColor = "progress-bar-success";
+                        }
+						//$("#ProductionDetail").append('<tr><td>' + data[i].STATION_NAME + '</td><td>' + (data[i].Enerji).toFixed(2).replace(".", ",") + ' MWh' + '</td><td>' + (data[i].P_AC).toFixed(2).replace(".", ",") + ' W' + '</td><td>' + (data[i].P_DC).toFixed(2).replace(".", ",") + ' W' + '</td><td>' + (data[i].PR).toFixed(2).replace(".", ",") + ' %' + '<div class="progress"><div class="progress-bar" style="width:' + data[i].PR+'%"></div></div></td></tr>');
+						$("#ProductionDetail").append('<tr><td>' + data[i].STATION_NAME + '</td><td>' + data[i].P_AC + ' W</td><td>' + data[i].IRRADIATION + ' W/m²</td><td> ' + data[i].ActiveInvCount + ' </td><td><div class="progress"><div class="progress-bar ' + barColor + '" role= "progressbar" aria- valuenow=70 aria-valuemin="0" aria-valuemax="100" style= "width:' + data[i].PR + '%">' + data[i].PR + ' %</div></div>' + '</td><td>' + (data[i].Enerji).toFixed(2).replace(".", ",") + ' MWh' + '</td> <td><a href="Detail?stationId='+data[i].STATION_ID+'" class="btnDetail">@Resources.Detail</a></td></tr>');
+                        listProd.push(data[i].Enerji.toFixed(2));
+                        listStation.push(data[i].STATION_NAME);
+                        listIncome.push(data[i].Income.toFixed(2));
+                        listPR.push(data[i].PR.toFixed(1));
+                        listPAC.push(data[i].P_AC.toFixed(1));
+                        listPDC.push(data[i].P_DC.toFixed(1));
+                        totalPro += data[i].Enerji;
+                        totalIncome += data[i].Income;
+                    }
+
+                    //$("#totalFooter").append("<tr><td><b>Total:</b></td><td><b>" + totalPro.toFixed(2).replace(".", ",") + " MWh" + "</b><td></td></td></tr>");
+
+
+
+                }
+            });
+        }
+
+        var timer, delay = 300000;
+        timer = setInterval(function () {
+            StationBar();
+        }, delay)
+
+    });
+
+</script>

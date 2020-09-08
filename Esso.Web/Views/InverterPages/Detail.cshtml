@@ -1,0 +1,2248 @@
+﻿@model int
+@using Esso.Data;
+@using Esso.Models;
+@using Microsoft.AspNet.Identity;
+@using language
+@{
+    ViewBag.Title = "Detail";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<style>
+    #myChart {
+        height: 750px;
+        width: 1000px;
+    }
+
+    div[id$="license"] {
+        display: none !important;
+    }
+
+    #myChart-license-text {
+        display: none !important;
+    }
+
+    .highcharts-credits {
+        display: none !important;
+    }
+</style>
+
+
+@{
+    EssoEntities DB = new EssoEntities();
+
+    #region User yetkileri kontrol
+    TBL_STATION stat = new TBL_STATION();
+    stat = null;
+
+    var userId = User.Identity.GetUserId();
+
+    //User yetkileri kontrol ediliyor
+    try
+    {
+        if (User.IsInRole("M_ADMIN"))
+        {
+            stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+        }
+        else if (User.IsInRole("COMP_ADMIN"))
+        {
+            int cmpId = DB.Stations.Where(a => a.ID == Model && a.IS_DELETED == false).FirstOrDefault().COMPANY_ID;
+
+            if (DB.CompanyUsers.Any(a => a.COMPANY_ID == cmpId && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+        else if (User.IsInRole("COMP_USER"))
+        {
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+        else if (User.IsInRole("DEMO"))
+        {
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+    }
+    catch (Exception)
+    {
+
+    }
+    #endregion
+}
+
+@{
+    if (stat == null)
+    {
+        @Html.Partial("~/Views/Home/_ErrorPagePartial.cshtml")
+    }
+    else
+    {
+        var _stationDetail = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+        string css = "";
+
+        var company = (from u in DB.Stations
+                       where u.ID == Model
+                       select new
+                       {
+                           IsCentral = u.IS_CENTRAL_INV
+                       }).FirstOrDefault();
+
+        if (company.IsCentral == true)
+        {
+            css = "none";
+        }
+        else
+        {
+            css = "";
+        }
+
+        <div class="page-title">
+            <div class="title_left">
+                @if (User.IsInRole("DEMO"))
+                {
+                    <h5><strong>@_stationDetail.DEMO_NAME</strong></h5>
+                }
+                else
+                {
+                    <h5><strong>@_stationDetail.NAME</strong></h5>
+                }
+            </div>
+        </div>
+        @Html.Partial("MenuPartial")
+        <input type="hidden" value="@Resources.Production" id="hdn_production" />
+        <input type="hidden" value="@Resources.Specific_Yield" id="hdn_specificYield" />
+        <div class="x_panel" style="background-color:#fafafa">
+            <div class="clearfix"></div>
+            <div class="x_content">
+                <a href="/InverterPages/OnlyInverterDetail?stationId=@Model"><input type="button" class="btn btn-round btn-primary btn-xs" value="@Resources.Inverter_Values_Comparison" /></a>
+                <a href="/InverterPages/InvDetailReport?stationId=@Model"><input type="button" class="btn btn-round btn-warning btn-xs" value="@Resources.Inverter_Detail_Report" /></a>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                @*<a href="#" id="export">Excele Aktar</a>*@
+                @*<a href="@Url.Action("ExportToExcel")" class="btn btn-primary">Export</a>*@
+                @*<a id="exportInvProd" class="btn btn-primary">Export</a>*@
+                <div class="x_panel">
+                    <div class="x_content">
+                        <div class="" role="tabpanel" data-example-id="togglable-tabs">
+                            <ul id="myTab1" class="nav nav-tabs bar_tabs" role="tablist">
+                                <li role="presentation" class="active">
+                                    <a href="#tab_contentA" id="profile-tabA" role="tab" data-toggle="tab" aria-controls="home" aria-expanded="true">Inverter @Resources.Daily_Production</a>
+                                </li>
+                                <li role="presentation" class="">
+                                    <a href="#tab_contentHeatMapProduction" id="profile-tabHeatMapProduction" role="tab" data-toggle="tab" aria-controls="home" aria-expanded="true">Inverter @Resources.Monthly_Production</a>
+                                </li>
+                                <li role="presentation" id="profile-tabB" class="">
+                                    <a href="#tab_contentB" role="tab" id="profile-tab3" data-toggle="tab" aria-expanded="false">Inverter @Resources.Graphic</a>
+                                </li>
+                                <li role="presentation" id="profile-tabHeatMap" class="">
+                                    <a href="#tab_contentHeatMap" role="tab" id="profile-tabHeatMap" data-toggle="tab" aria-expanded="false">@Resources.Inverter_Performance_Chart</a>
+                                </li>
+                                <li role="presentation" id="profile-tabC" class="">
+                                    <a href="#tab_contentC" role="tab" id="profile-tabb" data-toggle="tab" aria-controls="profile" aria-expanded="false">@Resources.Inverter_Values</a>
+                                </li>
+                            </ul>
+                            <div id="myTabContent" class="tab-content">
+                                <div role="tabpanel" class="tab-pane fade active in" id="tab_contentA" aria-labelledby="home-tab">
+                                    <div class="x_panel">
+                                        <img id="LoadingImage3" src="~/images/loader.gif" />
+                                        <div class="x_content">
+                                            <div id="mainb" style="height:350px;"></div>
+                                            <div class="well" style="overflow: auto">
+                                                <div class="col-md-12">
+                                                    <div class="btn-group">
+                                                        <input name="begin2" id="single_cal3" class="form-control has-feedback-left input-sm" type="text" />
+                                                    </div>
+                                                    <div class="btn-group">
+                                                        <input type="button" class="btn btn-info btn-sm" id="btnList2" value="@Resources.Show" />
+                                                    </div>
+                                                    <div class="btn-group">
+                                                        <button id="btnInvTblDetail" type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#InvModal">@Resources.Data_Table</button>
+                                                    </div>
+                                                    <div class="btn-group">
+                                                        <button onclick="location.href = '@Url.Action("ExceleAktarInvDataTable", "InverterPages")'" class="btn btn-primary pull-right btn-sm" style="margin-right: 5px;"><i class="fa fa-download"></i>@Resources.Download_As_Excel</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div role="tabpanel" class="tab-pane fade" id="tab_contentHeatMapProduction" aria-labelledby="profile-tab">
+                                    <div class="x_panel">
+                                        <div class="x_content">
+                                            <input type="hidden" value="@Resources.Power" id="hdn_power" />
+                                            <input type="hidden" value="@Resources.No_Data" id="hdn_noData" />
+                                            <div id="containerHeatMapProduction"></div>
+                                            <div class="well" style="overflow: auto">
+                                                <div class="col-md-6">
+                                                    <div class="btn-group">
+                                                        <fieldset id="pickerDiv">
+                                                            <input class="form-control input-sm" type="month" id="pickerMonthYear" name="pickerMonthYear"
+                                                                   min="2017-08" value="" />
+                                                            <span class="validity"></span>
+                                                        </fieldset>
+                                                    </div>
+                                                    <div class="btn-group">
+                                                        <input type="button" class="btn btn-info btn-sm" id="btnHeatMapProduction" value="@Resources.Show" />
+                                                    </div>
+                                                    <div class="btn-group">
+                                                        <img id="LoadingImageHeatMapProduction" src="~/images/loader.gif" />
+                                                    </div>
+                                                    <div class="btn-group">
+                                                        <a id="exportInvProd" class="btn btn-primary btn-sm">@Resources.Download_As_Excel</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div role="tabpanel" class="tab-pane fade" id="tab_contentB" aria-labelledby="profile-tab">
+                                    <div class="x_panel">
+                                        <div class="x_content">
+                                            <div id="echart_line" style="height:500px;"></div>
+                                            <div class="well" style="overflow: auto">
+                                                <div class="col-md-12">
+                                                    <div class="btn-group">
+                                                        <input name="begin" id="single_cal4" class="form-control has-feedback-left input-sm" type="text" />
+                                                    </div>
+                                                    <div class="btn-group">
+                                                        <select id="selectedTag" name="selectedTag" class="form-control input-sm">
+                                                            <option value="1">@Resources.Power AC</option>
+                                                            <option value="2">@Resources.Power DC</option>
+                                                            <option value="3">@Resources.Current AC</option>
+                                                            <option value="4">@Resources.Current DC</option>
+                                                            <option value="5">@Resources.Voltage AC</option>
+                                                            <option value="6">@Resources.Voltage DC</option>
+                                                            <option value="7">@Resources.Production (Wh)</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="btn-group">
+                                                        <input type="button" class="btn btn-info btn-sm" id="btnList" value="@Resources.Show" />
+                                                    </div>
+                                                    <div class="btn-group">
+                                                        <img id="LoadingImage" src="~/images/loader.gif" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div role="tabpanel" class="tab-pane fade" id="tab_contentHeatMap" aria-labelledby="profile-tab">
+                                    <div class="x_panel">
+                                        <div class="x_content">
+                                            <input type="hidden" value="@Resources.Power" id="hdn_power" />
+                                            <input type="hidden" value="@Resources.No_Data" id="hdn_noData" />
+                                            <div id="container"></div>
+                                            <div class="well" style="overflow: auto">
+                                                <div class="col-md-6">
+                                                    <div class="btn-group">
+                                                        <input name="beginDaily" id="single_cal_heatMap" class="form-control has-feedback-left input-sm" type="text" />
+                                                    </div>
+                                                    <div class="btn-group">
+                                                        <input type="button" class="btn btn-info btn-sm" id="btnListHeatMap" value="@Resources.Show" />
+                                                    </div>
+                                                    <div class="btn-group">
+                                                        <img id="LoadingImageHeatMap" src="~/images/loader.gif" />
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div role="tabpanel" class="tab-pane fade" id="tab_contentC" aria-labelledby="profile-tab">
+                                    <div class="x_panel">
+                                        <div class="x_panel">
+                                            <div class="x_title">
+                                                <h2>@Resources.Inverter_States</h2>
+
+                                                <img id="LoadingImage2" src="~/images/loader.gif" />
+
+                                                <ul class="nav navbar-right panel_toolbox">
+                                                    <li>
+                                                        <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="close-link"><i class="fa fa-close"></i></a>
+                                                    </li>
+                                                </ul>
+                                                <div class="clearfix"></div>
+                                            </div>
+                                            <div class="x_content">
+                                                <div class="col-md-3">
+                                                    <select id="selectedInverter" name="selectedTag" class="form-control input-sm"></select>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <input type="button" class="btn btn-info btn-sm" id="btnState" value="@Resources.Show" />
+                                                </div>
+                                                <table id="datatable" class="table table-striped jambo_table bulk_action">
+                                                    <thead>
+                                                        <tr>
+                                                            <th width="155">@Resources.Registers</th>
+                                                            <th>@Resources.Value</th>
+                                                            <th>@Resources.Date</th>
+                                                        </tr>
+                                                    </thead>
+
+                                                    <tr>
+                                                        <td id="BaslikGlobalState"></td>
+                                                        <td id="ValueGlobalState"></td>
+                                                        <td id="StateTarih1"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td id="BaslikAlarmState"></td>
+                                                        <td id="ValueAlarmState"></td>
+                                                        <td id="StateTarih2"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td id="BaslikDcDcConverterState"></td>
+                                                        <td id="ValueDcDcConverterState"></td>
+                                                        <td id="StateTarih3"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td id="BaslikDcAcConverterState"></td>
+                                                        <td id="ValueDcAcConverterState"></td>
+                                                        <td id="StateTarih4"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikDeratingState"></td>
+                                                        <td id="ValueDeratingState"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikHEARTBEAT"></td>
+                                                        <td id="ValueHEARTBEAT"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    @*<tr>
+                                                            <td id="BaslikINVERTER_MAIN_STATUS"></td>
+                                                            <td id="ValueINVERTER_MAIN_STATUS"></td>
+                                                            <td id="StateTarih5" class="StateTarih5"></td>
+                                                        </tr>*@
+
+                                                    <tr>
+                                                        <td id="BaslikREACTIVE_POWER"></td>
+                                                        <td id="ValueREACTIVE_POWER"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikGRID_VOLTAGE_VRMS"></td>
+                                                        <td id="ValueGRID_VOLTAGE_VRMS"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikGRID_FREQUENCY"></td>
+                                                        <td id="ValueGRID_FREQUENCY"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikPOWER_FACTOR"></td>
+                                                        <td id="ValuePOWER_FACTOR"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikCODE_OF_THE_ACTIVE_FAULT"></td>
+                                                        <td id="ValueCODE_OF_THE_ACTIVE_FAULT"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikGRID_CURRENT"></td>
+                                                        <td id="ValueGRID_CURRENT"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikDC_BUS_VOLTAGE"></td>
+                                                        <td id="ValueDC_BUS_VOLTAGE"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikGROUNDING_CURRENT"></td>
+                                                        <td id="ValueGROUNDING_CURRENT"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikSOLATION_RESISTANCE"></td>
+                                                        <td id="ValueSOLATION_RESISTANCE"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikAMBIENT_TEMPERATURE"></td>
+                                                        <td id="ValueAMBIENT_TEMPERATURE"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikHIGHEST_IGBT_TEMPERATURE_PU1"></td>
+                                                        <td id="ValueHIGHEST_IGBT_TEMPERATURE_PU1"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikHIGHEST_IGBT_TEMPERATURE_PU2"></td>
+                                                        <td id="ValueHIGHEST_IGBT_TEMPERATURE_PU2"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikHIGHEST_IGBT_TEMPERATURE_PU3"></td>
+                                                        <td id="ValueHIGHEST_IGBT_TEMPERATURE_PU3"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikHIGHEST_IGBT_TEMPERATURE_PU4"></td>
+                                                        <td id="ValueHIGHEST_IGBT_TEMPERATURE_PU4"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikCONTROL_SECTION_TEMPERATURE"></td>
+                                                        <td id="ValueCONTROL_SECTION_TEMPERATURE"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikDAILY_KVAH_SUPPLIED"></td>
+                                                        <td id="ValueDAILY_KVAH_SUPPLIED"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikTOTAL_KVAH_SUPPLIED"></td>
+                                                        <td id="ValueTOTAL_KVAH_SUPPLIED"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikIGBT_1_T1"></td>
+                                                        <td id="ValueIGBT_1_T1"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikIGBT_1_T2"></td>
+                                                        <td id="ValueIGBT_1_T2"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikIGBT_1_T3"></td>
+                                                        <td id="ValueIGBT_1_T3"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikIGBT_2_T1"></td>
+                                                        <td id="ValueIGBT_2_T1"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikIGBT_2_T2"></td>
+                                                        <td id="ValueIGBT_2_T2"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikIGBT_2_T3"></td>
+                                                        <td id="ValueIGBT_2_T3"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikIGBT_3_T1"></td>
+                                                        <td id="ValueIGBT_3_T1"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikIGBT_3_T2"></td>
+                                                        <td id="ValueIGBT_3_T2"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikIGBT_3_T3"></td>
+                                                        <td id="ValueIGBT_3_T3"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikIGBT_4_T1"></td>
+                                                        <td id="ValueIGBT_4_T1"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikIGBT_4_T2"></td>
+                                                        <td id="ValueIGBT_4_T2"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td id="BaslikIGBT_4_T3"></td>
+                                                        <td id="ValueIGBT_4_T3"></td>
+                                                        <td id="StateTarih5" class="StateTarih5"></td>
+                                                    </tr>
+
+
+                                                </table>
+                                            </div>
+
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="InvModal" role="dialog">
+            <div class="modal-dialog modal-lg">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <div class="x_title">
+                            <h2>@Resources.Yield_Data_Table</h2>
+                            <div class="clearfix"></div>
+                        </div>
+                        <table id="datatable" class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>@Resources.Date</th>
+                                    <th>Inverters</th>
+                                    <th>AC @Resources.Power</th>
+                                    <th>DC @Resources.Power</th>
+                                    <th>DC @Resources.Voltage</th>
+                                    <th>@Resources.Daily_Yield</th>
+                                    <th>@Resources.Specific_Yield</th>
+                                    <th>@Resources.total_Panel_Power </th>
+                                </tr>
+                            </thead>
+                            <tbody id="InvTblDetail"></tbody>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">@Resources.Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <script src="~/js/bootstrap.min.js"></script>
+        <script src="~/Content/raphael.min.js"></script>
+        <script src="~/Content/morris.min.js"></script>
+<script src="~/Content/highcharts/heatmap/highcharts.js"></script>
+<script src="~/Content/highcharts/heatmap/heatmap.js"></script>
+<script src="~/Content/highcharts/heatmap/exporting.js"></script>
+
+        <script>
+
+             $(document).ready(function () {
+                     $("#exportInvProd").click(function () {
+                         debugger;
+                          ExportToExcelMonthlyProduction();
+                      });
+                 });
+
+                 function ExportToExcelMonthlyProduction()
+                 {
+                     debugger;
+                     var pickDate = $('#pickerMonthYear').val();
+                     var _year = "";
+                     var _month = "";
+                     if (!pickDate || pickDate.length == 0) {
+                         var dt = new Date($.now());
+                         _year = dt.getFullYear();
+                         _month = dt.getMonth() + 1;
+                         pickDate = _year + "-" + _month;
+                         $('[name=pickerMonthYear]').val(pickDate);
+                     }
+
+                     var url = "@Url.Action("ExportToExcel", "InverterPages")";
+
+                     //window.location.href = url + "?stationId=" + 370 + "&&slctDate=" + pickDate;
+                     var urlLink = url + "?stationId=" + @Model + "&&slctDate=" + pickDate;
+                     window.open(urlLink);
+          
+                 }
+
+            function NumberConvert2(nStr) {
+                nStr += '';
+                x = nStr.split('.');
+                x1 = x[0];
+                x2 = x.length > 1 ? ',' + x[1] : '';
+                var rgx = /(\d+)(\d{3})/;
+                while (rgx.test(x1)) {
+                    x1 = x1.replace(rgx, '$1' + '.' + '$2');
+                }
+                return x1 + x2;
+            }
+            var theme = {
+
+                color: [
+                    '#26B99A', '#34495E', '#e74c3c', '#179e17',
+                    '#9B59B6', '#ff9201', '#755326', '#4c3a26'
+                ],
+
+
+                title: {
+                    itemGap: 8,
+                    textStyle: {
+                        fontWeight: 'normal',
+                        color: '#408829'
+                    }
+                },
+
+                dataRange: {
+                    color: ['#1f610a', '#97b58d']
+                },
+
+                toolbox: {
+                    color: ['#408829', '#408829', '#408829', '#408829']
+                },
+
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    axisPointer: {
+                        type: 'line',
+                        lineStyle: {
+                            color: '#408829',
+                            type: 'dashed'
+                        },
+                        crossStyle: {
+                            color: '#408829'
+                        },
+                        shadowStyle: {
+                            color: 'rgba(200,200,200,0.3)'
+                        }
+                    }
+                },
+
+                dataZoom: {
+                    dataBackgroundColor: '#eee',
+                    fillerColor: 'rgba(64,136,41,0.2)',
+                    handleColor: '#408829'
+                },
+                grid: {
+                    borderWidth: 0
+                },
+                categoryAxis: {
+                    axisLine: {
+                        lineStyle: {
+                            color: '#408829'
+                        }
+                    },
+                    splitLine: {
+                        lineStyle: {
+                            color: ['#eee']
+                        }
+                    }
+                },
+                valueAxis: {
+                    axisLine: {
+                        lineStyle: {
+                            color: '#408829'
+                        }
+                    },
+                    splitArea: {
+                        show: true,
+                        areaStyle: {
+                            color: ['rgba(250,250,250,0.1)', 'rgba(200,200,200,0.1)']
+                        }
+                    },
+                    splitLine: {
+                        lineStyle: {
+                            color: ['#eee']
+                        }
+                    }
+                },
+                timeline: {
+                    lineStyle: {
+                        color: '#408829'
+                    },
+                    controlStyle: {
+                        normal: { color: '#408829' },
+                        emphasis: { color: '#408829' }
+                    }
+                },
+                textStyle: {
+                    fontFamily: 'Arial, Verdana, sans-serif'
+                }
+            };
+
+            function ConvertTicksToTime(vl) {
+                vl = vl.replace("Date", "");
+                vl = vl.replace("/", "");
+                vl = vl.replace("(", "");
+                vl = vl.replace(")", "");
+                vl = vl.replace("/", "").trim();
+
+                var vlDate = new Date(parseInt(vl));
+                return vlDate.toLocaleTimeString();
+            }
+            function DateFormat(vl) {
+
+                var value = new Date
+                    (
+                         parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+                );
+                var dk;
+                var dkUzunluk = value.getMinutes().toString().length;
+                if (dkUzunluk == 1) {
+                    dk = "0" + value.getMinutes();
+                }
+                else {
+                    dk = value.getMinutes();
+                }
+                var saat;
+                var dkUzunluk = value.getHours().toString().length;
+                if (dkUzunluk == 1) {
+                    saat = "0" + value.getHours()
+                }
+                else {
+                    saat = value.getHours()
+                }
+
+                var time = saat + ":" + dk
+
+                return time.toString();
+            }
+
+            function ConvertTicksToDate(vl) {
+                vl = vl.replace("Date", "");
+                vl = vl.replace("/", "");
+                vl = vl.replace("(", "");
+                vl = vl.replace(")", "");
+                vl = vl.replace("/", "").trim();
+
+                var vlDate = new Date(parseInt(vl));
+                return vlDate.toLocaleDateString();
+            }
+
+            $(document).ready(function () {
+                //Inverter Grafiği bas.
+                 $('#btnList').click(function () {
+                     $(this).button('loading');
+                    CallChartData();
+                 });
+                 $('#profile-tabB').click(function () {
+                     CallChartData();
+                 });
+                function CallChartData() {
+                    $('#btnList').button('loading');
+                    var beginDate = $('input[name="begin"]').val();
+
+                    if (!beginDate || beginDate.length == 0) {
+                        beginDate = new Date().toISOString();
+                    }
+
+                    var secTag = $('#selectedTag').val();
+                    if (!secTag) {
+                        return;
+                    }
+                    //--------
+
+                    $.ajax({
+                        url: "/InverterPages/GetInverterCount/",
+                        type: "POST",
+                        dataType: "json",
+                        contentType: "application/json; charset=utf-8",
+                        data: "{'stationId':'" + @Model + "'}",
+                        success: function (data) {
+                            getData(data)
+                        }
+                    });
+                    $("#LoadingImage").show();
+                    function getData(invData)
+                    {
+                        $("#LoadingImage").show();
+                        $.ajax({
+                            type: "Post",
+                            url: "/InverterPages/GetChartInverterDetail",
+                            dataType: "json",
+                            contentType: "application/json; charset=utf-8",
+                            data: "{'beginDate':'" + beginDate +"','stationId':'"+@Model+ "'}",
+                            success: function (data) {
+                                debugger;
+                                $('#btnList').button('reset');
+                                var listDate = [];
+                                for (var i = 0; i < data.inverters.length; i++) {
+                                    listDate.push(DateFormat(data.inverters[i].Tarih));
+                                }
+                                var seriesList = [];
+                                var invId = [];
+                                var dataList = [];
+                                var listDateFiltered = [];
+                                var inv;
+                                var legendData = [];
+
+                                $.each(listDate, function (i, el) {
+                                    if ($.inArray(el, listDateFiltered) === -1) listDateFiltered.push(el);
+                                });
+                               
+                                for (var i = 0; i <= invData.length - 1; i++) {
+
+                                    listDateFiltered.push(invData[i].Tarih);
+
+                                    inv = invData.map(function (a) { return a.NAME; });
+
+                                    legendData = data.inverters.filter(
+                                                function (d) {
+                                                    return (parseInt(d.Inv_Id) == parseInt(invData[i].ID));
+                                                }
+                                            );
+
+                                    if (secTag == 1) {
+                                        legendData = legendData.map(function (d) {
+                                            if (d.Inv_Id == parseInt(invData[i].ID)) {
+
+                                                return d.Guc_AC == null ? d.Guc_AC : d.Guc_AC.toFixed(1);
+                                            }
+
+
+                                        });
+                                    }
+                                    else if (secTag == 2) {
+                                        legendData = legendData.map(function (d) {
+                                            if (d.Inv_Id == parseInt(invData[i].ID)) {
+                                                return d.Guc_DC.toFixed(1);
+                                           }
+
+                                      });
+                                    }
+                                    else if (secTag == 3) {
+                                        legendData = legendData.map(function (d) {
+                                            if (d.Inv_Id == parseInt(invData[i].ID)) {
+                                                return d.Akim_AC.toFixed(1);
+                                            }
+
+                                        });
+                                    }
+                                    else if (secTag == 4) {
+                                        legendData = legendData.map(function (d) {
+                                            if (d.Inv_Id == parseInt(invData[i].ID)) {
+                                                return d.Akim_DC.toFixed(1);
+                                            }
+
+                                        });
+                                    }
+                                    else if (secTag == 5) {
+                                        legendData = legendData.map(function (d) {
+                                            if (d.Inv_Id == parseInt(invData[i].ID)) {
+                                                return d.Gerilim_AC.toFixed(1);
+                                            }
+
+                                        });
+                                    }
+                                    else if (secTag == 6) {
+                                        legendData = legendData.map(function (d) {
+                                            if (d.Inv_Id == parseInt(invData[i].ID)) {
+                                                return d.Gerilim_DC.toFixed(1);
+                                            }
+
+                                        });
+                                    }
+                                    else if (secTag == 7) {
+                                        legendData = legendData.map(function (d) {
+                                            if (d.Inv_Id == parseInt(invData[i].ID)) {
+                                                return d.InverterProduction.toFixed(1);
+                                            }
+
+                                        });
+                                    }
+                                    seriesList.push(
+                                    {
+                                        name: inv[i],
+                                        type: 'line',
+                                        smooth: true,
+                                        itemStyle: {
+                                            normal: {
+
+                                            }
+                                        },
+
+                                        data:legendData
+                                    });
+                                }
+                               
+                                var echartLine = echarts.init(document.getElementById('echart_line'), theme);
+                                echartLine.setOption({
+                                    //tooltip: {
+                                    //    trigger: 'axis'
+                                    //},
+                                    tooltip: {
+                                        trigger: 'axis',
+                                        formatter: function (params) {
+                                            var tooltipText = "";
+                                            tooltipText += params[0].name;
+                                            if (params.length <= 20) {
+                                                for (var m = 0; m < params.length; m++) {
+                                                    tooltipText += "<br/>" + '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background-color:' + params[m].color + '"></span>' + params[m].seriesName + " : " + params[m].value;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                for (var m = 0; m < params.length; m++) {
+                                                   
+                                                    if (m % 2 == 1) {
+                                                        tooltipText += "&emsp;" + '<div style="float:right;"><span style="display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background-color:' + params[m].color + '"></span>' + params[m].seriesName + " : " + params[m].value + "</div>";
+                                                    }
+                                                    else {
+                                                        tooltipText += "<br/>" + '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background-color:' + params[m].color + '"></span>' + params[m].seriesName + " : " + params[m].value;
+                                                    }
+                                                }
+                                            }
+                                            return tooltipText;
+                                        },
+
+                                        axisPointer: {
+                                            animation: true
+                                        }
+                                    },
+                                    legend: {
+                                        x: 90,
+                                        y: 0,
+                                        data: inv
+                                    },
+                                    toolbox: {
+                                        show: true,
+                                        feature: {
+                                            mark: { show: false },
+                                            dataZoom: { show: false },
+                                            dataView: {
+                                                show: false,
+                                                title: "Döküman"
+                                            },
+                                            magicType: {
+                                                show: false,
+                                                title: {
+                                                    line: 'Line',
+                                                    bar: 'Bar',
+                                                    stack: 'Stack',
+                                                    tiled: 'Tiled'
+                                                },
+                                                type: ['line', 'bar', 'stack', 'tiled']
+                                            },
+                                            restore: {
+                                                show: true,
+                                                title: "Yenile"
+                                            },
+                                            saveAsImage: {
+                                                show: true,
+                                                title: "Resim Kaydet"
+                                            }
+                                        }
+                                    },
+                                    calculable: true,
+                                    dataZoom: [{
+                                        show: true,
+                                        realtime: true,
+                                        start: 0,
+                                        end: 100,
+                                        dataBackgroundColor: '#30aae1',
+                                        fillerColor: 'rgba(197,197,197,0.3)',
+                                        handleColor: '#868686'
+                                    },
+                                    {
+                                        type: 'inside',
+                                        realtime: true,
+                                        start: 0,
+                                        end: 100
+                                        }],
+                                    xAxis: [{
+                                        type: 'category',
+                                        boundaryGap: false,
+                                        data: listDateFiltered
+                                    }],
+                                    yAxis: [{
+                                        type: 'value',
+                                        yAxisIndex: 2,
+                                        axisLabel: {
+                                            formatter: '{value} '
+                                        }
+                                    }],
+                                    series: seriesList
+
+                                });
+                                function legendHandler(evt) {
+                                    var state = evt.dataItem.hidden;
+                                    if (evt.dataItem.id == "all") {
+                                        for (var i1 in evt.chart.graphs) {
+                                            if (evt.chart.graphs[i1].id != "all") {
+                                                evt.chart[evt.dataItem.hidden ? "hideGraph" : "showGraph"](evt.chart.graphs[i1]);
+                                            }
+                                        }
+                                    }
+                                }
+                                $("#LoadingImage").hide();
+                            }
+                        });
+                    }
+                }
+            //Inverter Grafiği bit.
+
+            //HeatMap Bas.
+            $('#btnListHeatMap').click(function () {
+                GetInverterHeatMap();
+                });
+
+            $('#profile-tabHeatMap').click(function () {
+                GetInverterHeatMap();
+            });
+
+            function GetInverterHeatMap() {
+            $("#LoadingImageHeatMap").show();
+                var selectDate = $('input[name="beginDaily"]').val();
+
+            if (!selectDate || selectDate.length == 0) {
+                selectDate = new Date().toISOString();
+            }
+            $.ajax({
+                url: "/InverterPages/HourlyColorReport/",
+                type: "POST",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                data: "{'slctDate':'" + selectDate + "','stationId':'" +@Model+ "'}",
+                success: function (data) {
+                    debugger;
+                    var _noData = $('#hdn_noData').val();
+                    var _power = $('#hdn_power').val();
+                    $("#LoadingImageHeatMap").hide();
+                    var json = [];
+                    var Nodata;
+                    if (data.ErrorMessage == "") {
+                         json = {
+                            "Data": []
+                        };
+                         Nodata = "";
+                        var listTime = [];
+                        for (var i = 0; i < data.invModel.series.length; i++) {
+                            var say = 0;
+                            for (var j = 0; j < data.invModel.series[i].values.length; j++) {
+                                if (i == 0) {
+                                    listTime.push(data.invModel.Hours[j]);
+                                }
+                                json.Data.push({ 'x': say, 'y': i + 1, 'value': data.invModel.series[i].values[j] });
+                                say++;
+                            }
+                            say = 0;
+                        }
+                    }
+                    else {
+                        json.Data = [];
+                        Nodata = _noData;
+                    }
+
+                    Highcharts.chart('container', {
+                        chart: {
+                            type: 'heatmap',
+                            //height: (9 / 16 * 100) + '%', // 16:9 ratio
+                            height:600,
+                            marginTop: 0,
+                            marginBottom: 120,
+                            plotBorderWidth: 1,
+                            zoomType: 'xy',
+                            resetZoomButton: {
+                                position: {
+                                    x: 0,
+                                    y: 20
+                                }
+                            }
+                        },
+                        title: {
+                            text: Nodata
+                        },
+                        credits: {
+                            enabled: false
+                        },
+                        xAxis: {
+                            type: 'category',
+                            tickPixelInterval: 200,
+                            categories: listTime,
+                            labels: {
+                                formatter: function () {
+                                    return this.value;
+                                }
+                            }
+                        },
+                        yAxis: {
+                            type: 'category',
+                            title: {
+                                text: null
+                            },
+                            labels: {
+                                formatter: function (a) {
+                                    return "Inverter "+a.value;
+                                }
+                            }
+                        },
+                        colorAxis: {
+                            stops: [
+                                [0, '#af272f'],
+                                [0.25, '#dd5f03'],
+                                [0.5, '#ffb549'],
+                                [0.75, '#f9c335'],
+                                [1, '#f5e1a4']
+                            ],
+                            min: 0,
+                            max: 1,
+                            startOnTick: false,
+                            endOnTick: false,
+                            labels: {
+                                format: '{value}'
+                            }
+                        },
+                        legend: {
+                            title: {
+                                text: _power + ' AC (normalized) [kW/kWp]'
+                            },
+                            align: 'center',
+                            verticalAlign: 'bottom',
+                            layout: 'horizontal',
+                            x: 0,
+                            y: 0,
+                            symbolWidth: 300
+                        },
+                        tooltip: {
+                            formatter: function () {
+                                return "<b>Inverter" + [this.point.y] +"<br/>" + this.series.xAxis.categories[this.point.x] + "</b>" +
+                                    "<b> " + this.point.value + ' kW/kWp</b>';
+                            }
+                        },
+                        navigation: {
+                            backgroundColor: {
+                                linearGradient: [0, 0, 0, 0]
+                            },
+                            buttonOptions: {
+                                theme: {
+                                    fill: '#f7f7f700'
+                                },
+                                symbolStroke: 'black',
+                                symbolSize: 13
+                            }
+                        },
+                        series: [{
+                            borderWidth: 0,
+                            turboThreshold: 0,
+                            data: json.Data
+                        }]
+                    });
+
+                    }
+        });
+        }
+                //HeatMap Bit.
+
+            //HeatMapProduction Bas.
+                $('#btnHeatMapProduction').click(function () {
+                GetInverterHeatMapProduction();
+                });
+
+            $('#profile-tabHeatMapProduction').click(function () {
+                GetInverterHeatMapProduction();
+                });
+
+                
+            function GetInverterHeatMapProduction() {
+
+            $("#LoadingImageHeatMapProduction").show();
+                debugger;
+                var pickDate = $('#pickerMonthYear').val();
+                var _year = "";
+                var _month = "";
+                if (!pickDate || pickDate.length == 0) {
+                    var dt = new Date($.now());
+                    _year = dt.getFullYear();
+                    _month = dt.getMonth() + 1;
+                    pickDate = _year + "-" + _month;
+                    $('[name=pickerMonthYear]').val(pickDate);
+                }
+
+            $.ajax({
+                url: "/InverterPages/HeatMapInvProductionData/",
+                type: "POST",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                data: "{'slctDate':'" + pickDate + "','stationId':'" +@Model+ "'}",
+                success: function (data) {
+                    debugger;
+                    var _noData = $('#hdn_noData').val();
+                    var _power = $('#hdn_power').val();
+                    $("#LoadingImageHeatMapProduction").hide();
+
+                    var MainList = [];
+                    var index = 0;
+                    var invNameList = [];
+                    var DayList = [];
+                    var Nodata;
+                    if (data.ErrorMessage == "") {
+                        Nodata = "";
+                        $.each(data.invModel.listInvName, function (i, item) {
+                            invNameList.push(item);
+                        });
+
+                        $.each(data.invModel.listDay, function (i, item) {
+                            DayList.push(item);
+                        });
+
+                        for (var i = 0; i < data.invModel.listDay.length; i++) {
+                            for (var j = 0; j < data.invModel.listInvName.length; j++) {
+                                var subList = [];
+                                subList.push(i);
+                                subList.push(j);
+                                subList.push(data.invModel.listInvValue[index].energy);
+                                MainList.push(subList);
+                                index++;
+                            }
+                        }
+                    }
+                    else {
+
+                        Nodata = _noData;
+                    }
+
+
+                    Highcharts.chart('containerHeatMapProduction', {
+                        chart: {
+                            type: 'heatmap',
+                            marginTop: 40,
+                            marginBottom: 70,
+                            plotBorderWidth: 1,
+                            height: 500
+                            //height: (9 / 16 * 100) + '%', // 16:9 ratio
+                        },
+
+                        title: {
+                            text: Nodata
+                        },
+
+                        xAxis: {
+                            categories: DayList,
+                            labels: {
+                                style: {
+                                    color: '#0062b4',
+                                    fontSize: '7pt',
+                                    fontWeight: 'bold'
+                                }
+                            }
+                        },
+
+                        yAxis: {
+                            categories: invNameList,
+                            title: null,
+                            labels: {
+                                style: {
+                                    color: '#0062b4',
+                                    fontSize: '7pt',
+                                    fontWeight: 'bold'
+                                }
+                            }
+                        },
+
+                        //colorAxis: {
+                        //    min: 0,
+                        //    minColor: '#FFFFFF',
+                        //    maxColor: Highcharts.getOptions().colors[0],
+                        //    labels: {
+                        //        format: '{value} kWh'
+                        //    }
+                        //},
+
+                        colorAxis: {
+                            stops: [
+                                [0, '#f5e1a4'],
+                                [0.25, '#f9c335'],                              
+                                [0.5, '#ffb549'],
+                                [0.75, '#dd5f03'],
+                                [1, '#af272f']                         
+                            ],
+                            min: 0,
+                            minColor: '#FFFFFF',
+                            startOnTick: false,
+                            endOnTick: false,
+                            labels: {
+                                format: '{value} kWh'
+                            }
+                        },
+                        //legend: {
+                        //    align: 'right',
+                        //    layout: 'vertical',
+                        //    margin: 0,
+                        //    verticalAlign: 'top',
+                        //    x: -10,
+                        //    y: 75,
+                        //    symbolHeight: 280
+                        //},
+                        legend: {
+                            align: 'center',
+                            verticalAlign: 'bottom',
+                            layout: 'horizontal',
+                            x: 100,
+                            y: 10,
+                            symbolWidth: 600
+                        },
+                        tooltip: {
+                            formatter: function () {
+                                var _value = "";
+                                if (this.point.value == undefined) {
+                                    _value = "-";
+                                }
+                                else {
+                                    _value = this.point.value;
+                                }
+
+                                return "<b>" + this.series.yAxis.categories[this.point.y] + "</b><br/><table>" +
+                                    "<tr><td></td></tr><tr><td style='color: { series.color }'>" + this.series.xAxis.categories[this.point.x].toString().substr(0, 2) + "." + this.series.xAxis.categories[this.point.x].toString().substr(2, 2) + " </td>" +
+                                    "<td style='text-align:right'><b>" + _value + " kWh</b></td></tr></table>";
+                            }
+                        },
+                        //plotOptions: {
+                        //    series: {
+                        //        dataLabels: {
+                        //            enabled: false,
+                        //            format: '{y} kW'
+                        //        }
+                        //    }
+                        //},
+                        series: [{
+                            name: '',
+                            borderWidth: 1,
+                            data: MainList,
+                            dataLabels: {
+                                enabled: true,
+                                style: {
+                                    fontSize: '8px',
+                                    fontWeight: 'none',
+                                    textOutline:'none'
+                                },
+                                color: '#000'
+                            }
+                        }]
+
+                    });
+
+                    }
+        });
+        }
+                //HeatMapProduction Bit.
+                //Datetime bas.
+                $('#single_cal4').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                    });
+
+                $('#single_cal5').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+                $('#single_cal_heatMap').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+                $('#single_cal3').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                    });
+                $('#single_cal_heatMapProduction').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+                //Datetime bit.
+            })
+
+        </script>
+        <script>
+                function Annex3(a) {
+                    var state;
+                    if (a == 0) {
+                        state = "Initializing (configuring power control)";
+                    }
+                    else if (a == 1) {
+                        state = "Waiting sun or grid";
+                    }
+                    else if (a == 2) {
+                        state = "Connecting to grid (checking grid)";
+                    }
+                    else if (a == 3) {
+                        state = "Initializing (system startup)";
+                    }
+                    else if (a == 4) {
+                        state = "Connecting to grid (switching-on DC/DC)";
+                    }
+                    else if (a == 5) {
+                        state = "Connecting to grid (switching-on DC/AC)";
+                    }
+                    else if (a == 6) {
+                        state = "Connected to Grid";
+                    }
+                    else if (a == 7) {
+                        state = "Post-alarm actions (recovery)";
+                    }
+                    else if (a == 8) {
+                        state = "Post-alarm actions (pause)";
+                    }
+                    else if (a == 9) {
+                        state = "Ground fault";
+                    }
+                    else if (a == 10) {
+                        state = "Over-temperature fault";
+                    }
+                    else if (a == 12) {
+                        state = "Connecting to grid (grid protection interface self-test)";
+                    }
+                    else if (a == 13) {
+                        state = "Grid protection interface self-test fault";
+                    }
+                    else if (a == 14) {
+                        state = "Connecting to grid (safety checks)";
+                    }
+                    else if (a == 15) {
+                        state = "Leakage fault";
+                    }
+                    else if (a == 24) {
+                        state = "Under-temperature fault";
+                    }
+                    else if (a == 125) {
+                        state = "Interlock (remote off)";
+                    }
+                    else if (a == 26) {
+                        state = "Interlock (Emergency stop)";
+                    }
+                    else if (a == 27) {
+                        state = "Executing auto-test";
+                    }
+                    else if (a == 29) {
+                        state = "Grounding-kit fault";
+                    }
+                    else if (a == 30) {
+                        state = "SW bundle not valid fault";
+                    }
+                    else if (a == 41) {
+                        state = "Temperature sensors fault";
+                    }
+                    else if (a == 42) {
+                        state = "Grid sequence fault";
+                    }
+                    else if (a == 51) {
+                        state = "Arc fault";
+                    }
+                    else if (a == 53) {
+                        state = "Arc detector self-test fault";
+                    }
+                    else if (a == 116) {
+                        state = "Power stage off-line";
+                    }
+                    else if (a == 118) {
+                        state = "Arc detector wrong configuration fault";
+                    }
+                    else if (a == 119) {
+                        state = "Arc detector self-test";
+                    }
+                    else if (a == 120) {
+                        state = "Configuration fault (bad model)";
+                    }
+                    else if (a == 124) {
+                        state = "Latch with “Reset by hand”";
+                    }
+                    else if (a == 150) {
+                        state = "Power stage communication fault";
+                    }
+                    else if (a == 151) {
+                        state = "Configuration fault (bad global-settings)";
+                    }
+                    else if (a == 200) {
+                        state = "Programming power stage";
+                    }
+                    else {
+                        state = "Not Found";
+                    }
+
+                    return state;
+                }
+                function Annex4(a) {
+                    var state;
+                    if (a == 0) {
+                        state = "No alarm";
+                    }
+                    else if (a == 1) {
+                        state = "Sun Low";
+                    }
+                    else if (a == 2) {
+                        state = "Input OC";
+                    }
+                    else if (a == 3) {
+                        state = "Input UV";
+                    }
+                    else if (a == 4) {
+                        state = "Input OV";
+                    }
+                    else if (a == 5) {
+                        state = "Sun Low";
+                    }
+                    else if (a == 6) {
+                        state = "No pars (DSP)";
+                    }
+                    else if (a == 7) {
+                        state = "Bulk OV";
+                    }
+                    else if (a == 8) {
+                        state = "Internal error";
+                    }
+                    else if (a == 9) {
+                        state = "Output OC";
+                    }
+                    else if (a == 10) {
+                        state = "IGBT sat.";
+                    }
+                    else if (a == 11) {
+                        state = "Bulk UV";
+                    }
+                    else if (a == 12) {
+                        state = "Internal error";
+                    }
+                    else if (a == 14) {
+                        state = "Bulk UV";
+                    }
+                    else if (a == 15) {
+                        state = "Ramp Fault";
+                    }
+                    else if (a == 16) {
+                        state = "Internal error";
+                    }
+                    else if (a == 19) {
+                        state = "Bulk UV";
+                    }
+                    else if (a == 20) {
+                        state = "Internal error";
+                    }
+                    else if (a == 21) {
+                        state = "Grid fault";
+                    }
+                    else if (a == 22) {
+                        state = "Bulk UV";
+                    }
+                    else if (a == 23) {
+                        state = "Ramp Fault";
+                    }
+                    else if (a == 24) {
+                        state = "Internal error";
+                    }
+                    else if (a == 26) {
+                        state = "Internal error";
+                    }
+                    else if (a == 27) {
+                        state = "Internal error";
+                    }
+                    else if (a == 28) {
+                        state = "Internal error";
+                    }
+                    else if (a == 29) {
+                        state = "Internal error";
+                    }
+                    else if (a == 30) {
+                        state = "Internal error";
+                    }
+                    else if (a == 31) {
+                        state = "DC injection";
+                    }
+                    else if (a == 32) {
+                        state = "Grid OV";
+                    }
+                    else if (a == 33) {
+                        state = "Grid UV";
+                    }
+                    else if (a == 34) {
+                        state = "Grid OF";
+                    }
+                    else if (a == 35) {
+                        state = "Grid UF";
+                    }
+                    else if (a == 38) {
+                        state = "Riso low";
+                    }
+                    else if (a == 42) {
+                        state = "Mid bulk OV";
+                    }
+                    else if (a == 44) {
+                        state = "Internal error";
+                    }
+                    else if (a == 45) {
+                        state = "Internal error";
+                    }
+                    else if (a == 47) {
+                        state = "Fan fault";
+                    }
+                    else if (a == 48) {
+                        state = "Under temperature";
+                    }
+                    else if (a == 49) {
+                        state = "IGBT not ready";
+                    }
+                    else if (a == 50) {
+                        state = "Remote off";
+                    }
+                    else if (a == 51) {
+                        state = "Internal error";
+                    }
+                    else if (a == 52) {
+                        state = "Battery low";
+                    }
+                    else if (a == 53) {
+                        state = "Clock fault";
+                    }
+                    else if (a == 54) {
+                        state = "Riso low";
+                    }
+                    else if (a == 62) {
+                        state = "Island. Detected";
+                    }
+                    else if (a == 64) {
+                        state = "Jbox fault";
+                    }
+                    else if (a == 70) {
+                        state = "DC SPD tripped";
+                    }
+                    else if (a == 71) {
+                        state = "AC SPD tripped";
+                    }
+                    else if (a == 75) {
+                        state = "Q-modeChange";
+                    }
+                    else if (a == 76) {
+                        state = "Date/time mod.";
+                    }
+                    else if (a == 77) {
+                        state = "Energy data rst";
+                    }
+                    else if (a == 78) {
+                        state = "Riso Test Fail";
+                    }
+                    else if (a == 79) {
+                        state = "AFDD activated";
+                    }
+                    else if (a == 82) {
+                        state = "AFDD fault";
+                    }
+                    else if (a == 84) {
+                        state = "AFDD user reset";
+                    }
+                    else if (a == 85) {
+                        state = "AFDD wrong conf.";
+                    }
+                    else if (a == 89) {
+                        state = "Latch-Manual rst";
+                    }
+                    else if (a == 90) {
+                        state = "Periodic Grid Off";
+                    }
+                    else if (a == 91) {
+                        state = "Internal error";
+                    }
+                    else if (a == 95) {
+                        state = "Grid conn. fault";
+                    }
+                    else if (a == 96) {
+                        state = "Latch-Manual ent";
+                    }
+                    else if (a == 102) {
+                        state = "T Sensor Warning";
+                    }
+                    else if (a == 103) {
+                        state = "T Sensor Fault";
+                    }
+                    else if (a == 144) {
+                        state = "HW Module Swap";
+                    }
+                    else if (a == 150) {
+                        state = "Update Incomplete";
+                    }
+                    else if (a == 151) {
+                        state = "Global-Settings Event";
+                    }
+                    else if (a == 152) {
+                        state = "Wrong Sequence";
+                    }
+                    else if (a == 156) {
+                        state = "BackFeed OC";
+                    }
+                    else if (a == 160) {
+                        state = "ID Data Was Set";
+                    }
+                    else {
+                        state = "Not Found";
+                    }
+
+                    return state;
+                }
+                function Annex5(a) {
+                    var state;
+                    if (a == 1) {
+                        state = "Ramp";
+                    }
+                    else if (a == 2) {
+                        state = "MPPT";
+                    }
+                    else if (a == 4) {
+                        state = "Input over-current";
+                    }
+                    else if (a == 5) {
+                        state = "Input under-voltage";
+                    }
+                    else if (a == 6) {
+                        state = "Input over-voltage";
+                    }
+                    else if (a == 7) {
+                        state = "Low input";
+                    }
+                    else if (a == 8) {
+                        state = "No configuration";
+                    }
+                    else if (a == 9) {
+                        state = "Bulk under-voltage";
+                    }
+                    else if (a == 10) {
+                        state = "Communication error";
+                    }
+                    else if (a == 11) {
+                        state = "Ramp fault";
+                    }
+                    else if (a == 12) {
+                        state = "Pending redundancy fault";
+                    }
+                    else if (a == 13) {
+                        state = "Wrong input mode";
+                    }
+                    else if (a == 14) {
+                        state = "Ground fault";
+                    }
+                    else if (a == 15) {
+                        state = "Pending redundancy fault";
+                    }
+                    else if (a == 16) {
+                        state = "IGBT error";
+                    }
+                    else if (a == 17) {
+                        state = "Leakage sensor self-test fault";
+                    }
+                    else if (a == 18) {
+                        state = "Grid fault";
+                    }
+                    else if (a == 19) {
+                        state = "Communication error";
+                    }
+                    else if (a == 20) {
+                        state = "Charging bulk";
+                    }
+                    else if (a == 21) {
+                        state = "IGBT not ready";
+                    }
+                    else if (a == 255) {
+                        state = "Not programmed";
+                    }
+                    else {
+                        state = "Not Found";
+                    }
+
+                    return state;
+                }
+                function Annex6(a) {
+                    var state;
+                    if (a == 0) {
+                        state = "Initializing";
+                    }
+                    else if (a == 1) {
+                        state = "Connecting to grid";
+                    }
+                    else if (a == 2) {
+                        state = "Connected to grid";
+                    }
+                    else if (a == 3) {
+                        state = "Bulk over-voltage";
+                    }
+                    else if (a == 4) {
+                        state = "Output over-current";
+                    }
+                    else if (a == 5) {
+                        state = "IGBT fault";
+                    }
+                    else if (a == 6) {
+                        state = "Bulk under-voltage";
+                    }
+                    else if (a == 7) {
+                        state = "Leakage sensor degaussing error";
+                    }
+                    else if (a == 8) {
+                        state = "No configuration";
+                    }
+                    else if (a == 9) {
+                        state = "Low bulk voltage";
+                    }
+                    else if (a == 10) {
+                        state = "Grid fault";
+                    }
+                    else if (a == 11) {
+                        state = "Communication error";
+                    }
+                    else if (a == 12) {
+                        state = "Leakage sensor degaussing error";
+                    }
+                    else if (a == 13) {
+                        state = "Connecting to grid";
+                    }
+                    else if (a == 14) {
+                        state = "Bulk capacitor fault";
+                    }
+                    else if (a == 15) {
+                        state = "Leakage fault";
+                    }
+                    else if (a == 16) {
+                        state = "Pending redundancy fault";
+                    }
+                    else if (a == 17) {
+                        state = "Leakage sensor self-test fault";
+                    }
+                    else if (a == 18) {
+                        state = "Grid protection self-test";
+                    }
+                    else if (a == 19) {
+                        state = "Leakage sensor self-test";
+                    }
+                    else if (a == 20) {
+                        state = "Grid protection self-test";
+                    }
+                    else if (a == 21) {
+                        state = "Grid protection self-test";
+                    }
+                    else if (a == 22) {
+                        state = "Grid protection self-test timeout";
+                    }
+                    else if (a == 23) {
+                        state = "Grid protection self-test fault";
+                    }
+                    else if (a == 24) {
+                        state = "Grid protection self-test fault";
+                    }
+                    else if (a == 25) {
+                        state = "Auto-test";
+                    }
+                    else if (a == 30) {
+                        state = "Grid voltage read error";
+                    }
+                    else if (a == 31) {
+                        state = "Grid current read error";
+                    }
+                    else if (a == 33) {
+                        state = "IGBT not ready";
+                    }
+                    else if (a == 35) {
+                        state = "Communication error";
+                    }
+                    else if (a == 36) {
+                        state = "Mid-bulk over-voltage";
+                    }
+                    else if (a == 255) {
+                        state = "Not programmed";
+                    }
+                    else {
+                        state = "Not Found";
+                    }
+
+                    return state;
+                }
+                function Annex7(a) {
+                    var state;
+                    if (a == 0) {
+                        state = "Power curtailment from user setpoint";
+                    }
+                    else if (a == 1) {
+                        state = "Grid over-frequency derating";
+                    }
+                    else if (a == 2) {
+                        state = "Average grid over-voltage derating";
+                    }
+                    else if (a == 3) {
+                        state = "Anti-islanding derating";
+                    }
+                    else if (a == 4) {
+                        state = "Nameplate grid current limitation";
+                    }
+                    else if (a == 5) {
+                        state = "Over-temperature derating";
+                    }
+                    else if (a == 6) {
+                        state = "DC over-voltage derating";
+                    }
+                    else if (a == 7) {
+                        state = "Energy storage system zero-Power injection";
+                    }
+                    else {
+                        state = "Not Found";
+                    }
+
+                    return state;
+                }
+                function GetInverterName() {
+                    //Inverter State dropbox bas.
+                    $.ajax({
+                        url: "/InverterPages/GetInverterCount/",
+                        type: "Post",
+                        dataType: "json",
+                        contentType: "application/json; charset=utf-8",
+                        data: "{'stationId':'" + @Model + "'}",
+                        success: function (data) {
+                            $('#selectedInverter').empty();
+                            $.each(data, function (i, item) {
+                                $('#selectedInverter').append("<option selected value=" + item.ID + ">" + item.NAME + "</option>");
+                            })
+                            GetInverterState();
+                        }
+
+                    });
+                    //Inverter State dropbox bit.
+                }
+                function GetInverterState() {
+
+                       // GetInverterName();
+
+                    $("#LoadingImage2").show();
+
+                    var selectedInv = $('#selectedInverter').val();
+
+                    $.ajax({
+                        url: "/InverterPages/GetInvState/",
+                        type: "Post",
+                        dataType: "json",
+                        contentType: "application/json; charset=utf-8",
+                        data: "{'invId':'" + selectedInv + "'}",
+                        success: function (data) {
+                            $('#btnState').button('reset');
+                            $("#StateTarih1").html(ConvertTicksToTime(data._tarih) + " / " + ConvertTicksToDate(data._tarih));
+                            $("#StateTarih2").html(ConvertTicksToTime(data._tarih) + " / " + ConvertTicksToDate(data._tarih));
+                            $("#StateTarih3").html(ConvertTicksToTime(data._tarih) + " / " + ConvertTicksToDate(data._tarih));
+                            $("#StateTarih4").html(ConvertTicksToTime(data._tarih) + " / " + ConvertTicksToDate(data._tarih));
+                            $("#StateTarih5").html(ConvertTicksToTime(data._tarih) + " / " + ConvertTicksToDate(data._tarih));
+
+                            $(".StateTarih5").html(ConvertTicksToTime(data._tarih) + " / " + ConvertTicksToDate(data._tarih));
+
+                            $("#BaslikGlobalState").html("Global State:");
+                            $("#ValueGlobalState").html(Annex3(data._globalState));
+                            $("#BaslikAlarmState").html("Alarm State:");
+                            $("#ValueAlarmState").html(Annex4(data._alarmState));
+                            $("#BaslikDcDcConverterState").html("DC/DC Converter State:");
+                            $("#ValueDcDcConverterState").html(Annex5(data._DcDcConverterState));
+                            $("#BaslikDcAcConverterState").html("DC/AC Converter State:");
+                            $("#ValueDcAcConverterState").html(Annex6(data._DcAcConverterState));
+                            $("#BaslikDeratingState").html("Derating State:");
+                            $("#ValueDeratingState").html(Annex7(data._deratingState));
+
+                            $("#BaslikHEARTBEAT").html("Heartbeat:");
+                            //$("#BaslikINVERTER_MAIN_STATUS").html("İnverter Main:");
+                            $("#BaslikREACTIVE_POWER").html("Reactive Power:");
+                            $("#BaslikGRID_VOLTAGE_VRMS").html("Grid Voltage:");
+                            $("#BaslikGRID_FREQUENCY").html("Grid Frequency:");
+                            $("#BaslikPOWER_FACTOR").html("Power Factor:");
+                            $("#BaslikCODE_OF_THE_ACTIVE_FAULT").html("Code of Active Fault:");
+                            $("#BaslikGRID_CURRENT").html("Grid Current:");
+                            $("#BaslikDC_BUS_VOLTAGE").html("Dc Bus Voltage:");
+                            $("#BaslikGROUNDING_CURRENT").html("Grounding Current:");
+                            $("#BaslikSOLATION_RESISTANCE").html("Solation Resistance:");
+                            $("#BaslikAMBIENT_TEMPERATURE").html("Ambient Temperature:");
+                            $("#BaslikHIGHEST_IGBT_TEMPERATURE_PU1").html("Highest Igt Temp PU1:");
+                            $("#BaslikHIGHEST_IGBT_TEMPERATURE_PU2").html("Highest Igt Temp PU2:");
+                            $("#BaslikHIGHEST_IGBT_TEMPERATURE_PU3").html("Highest Igt Temp PU3:");
+                            $("#BaslikHIGHEST_IGBT_TEMPERATURE_PU4").html("Highest Igt Temp PU4:");
+                            $("#BaslikCONTROL_SECTION_TEMPERATURE").html("Control Section Temp:");
+                            $("#BaslikDAILY_KVAH_SUPPLIED").html("Daily Kvah Supplied:");
+                            $("#BaslikTOTAL_KVAH_SUPPLIED").html("Totola Kvah Supplied:");
+                            $("#BaslikIGBT_1_T1").html("IGBT 1 T1:");
+                            $("#BaslikIGBT_1_T2").html("IGBT 1 T2:");
+                            $("#BaslikIGBT_1_T3").html("IGBT 1 T3:");
+                            $("#BaslikIGBT_2_T1").html("IGBT 2 T1:");
+                            $("#BaslikIGBT_2_T2").html("IGBT 2 T2:");
+                            $("#BaslikIGBT_2_T3").html("IGBT 2 T3:");
+                            $("#BaslikIGBT_3_T1").html("IGBT 3 T1:");
+                            $("#BaslikIGBT_3_T2").html("IGBT 3 T2:");
+                            $("#BaslikIGBT_3_T3").html("IGBT 3 T3:");
+                            $("#BaslikIGBT_4_T1").html("IGBT 4 T1:");
+                            $("#BaslikIGBT_4_T2").html("IGBT 4 T2:");
+                            $("#BaslikIGBT_4_T3").html("IGBT 4 T3:");
+
+                            $("#ValueHEARTBEAT").html(data._HEARTBEAT);
+                            //$("#ValueINVERTER_MAIN_STATUS").html(data._INVERTER_MAIN_STATUS);
+                            $("#ValueREACTIVE_POWER").html(data._REACTIVE_POWER + " kVAR");
+                            $("#ValueGRID_VOLTAGE_VRMS").html(data._GRID_VOLTAGE_VRMS + " V");
+                            $("#ValueGRID_FREQUENCY").html(data._GRID_FREQUENCY + " Hz");
+                            $("#ValuePOWER_FACTOR").html(data._POWER_FACTOR);
+                            $("#ValueCODE_OF_THE_ACTIVE_FAULT").html(data._CODE_OF_THE_ACTIVE_FAULT);
+                            $("#ValueGRID_CURRENT").html(data._GRID_CURRENT + " A");
+                            $("#ValueDC_BUS_VOLTAGE").html(data._DC_BUS_VOLTAGE + " V");
+                            $("#ValueGROUNDING_CURRENT").html(data._GROUNDING_CURRENT + " mA");
+                            $("#ValueSOLATION_RESISTANCE").html(data._SOLATION_RESISTANCE + " kOhm");
+                            $("#ValueAMBIENT_TEMPERATURE").html(data._AMBIENT_TEMPERATURE + " °C");
+                            $("#ValueHIGHEST_IGBT_TEMPERATURE_PU1").html(data._HIGHEST_IGBT_TEMPERATURE_PU1 + " °C");
+                            $("#ValueHIGHEST_IGBT_TEMPERATURE_PU2").html(data._HIGHEST_IGBT_TEMPERATURE_PU2 + " °C");
+                            $("#ValueHIGHEST_IGBT_TEMPERATURE_PU3").html(data._HIGHEST_IGBT_TEMPERATURE_PU3 + " °C");
+                            $("#ValueHIGHEST_IGBT_TEMPERATURE_PU4").html(data._HIGHEST_IGBT_TEMPERATURE_PU4 + " °C");
+                            $("#ValueCONTROL_SECTION_TEMPERATURE").html(data._CONTROL_SECTION_TEMPERATURE + " °C");
+                            $("#ValueDAILY_KVAH_SUPPLIED").html(data._DAILY_KVAH_SUPPLIED + " kVAh");
+                            $("#ValueTOTAL_KVAH_SUPPLIED").html(data._TOTAL_KVAH_SUPPLIED + " kVAh");
+                            $("#ValueIGBT_1_T1").html(data._IGBT_1_T1 + " °C");
+                            $("#ValueIGBT_1_T2").html(data._IGBT_1_T2 + " °C");
+                            $("#ValueIGBT_1_T3").html(data._IGBT_1_T3 + " °C");
+                            $("#ValueIGBT_2_T1").html(data._IGBT_2_T1 + " °C");
+                            $("#ValueIGBT_2_T2").html(data._IGBT_2_T2 + " °C");
+                            $("#ValueIGBT_2_T3").html(data._IGBT_2_T3 + " °C");
+                            $("#ValueIGBT_3_T1").html(data._IGBT_3_T1 + " °C");
+                            $("#ValueIGBT_3_T2").html(data._IGBT_3_T2 + " °C");
+                            $("#ValueIGBT_3_T3").html(data._IGBT_3_T3 + " °C");
+                            $("#ValueIGBT_4_T1").html(data._IGBT_4_T1 + " °C");
+                            $("#ValueIGBT_4_T2").html(data._IGBT_4_T2 + " °C");
+                            $("#ValueIGBT_4_T3").html(data._IGBT_4_T3 + " °C");
+
+                            $("#LoadingImage2").hide();
+                        }
+
+                    });
+                }
+
+                $(document).ready(function () {
+
+                    //Inverter State bas.
+                    $('#btnState').click(function () {
+                        $(this).button('loading');
+                        GetInverterState();
+                    });
+                    $('#profile-tabC').click(function () {
+                        setTimeout(function () {
+                            GetInverterName();
+                        }, 250);
+
+                    });
+                //Inverter Status Bit.
+                $('#btnList2').button('loading');
+                InverterBar();
+                $('#btnState').button('loading');
+                $('#btnList2').click(function () {
+                    $(this).button('loading');
+                    InverterBar();
+                });
+                function InverterBar() {
+                    var beginDate2 = $('input[name="begin2"]').val();
+
+                    if (!beginDate2 || beginDate2.length == 0) {
+                        beginDate2 = new Date().toISOString();
+                    }
+                    $("#LoadingImage3").show();
+                    var totalInv = 0;
+                    $.ajax({
+                        url: "/InverterPages/GetInvProduction",
+                        type: "POST",
+                        dataType: "json",
+                        data: { beginDate: beginDate2,stationId: @Model},
+                        success: function (data) {
+                            debugger;
+                            var _production = $('#hdn_production').val();
+                            var _specificYield = $('#hdn_specificYield').val();
+                            $('#btnList2').button('reset');
+                            $("#InvTblDetail").empty();
+                            $.each(data, function (i, item) {
+                                totalInv += item._acPower;
+                                $("#InvTblDetail").append("<tr><td>" + ConvertTicksToDate(item.date) + " / " + ConvertTicksToTime(item.date) + "</td><td>" + (item.inverter_Name) + "</td><td>" + (item.acPower).toFixed(1).replace('.', ',') + " W" + "</td><td>" + (item.dcPower).toFixed(1).replace('.', ',') + " W" + "</td><td>" + (item.dcVoltage).toFixed(1).replace('.', ',') + " V" + "</td><td>" + (item.dailyProduction).toFixed(2).replace('.', ',') + " kWh" + "</td><td>" + (item.specificYield).toFixed(2).replace('.', ',') + " kWh/kWp" + "</td><td>" + (item.totaPanelPower).toFixed(2).replace('.', ',') + " kWp" + "</td></tr>");
+                            });
+
+                            var listA = [];
+                            var listB = [];
+                            var listC = [];
+                            var listInv = [];
+                            var invNum = 1;
+                            for (var i = 0; i < data.length; i++) {
+                                listA.push(data[i].inverter_Name);
+                                listB.push(data[i].dailyProduction);
+                                listC.push(data[i].specificYield);
+                                listInv.push({ device: "" + "Inverter " + invNum + "", geekbench: data[i]._dailyProduction, sorned: data[i]._specificYield*1000000 });
+                                invNum++;
+                            }
+                            var echartBar = echarts.init(document.getElementById('mainb'), theme);
+
+                            echartBar.setOption({
+                                title: {
+                                },
+
+                                tooltip: {
+                                    trigger: 'axis',
+                                    axisPointer: {
+                                        animation: true
+                                    },
+                                        formatter: function (params) {
+                                            let ItemsArray = ['kWh', 'kWh/kWp', 'MWh'];
+                                        var tooltipText = "";
+                                            var _unit;
+                                            if (params.length>0) {
+                                                tooltipText += params[0].name;
+                                                for (var i = 0; i < params.length; i++) {
+                                                    _unit = ItemsArray[params[i].seriesIndex];
+                                                    tooltipText += "<br/>" + '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background-color:' + params[i].color + '"></span>' + params[i].seriesName + " : " + NumberConvert2(params[i].value) + " " + _unit;
+                                                }
+                                            }
+                                        return tooltipText;
+                                    }
+                                },
+                                legend: {
+                                    data: [_production, _specificYield]
+                                },
+                                toolbox: {
+                                    show: false
+                                },
+                                calculable: false,
+                                xAxis: [{
+                                    type: 'category',
+                                    data: listA,
+                                    axisLabel: {
+                                        show: true,
+                                        interval: 0,
+                                        rotate: 30,
+                                        clickable: true,
+                                        formatter: null,
+                                        textStyle: {
+                                        fontSize: 11,
+                                        fontStyle: 'normal',
+                                        fontWeight: 'normal',
+                                        },
+                                        }
+                                }],
+                                yAxis: [{
+                                    type: 'value',
+                                    name: 'Production',
+                                    axisLabel: {
+                                        formatter: '{value} kWh'
+                                    },
+                                },
+                                    {
+                                    type: 'value',
+                                    name: 'Specific Yield',
+                                    yAxisIndex: 1,
+                                    axisLabel: {
+                                        formatter: '{value} kWh/kWp'
+                                    }
+                                }],
+                                series: [{
+                                    name: _production,
+                                    type: 'bar',
+                                    yAxisIndex: 0,
+                                    data: listB,
+                                    markPoint: {
+                                        label: {
+                                            normal: {
+                                                textStyle: {
+                                                    color: '#000',
+                                                    fontWeight: 'bold',
+                                                    fontSize: 10
+                                                }
+                                            }
+                                        },
+                                        data: [{
+                                            type: 'max',
+                                            name: 'MAX'
+                                        }, {
+                                            type: 'min',
+                                            name: 'MIN'
+                                        }]
+
+                                    },
+                                    markLine: {
+                                        data: [{
+                                            type: 'average',
+                                            name: 'Average'
+                                        }]
+                                    }
+                                }, {
+                                        name: _specificYield,
+                                        type: 'bar',
+                                        yAxisIndex: 1,
+                                    data: listC,
+                                        markPoint: {
+                                            label: {
+                                                normal: {
+                                                    textStyle: {
+                                                        color: '#fff',
+                                                        fontWeight: 'bold',
+                                                        fontSize: 10
+                                                    }
+                                                }
+                                            },
+                                            data: [{
+                                                type: 'max',
+                                                name: 'MAX'
+                                            }, {
+                                                type: 'min',
+                                                name: 'MIN'
+                                            }]
+
+                                        }
+                                }]
+                            });
+                            $("#LoadingImage3").hide();
+                            $('#InvCount').html("Inverter @Resources.Count : " + (invNum-1));
+                        }
+
+                    });
+                }
+
+                $MENU_TOGGLE.on('click', function () {
+                    $(window).resize();
+                });
+
+
+            });
+
+        </script>
+
+    }
+}
+
+
+

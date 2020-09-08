@@ -1,0 +1,380 @@
+﻿@using language
+@{
+	ViewBag.Title = "Table";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+
+	List<Esso.Models.TBL_USER_CHART> _List = (List<Esso.Models.TBL_USER_CHART>)ViewBag._List;
+	string ChartName = (string)ViewBag.ChartName;
+	string UserId = (string)ViewBag.UserId;
+	string ChartId = (string)ViewBag.ChartId;
+	int _ChartId = Convert.ToInt32(ChartId);
+	DateTime date_time = new DateTime();
+	date_time = DateTime.Now.AddDays(-1);
+	date_time = Convert.ToDateTime(date_time.ToShortDateString());
+
+}
+<input type="hidden" value="@_List" id="hdnList" />
+<input type="hidden" value="@UserId" id="hdnUserId" />
+<input type="hidden" value=""
+
+<div class="col-md-12 col-sm-12 col-xs-12">
+	<div class="x_panel">
+		<div class="x_title">
+			<h2>@Resources.Get_Table_Report</h2>
+			<div class="clearfix"></div>
+		</div>
+		<div class="x_content">
+			<div class="col-md-12 col-sm-12 col-xs-12">
+
+				<div class="btn-group">
+					<div class="row">
+						<div class="col-md-3">
+							<h5 class="title" style="font:bold">@Resources.Report_List :</h5>
+							<select id="cmbTag" name="selectedTag" class="form-control">
+								<option value="0">@Resources.Select ... </option>
+								@for (int i = 0; i < _List.Count; i++)
+								{
+									<option value="@_List[i].ID">@_List[i].CHART_NAME</option>
+								}
+							</select>
+						</div>
+						<div class="col-md-3">
+							<h5 class="title" style="font:bold">@Resources.From :</h5>
+							<div class="input-group date">
+								<div class="input-group-addon">
+									<i class="fa fa-calendar"></i>
+								</div>
+								<input type="text" class="form-control pull-right" id="datepicker">
+							</div>
+						</div>
+						<div class="col-md-3">
+							<h5 class="title" style="font:bold">@Resources.To :</h5>
+							<div class="input-group date">
+								<div class="input-group-addon">
+									<i class="fa fa-calendar"></i>
+								</div>
+								<input type="text" class="form-control pull-right" id="datepicker2">
+							</div>
+						</div>
+						<div class="col-md-1">
+							<br /><br />
+							<button class="btn btn-info btn-md" id="btnChart">@Resources.Get_Report</button>
+							<br />
+						</div>
+						<div class="col-md-1">
+							<br /><br />
+							<button id="ExportBtn" style="display:none" type="button" class="btn btn-info btn-md" data-toggle="dropdown">@Resources.Download <span class="caret"></span></button>
+							<ul class="dropdown-menu" role="menu" id="ExportMenu">
+								@*<li id="csvEkk" style="display:none"><a onclick="exportAllEkk('csv');">CSV</a></li>
+									<li id="csvInv" style="display:none"><a onclick="exportAllInv('csv');">CSV</a></li>
+									<li id="xlsEkk" style="display:none"><a onclick="exportAllEkk('xls');">XLS</a></li>
+									<li id="xlsInv" style="display:none"><a onclick="exportAllInv('xls');">XLS</a></li>
+									<li id="pdfInv" style="display:none"><a onclick="demoFromHTML();">PDF</a></li>
+									<li id="pdfEkk" style="display:none"><a onclick="demoFromHTMLEkk();">PDF</a></li>
+									<li id="txtEkk" style="display:none"><a onclick="exportAllEkk('txt');">TXT</a></li>
+									<li id="txtInv" style="display:none"><a onclick="exportAllInv('txt');">TXT</a></li>*@
+								    <li id="csvEkk" style="display:none"><a name="csvEkk">CSV</a></li>
+									<li id="csvInv" style="display:none"><a name="csvInv">CSV</a></li>
+									<li id="xlsEkk" style="display:none"><a name="xlsEkk">XLS</a></li>
+									<li id="xlsInv" style="display:none"><a name="xlsInv">XLS</a></li>
+									<li id="pdfInv" style="display:none"><a name="pdfInv" onclick="demoFromHTML();">PDF</a></li>
+									<li id="pdfEkk" style="display:none"><a name="pdfEkk" onclick="demoFromHTMLEkk();">PDF</a></li>
+									<li id="txtEkk" style="display:none"><a name="txtEkk">TXT</a></li>
+									<li id="txtInv" style="display:none"><a name="txtInv">TXT</a></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+				<div class="" role="tabpanel" data-example-id="togglable-tabs">
+					<ul style="display:none" id="myTab1" class="nav nav-tabs bar_tabs" role="tablist">
+						<li role="presentation" id="tabEKK" class="active">
+							<a href="#tab_content11" id="EkkBtn" role="tab" data-toggle="tab" aria-controls="home" aria-expanded="true">EKK-METEOROLOGY-PRODUCTION</a>
+						</li>
+						<li role="presentation" id="tabINV" class="">
+							<a href="#tab_content55" role="tab" id="InvBtn" data-toggle="tab" aria-controls="home" aria-expanded="true">INVERTER</a>
+						</li>
+					</ul>
+				</div>
+				<div id="TblOzetPage"></div>
+				<div id="TblInvPage"></div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="ChartMessage" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel">Warning</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				@Resources.Please_select_report_name_in_list !
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">@Resources.Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<br /><br />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.4.1/jspdf.debug.js" integrity="sha384-THVO/sM0mFD9h7dfSndI6TS0PgAGavwKvB5hAxRRvc0o9cPLohB0wb/PTA7LdUHs" crossorigin="anonymous"></script>
+<script src="/Scripts/jspdf.debug.js"></script>
+<script src="/Scripts/main.js"></script>
+<script src="/Scripts/tableExport.js"></script>
+<script src="/js/daterangepicker.js"></script>
+<script>
+	$(document).ready(function () {
+		$("#datepicker").daterangepicker(
+			{
+				singleDatePicker: true,
+				showDropdowns: true,
+				locale: {
+					format: 'DD.MM.YYYY'
+				}
+			});
+
+		$("#datepicker2").daterangepicker(
+			{
+				singleDatePicker: true,
+				showDropdowns: true,
+				locale: {
+					format: 'DD.MM.YYYY'
+				}
+			});
+
+		$('#btnChart').click(function () {
+			debugger;
+			var _datepicker = $('#datepicker').val();
+			var _datepicker2 = $('#datepicker2').val();
+			var _chartId = $('#cmbTag').val();
+
+			if (_chartId != 0) {
+				debugger;
+				ShowLoading();
+
+				$.ajax({
+					url: '@Url.Action("ReportTemp", "ReportTable")',
+					data: {
+						'date1': _datepicker,
+						'date2': _datepicker2,
+						'_chartId': _chartId
+					},
+					type: "post",
+					cache: false,
+					success: function (result) {
+						HideLoading();
+						if (result.ErrorMessage == "") {
+
+							$("#TblInvPage").hide();
+
+							$("#pdfEkk").show();
+
+							$('#myTab1').show();
+
+							$('#ExportBtn').show();
+
+							if (result._MasterFieldList.length == 0) {
+								$('#EkkBtn').hide();
+								$('#tabINV').addClass('active');
+								$('#tabEKK').removeClass('active');
+								$("#TblOzetPage").hide();
+								$("#TblInvPage").show();
+
+							} else {
+								$('#EkkBtn').show();
+								$('#tabEKK').addClass('active');
+								$('#tabINV').removeClass('active');
+								$("#TblOzetPage").show();
+								$("#TblInvPage").hide();
+								$("#pdfInv").hide();
+								$("#txtInv").hide();
+								$("#csvInv").hide();
+								$("#xlsInv").hide();
+								$("#pdfEkk").show();
+								$("#csvEkk").show();
+								$("#txtEkk").show();
+								$("#xlsEkk").show();
+
+							}
+
+							if (result._DetailFieldList.length == 0) {
+								$('#InvBtn').hide();
+								$('#tabEKK').addClass('active');
+								$('#tabINV').removeClass('active');
+								$("#TblInvPage").hide();
+								$("#TblOzetPage").show();
+							} else {
+								$('#InvBtn').show();
+								$('#tabINV').addClass('active');
+								$('#tabEKK').removeClass('active');
+								$("#TblInvPage").show();
+								$("#TblOzetPage").hide();
+								$("#pdfEkk").hide();
+								$("#txtEkk").hide();
+								$("#csvEkk").hide();
+								$("#xlsEkk").hide();
+								$("#pdfInv").show();
+								$("#csvInv").show();
+								$("#txtInv").show();
+								$("#xlsInv").show();
+
+							}
+
+
+							// tblOzet
+
+							var _header = '<thead><tr style="background-color:#5bc0de;font-weight:bold;font-size:10pt;color:#FFFFFF;"><th style="padding:3px;width:150px;"><span style="display:block;text-align:center;">DATE</span></th>';
+
+							for (var i = 0; i < result._MasterFieldList.length; i++) {
+								_header += '<th style="padding:3px;"><span style="display:block;text-align:center;">' + result._MasterFieldList[i].DisplayName + '</span></th>';
+							}
+
+
+							_header += '</tr></thead>';
+
+							var _html =
+								'<table id="table" style="border-collapse:collapse;text-align:center;width:100%;">' + _header
+
+							for (var i = 0; i < result._ListTblOzet.length; i++) {
+								var _kalan = i % 2;
+
+								if (_kalan > 0) {
+									_html += '<tr style="color:#333333;background-color:#ebf2f3;" >';
+								}
+								else {
+									_html += '<tr style="color:#333333;" >';
+								}
+
+
+
+								for (var j = 0; j < result._ListTblOzet[i].length; j++) {
+									_html += '<td style="border- left:solid 0.5px #DDDDDD;padding:3px 10px;">' + result._ListTblOzet[i][j] + '</td>';
+								}
+
+								_html += '</tr>';
+							}
+
+							_html += '</table>';
+
+							$('#TblOzetPage').html(_html);
+							//ınvOzet
+
+							var head = '<thead><tr style="background-color:#5bc0de;font-weight:bold;font-size:10pt;color:#FFFFFF;"><th style="padding:3px;width:150px;"><span style="display:block;text-align:center;">DATE</span><th style="padding:3px;width:150px;"><span style="display:block;text-align:center;">NAME</span></th>';
+
+							for (var i = 0; i < result._DetailFieldList.length; i++) {
+								head += '<th style="padding:3px;"><span style="display:block;text-align:center;">' + result._DetailFieldList[i].DisplayName + '</span></th>';
+							}
+
+
+							head += '</tr></thead>';
+
+							var html =
+								'<table id="tableInv" style="border-collapse:collapse;text-align:center;width:100%;">' + head
+
+							for (var i = 0; i < result._ListInvOzet.length; i++) {
+								var _kalan = i % 2;
+
+								if (_kalan > 0) {
+									html += '<tr style="color:#333333;background-color:#ebf2f3;" >';
+								}
+								else {
+									html += '<tr style="color:#333333;" >';
+								}
+
+
+
+								for (var j = 0; j < result._ListInvOzet[i].length; j++) {
+									html += '<td style="border- left:solid 0.5px #DDDDDD;padding:3px 10px;">' + result._ListInvOzet[i][j] + '</td>';
+								}
+
+								html += '</tr>';
+							}
+
+							html += '</table>';
+
+							$('#TblInvPage').html(html);
+
+						}
+						else {
+							alert(result.ErrorMessage);
+						}
+					}
+				});
+			}
+			else
+				$('#ChartMessage').modal('show');
+		});
+
+		$("#EkkBtn").click(function () {
+			$("#TblOzetPage").show();
+			$("#TblInvPage").hide();
+			$("#pdfInv").hide();
+			$("#txtInv").hide();
+			$("#csvInv").hide();
+			$("#xlsInv").hide();
+			$("#pdfEkk").show();
+			$("#csvEkk").show();
+			$("#txtEkk").show();
+			$("#xlsEkk").show();
+		});
+		$("#InvBtn").click(function () {
+			$("#TblInvPage").show();
+			$("#TblOzetPage").hide();
+			$("#pdfEkk").hide();
+			$("#txtEkk").hide();
+			$("#csvEkk").hide();
+			$("#xlsEkk").hide();
+			$("#pdfInv").show();
+			$("#csvInv").show();
+			$("#txtInv").show();
+			$("#xlsInv").show();
+
+		});
+		
+
+
+		$("#ExportMenu a").click(function () {
+
+			var _name = $(this).attr("name");
+
+			if (_name == "csvEkk" || _name == "csvInv"  ) {
+				exportAll('csv', _name);
+			} else if (_name == "xlsEkk" || _name == "xlsInv") {
+				exportAll('xls', _name);
+			} else if (_name == "txtEkk" || _name == "txtInv") {
+				exportAll('txt', _name);
+			}
+			
+
+		});
+
+	});
+
+
+
+
+</script>
+<style>
+	.Loading {
+		position: absolute;
+		top: 0;
+		z-index: 1000;
+		background: rgba(255,255,255,0.7);
+		overflow: hidden;
+		display: none;
+	}
+
+	#Gif img {
+		width: 100%;
+		height: 50px;
+	}
+
+	#Gif {
+		width: 50px;
+		margin: 0 auto;
+	}
+</style>

@@ -1,0 +1,338 @@
+﻿@using Esso.Data;
+@using Microsoft.AspNet.Identity
+@using language
+@using System.Threading;
+@using System.Globalization;
+
+@{
+    ViewBag.Title = "InvDetailReport";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model int
+@{
+    EssoEntities DB = new EssoEntities();
+    Thread.CurrentThread.CurrentCulture = new CultureInfo("tr-TR");
+    var userId = User.Identity.GetUserId();
+    var _stationDetail = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+    string min_date = DB.InvSums.Where(x => x.STATION_ID == Model).Select(x => new { x.Tarih }).OrderBy(x => x.Tarih).FirstOrDefault().ToString();
+    min_date = min_date.Replace("{", "");
+    min_date = min_date.Replace("}", "");
+    min_date = min_date.Substring(9).TrimEnd();
+}
+
+<div class="page-title">
+    <div class="title_left">
+        @if (User.IsInRole("DEMO"))
+        {
+            <h3>@_stationDetail.DEMO_NAME</h3>
+        }
+        else
+        {
+            <h3>@_stationDetail.NAME</h3>
+        }
+    </div>
+</div>
+
+@Html.Partial("MenuPartial")
+
+<script type="text/javascript">
+
+
+	var filterString = "";
+	function ApplyFilter(dateFrom, dateTo) {
+
+			var d1 = dateFrom.GetText();
+			var d2 = dateTo.GetText();
+			if (d1 == "" || d2 == "")
+				return;
+			filterString = d1 + "|" + d2;
+            grdInvDetail.AutoFilterByColumn("Tarih", d1 + "|" + d2);
+
+		}
+
+		function EndCallback(s, e) {
+			if ($("#grdInvDetail_DXFREditorcol0_I").val() != "") {
+				$("#grdInvDetail_DXCTMenu0_DXI1_").hide();
+			}
+
+			//if (/*filterString != "" && */s.cpFilter == "filter") {
+			//	dde.SetText(filterString);
+			//	//$("#grdInvDetail_DXCTMenu0_DXI1_").hide();
+
+			//}
+			//else {
+			//	filterString = "";
+			//}
+
+		}
+
+		function dateSelected(s,d,f)
+		{
+			grdInvDetail.PerformCallback();
+		}
+
+		function repGridBgCallBack(s, e) {
+			//e.customArgs["date"] = datePck.GetValue().toLocaleDateString();
+			e.customArgs["date1"] = dFrom.GetValue().toLocaleDateString();
+			e.customArgs["date2"] = dTo.GetValue().toLocaleDateString();
+			e.customArgs["stationId"] = @Model;
+
+		}
+
+		function OnToolbarItemClick(s, e) {
+			if(!IsExportToolbarCommand(e.item.name))
+				return;
+
+			var $exportFormat = $('#exportFormat');
+            $exportFormat.val(e.item.name);
+            $('form').submit();
+			window.setTimeout(function(){
+                $exportFormat.val("");
+			}, 0);
+		}
+        function IsExportToolbarCommand(command) {
+            debugger;
+			return command == "Pdf" || command == "Xlsx" || command == "Xls";
+		}
+</script>
+
+
+
+<script type="text/javascript">
+    // page search
+
+    function SearchClick(e) {
+        if ($("#tbName_I").val() == "" || $("#tbName_I").val() == "Page X") {
+            alert("Please write page number");
+        } else {
+            var textbox_value = $("#tbName_I").val();
+            grdInvDetail.pageIndex = textbox_value - 1;
+            var ındex = grdInvDetail.pageIndex;
+            grdInvDetail.GotoPage(ındex);
+            return false;
+        }
+
+    }
+
+
+</script>
+
+
+
+<div class="editorContainer">
+
+</div>
+<div class="col-md-12 col-sm-12 col-xs-12">
+    <div class="x_panel">
+        <div class="x_title">
+            <h2>@Resources.Inverter_Detail_Report</h2>
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            @using (Html.BeginForm("ExportTo", "InverterPages", new { stationId = Model }))
+            {
+
+                @*@Html.DevExpress().DateEdit(
+                        settings =>
+                        {
+                            settings.Properties.ClientSideEvents.ValueChanged = "dateSelected";
+                            settings.Name = "datePck";
+                            settings.Properties.EditFormat = EditFormat.Custom;
+                            settings.Properties.EditFormatString = "dd/MM/yyyy";
+                            settings.Properties.DisplayFormatString = "dd/MM/yyyy";
+                            settings.Date = DateTime.Now.Date;
+                            settings.Properties.MaxDate = DateTime.Now;
+                            //settings.Width = Unit.Percentage(100);
+                        }
+                    ).GetHtml()*@
+                <div class="row">
+                    <div class="col-sm-2" style=" margin-right:60px;">
+                        @Html.DevExpress().Label(s =>
+                         {
+                             s.Name = "L1";
+                             s.Text = "From:";
+                         }).GetHtml()
+
+
+                        @Html.DevExpress().DateEdit(s =>
+                         {
+                             s.Name = "dFrom";
+                             s.Properties.EditFormat = EditFormat.Custom;
+                             s.Properties.EditFormatString = "dd/MM/yyyy";
+                             s.Properties.DisplayFormatString = "dd/MM/yyyy";
+                             s.Date = DateTime.Now.Date;
+                             s.Properties.MaxDate = DateTime.Now;
+                             s.Properties.MinDate = Convert.ToDateTime(min_date);
+
+                         }).GetHtml()
+                    </div>
+
+                    <div class="col-sm-offset-2">
+                        @Html.DevExpress().Label(s =>
+                                {
+                                    s.Name = "L2";
+                                    s.Text = "To:";
+                                }).GetHtml()
+                    </div>
+                    <div class="col-sm-2" style=" margin-right:60px;">
+                        @Html.DevExpress().DateEdit(s =>
+                        {
+                            s.Name = "dTo";
+                            s.Properties.EditFormat = EditFormat.Custom;
+                            s.Properties.EditFormatString = "dd/MM/yyyy";
+                            s.Properties.DisplayFormatString = "dd/MM/yyyy";
+                            s.Date = DateTime.Now.Date;
+                            s.Properties.MaxDate = DateTime.Now;
+                            s.Properties.MinDate = Convert.ToDateTime(min_date);
+                        }).GetHtml()
+                    </div>
+                    <div class="col-sm-2">
+                        @Html.DevExpress().Button(s =>
+                           {
+                               s.Name = "btn";
+                               s.Images.Image.IconID = IconID.ActionsApply16x16;
+                               s.UseSubmitBehavior = false;
+                               s.ClientSideEvents.Click = "dateSelected";
+                               s.Text = "Apply";
+                           }).GetHtml()
+                    </div>
+                </div>
+
+                @Html.Hidden("exportFormat")
+
+                @Html.Action("InvDetailReportPartial", new
+                {
+                    stationId = Model,
+date1 = DateTime.Now.ToString(),
+date2 = DateTime.Now.ToString()
+})}
+        </div>
+        <footer class="x_content" style="margin-left:0;">
+            <div class="footer">
+                @*<div class="x_panel" style=" width: 25%;">*@
+                <div class="row">
+                    <div class="col-sm-1" style=" margin-right:15px;">
+                        @Html.DevExpress().SpinEdit(s =>
+                        {
+                            s.Name = "tbName";
+                            s.Properties.NullText = "Page X";
+                            s.Properties.SpinButtons.ShowIncrementButtons = false;
+                            s.Properties.SpinButtons.ShowLargeIncrementButtons = false;
+                            s.Properties.NumberType = SpinEditNumberType.Integer;
+                        }).GetHtml()
+                    </div>
+                    <div class="col-sm-2">
+                        @Html.DevExpress().Button(s =>
+                             {
+                                 s.Name = "btn_search";
+                                 s.UseSubmitBehavior = false;
+                                 s.ClientSideEvents.Click = "function (e) { SearchClick(); }";
+                                 s.Images.Image.IconID = IconID.ArrowsDoublenext16x16;
+                                 s.Text = "Go To Page";
+                             }).GetHtml()
+                    </div>
+                    @*</div>*@
+                </div>
+
+            </div>
+        </footer>
+        <style>
+
+            #btn_search {
+                border-color: #adaeb1;
+                color: black;
+                border-radius: 25px;
+                align-content: center;
+                width: 100px;
+                height: 25px;
+                font-size: 12px;
+                font: bold;
+            }
+
+            #tbName {
+                border-radius: 25px;
+                height: 25px;
+                width: 100px;
+                border-color: #adaeb1;
+            }
+
+            #dTo {
+                border-radius: 25px;
+                height: 30px;
+                width: 210px;
+                border-color: #adaeb1;
+            }
+
+            #dFrom {
+                border-radius: 25px;
+                height: 30px;
+                width: 210px;
+                border-color: #adaeb1;
+            }
+
+            #dFrom_B-1 {
+                border-radius: 30px;
+                height: 1px;
+            }
+
+            #dTo_B-1 {
+                border-radius: 40px;
+                height: 1px;
+            }
+
+            #dFrom_B-1Img {
+                background-color: whitesmoke;
+                border-radius: 25px;
+            }
+
+            #btn {
+                border-color: #adaeb1;
+                color: black;
+                border-radius: 25px;
+                align-content: center;
+                width: 120px;
+                height: 30px;
+                font-size: 12px;
+                font: bold;
+            }
+
+            .dxgvHeader {
+                background: linear-gradient(#3b6792,#9cb0bd,#3b6792);
+            }
+
+            .dxgvFooter {
+                background: linear-gradient(#3b6792,#9cb0bd,#3b6792);
+            }
+
+            #grdInvDetail_DXCTMenu0 {
+                background-color: white;
+                border-top-color: white /*#e6e9ed*/;
+                border-top-width: 2px;
+            }
+
+            #btn {
+                border-style: solid;
+            }
+
+            #grdInvDetail_DXCTMenu0_DXI1_ {
+                background-color: white !important;
+                border-radius: 25px;
+            }
+
+            #grdInvDetail_DXCTMenu0_DXI0_ {
+                background-color: white !important;
+                border-radius: 25px;
+            }
+
+            #grdInvDetail {
+                border-color: white !important;
+            }
+
+            #grdInvDetail_DXPagerBottom {
+                color: #3b6792;
+            }
+        </style>
+
+
+    </div>
+</div>

@@ -1,0 +1,270 @@
+﻿@model int
+@{
+    ViewBag.Title = "chart";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/series-label.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+
+<div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+
+<script>
+    function DateStrFormat(vl) {
+
+        var strDate = [];
+        var value = new Date
+            (
+            parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+        );
+
+        var dat = value.getDate() +
+            "/" +
+            (value.getMonth() + 1) +
+            "/" +
+            value.getFullYear();
+
+        var dk;
+        var dkUzunluk = value.getMinutes().toString().length;
+        if (dkUzunluk == 1) {
+            dk = "0" + value.getMinutes();
+        }
+        else {
+            dk = value.getMinutes();
+        }
+        var saat;
+        var dkUzunluk = value.getHours().toString().length;
+        if (dkUzunluk == 1) {
+            saat = "0" + value.getHours()
+        }
+        else {
+            saat = value.getHours()
+        }
+
+        //2019, 0, 20, 17, 04, 59
+
+        var _year = value.getFullYear();
+        var _month = value.getMonth();
+        var _day = value.getDate();
+        var _hour = value.getHours();
+        var _minutes = value.getMinutes();
+        var _seconds = value.getSeconds();
+
+        strDate = Date.UTC(_year, _month, _day, _hour, _minutes, _seconds);
+
+        return strDate;
+    }
+    GetChartData();
+    var dataTemp = [];
+    var say = 0;
+    function GetChartData() {
+
+                    var beginDate = $('input[name="beginDaily"]').val();
+
+
+                    if (!beginDate || beginDate.length == 0) {
+                        beginDate = new Date().toISOString();
+                    }
+
+                    $.ajax({
+                        type: "get",
+                        url: "/HES/GetLineChart2",
+                        dataType: "json",
+                        contentType: "application/json; charset=utf-8",
+                        data: { beginDate: beginDate, stationId: @Model },
+                        success: function (dataA) {
+                            debugger;
+                            var skala1;
+                            var skala2;
+                            if (dataA._acInstalledPower == null) {
+                                skala1 = 30000;
+                            }
+                            else {
+                                skala1 = dataA._acInstalledPower * 1.10;
+                            }
+
+
+                            if (dataA._irradiationScale == null) {
+                                skala2 = 200;
+                            }
+                            else {
+                                skala2 = dataA._irradiationScale * 1.10;
+                            }
+
+                            var obj = {
+                                //symbol: 'url(/images/sun.png)',
+                                width: 15,
+                                heigt: 15,
+                                radius: 0
+                            };
+
+                            var valueToPush = [];
+                            var data = [];
+                   
+
+
+                            $.each(dataA._ozet, function (i, el) {
+                                //data.push([DateStrFormat(el._tarih), (el._gunlukUretim)]);
+                                data.push([el.DateUTC, (el._gunlukUretim)]);
+                            });
+
+                            var aar = {
+                                name: "Power AC",
+                                type: 'area',
+                                marker: obj,
+                                color: '#23e600',
+                                yAxis: 0,
+                                data
+                            };
+
+
+
+                            dataTemp.push(aar);
+                            //////
+                            //data = [];
+                            $.each(dataA._ozet, function (i, el) {                  
+                                //data.push([DateStrFormat(el._tarih), (el._isinim)]);
+                                data.push([el.DateUTC, (el._isinim)]);
+                            });
+                            var aar2 = {
+                                name: "isinim",
+                                marker: obj,
+                                color: '#052ec7',
+                                yAxis: 1,
+                                data
+                            };
+                          
+                            dataTemp.push(aar2);
+
+                            debugger;
+                            Highcharts.chart('container', {
+                                    chart: {
+                                        type: 'line',
+                                        zoomType: 'x'
+                                },
+
+                                    title: {
+                                        text: 'E-SOFT'
+                                    },
+                                    subtitle: {
+                                        text: 'Test'
+                                    },
+                                    xAxis: {
+                                        type: 'datetime',
+                                        dateTimeLabelFormats: { // don't display the dummy year
+                                            month: '%e. %b',
+                                            year: '%b'
+                                        },
+                                        title: {
+                                            text: 'Date'
+                                        }
+                                    },
+                                //    yAxis: {
+                                //        title: {
+                                //            text: 'POWER AC (kW)'                                           
+                                //        },
+                                //        min: 0,
+                                //        tickInterval:100,
+                                //        max: 1200,
+                                //        labels: {
+                                //            formatter: function () {
+                                //                return (Math.abs(this.value)) + ' kW';
+                                //            }
+                                //        }
+                                //},
+                                yAxis: [{ // Primary yAxis
+                                    labels: {
+                                        format: '{value} kW',
+                                        style: {
+                                            color: Highcharts.getOptions().colors[2],
+                                            fontWeight: 'bold'
+                                        }
+                                    },
+                                    title: {
+                                        text: 'POWER AC (kW)',
+                                        style: {
+                                            color: Highcharts.getOptions().colors[2],
+                                            fontWeight: 'bold'
+                                        }
+                                    },
+                                    min: 0,
+                                    max: skala1,
+                                    step: 100,
+                                    opposite: false
+
+                                }, { // Secondary yAxis
+                                    gridLineWidth: 0,
+                                    title: {
+                                        text: 'Irradiation (W/m²)',
+                                        style: {
+                                            color: Highcharts.getOptions().colors[0],
+                                            fontWeight: 'bold'
+                                        }
+                                    },
+                                    labels: {
+                                        format: '{value} W/m²',
+                                        style: {
+                                            color: Highcharts.getOptions().colors[0],
+                                            fontWeight: 'bold'
+                                        }
+                                        },
+                                        min: 0,
+                                        max: skala2,
+                                        step: 100,
+                                    opposite: true
+                                    }
+                                    //, { // Tertiary yAxis
+                                    //gridLineWidth: 0,
+                                    //title: {
+                                    //    text: 'Sea-Level Pressure',
+                                    //    style: {
+                                    //        color: Highcharts.getOptions().colors[2]
+                                    //    }
+                                    //},
+                                    //labels: {
+                                    //    format: '{value} mb',
+                                    //    style: {
+                                    //        color: Highcharts.getOptions().colors[2]
+                                    //    }
+                                    //},
+                                    //opposite: true
+                                    //}
+                                ],
+
+                                //tooltip: {
+                                //        headerFormat: '<b>{series.name}</b><br>',
+                                //    pointFormat: '{point.x:%A, %b %e, %H:%M} : {point.y:.2f} kW'
+                                //    },
+                                tooltip: {
+                                    shared: true,
+                                    useHTML: true,
+                                    headerFormat: '<b> {point.key} </b><table>',
+                                    pointFormat: '<tr><td style="color: {series.color}">{series.name}: </td>' +
+                                        '<td style="text-align: right"><b>{point.y} </b></td></tr>',
+                                    footerFormat: '</table>',
+                                    valueDecimals: 2
+                                },
+
+                                    plotOptions: {
+                                        spline: {
+                                            marker: {
+                                                enabled: true
+                                            }
+                                        }
+                                    },
+
+                                    colors: ['#6CF', '#39F', '#06C', '#036', '#000'],
+
+                                    // Define the data points. All series have a dummy year
+                                    // of 1970/71 in order to be compared on the same x axis. Note
+                                    // that in JavaScript, months start at 0 for January, 1 for February etc.
+
+                                    series: dataTemp
+
+                                });
+
+                        }
+                    });
+                }
+
+</script>

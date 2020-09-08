@@ -1,0 +1,128 @@
+﻿@using Esso.Data
+@using Esso.Web.ViewModels
+@using System.Web.UI.WebControls;
+@{
+    Html.EnableClientValidation(true);
+    Html.EnableUnobtrusiveJavaScript(true);
+
+    EssoEntities DB = new EssoEntities();
+    
+    
+    }
+
+
+@Html.DevExpress().GridView(
+    settings =>
+    {
+
+        settings.Name = "tagView";
+        settings.KeyFieldName = "ID";
+        settings.SettingsPager.PageSize = 20;
+        settings.Width = Unit.Percentage(100);
+        settings.CallbackRouteValues = new { Controller = "Tag", Action = "GridTagPartial" };
+        settings.SettingsEditing.BatchUpdateRouteValues = new { Controller = "Tag", Action = "TagGridUpdateTemp" };
+
+
+
+        settings.SettingsEditing.Mode = GridViewEditingMode.Batch;
+        settings.SettingsEditing.BatchEditSettings.EditMode = GridViewBatchEditMode.Cell;
+        settings.SettingsEditing.BatchEditSettings.StartEditAction = GridViewBatchStartEditAction.Click;
+
+        settings.CommandColumn.Visible = true;
+        settings.CommandColumn.ShowDeleteButton = true;
+        settings.CommandColumn.ShowNewButtonInHeader = true;
+        settings.CommandColumn.Width = Unit.Point(100);
+
+
+        settings.Columns.Add(column =>
+        {
+            column.FieldName = "NAME";
+            column.Caption = "Tag Name";
+
+            column.EditorProperties().TextBox(p =>
+            {
+                p.MaxLength = 100;
+            });
+        });
+
+
+        settings.Columns.Add(column =>
+        {
+            column.Caption = "Created Date";
+            column.ColumnType = MVCxGridViewColumnType.DateEdit;
+            column.Width = 110;
+            column.FieldName = "INSERT_DATE";
+            column.SortOrder = DevExpress.Data.ColumnSortOrder.Descending;
+
+            column.PropertiesEdit.DisplayFormatString = "d/M/yyyy HH:mm:ss";
+
+
+
+        });
+
+
+        settings.CellEditorInitialize += (s, e) =>
+        {
+
+            ASPxEdit editor = (ASPxEdit)e.Editor;
+            editor.ValidationSettings.Display = Display.None;
+            if (e.Column.FieldName == "CREATED_DATE")
+            {
+                e.Editor.ReadOnly = true;
+            }
+        };
+
+
+
+        settings.Columns.Add(column =>
+        {
+            column.FieldName = "IS_INV_TAG";
+            column.Caption = "Inverter Tag ";
+            column.ColumnType = MVCxGridViewColumnType.CheckBox;
+            column.Width=110;
+        });
+        settings.Columns.Add(column =>
+        {
+            column.FieldName = "IS_DIGITAL";
+            column.Caption = "Digital";
+            column.ColumnType = MVCxGridViewColumnType.CheckBox;
+            column.Width = 110;
+        });
+        settings.Columns.Add(column =>
+        {
+            column.FieldName = "IS_STRING";
+            column.Caption = "String";
+            column.ColumnType = MVCxGridViewColumnType.CheckBox;
+            column.Width = 110;
+
+        });
+
+     
+
+        settings.Settings.ShowFilterRow = true;
+        settings.Settings.ShowFilterRowMenu = true;
+        settings.CommandColumn.Visible = true;
+        settings.CommandColumn.ShowClearFilterButton = true;
+
+    }).BindToLINQ(string.Empty, string.Empty, (s, e) =>
+    {
+        e.KeyExpression = "ID";
+        e.QueryableSource = (from t in DB.Tags
+                             where t.IS_DELETED == false
+                             select new TagDTO
+                             {
+                                 ID = t.ID,
+                                 IS_DIGITAL = t.IS_DIGITAL,
+                                 IS_INV_TAG = t.IS_INV_TAG,
+                                 IS_STRING = t.IS_STRING,
+                                 NAME = t.NAME,
+                                 INSERT_DATE = t.CREATED_DATE
+                             });
+    }).GetHtml();
+
+
+
+
+
+
+

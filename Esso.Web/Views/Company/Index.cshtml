@@ -1,0 +1,259 @@
+﻿@using System.Web.UI.WebControls;
+@{
+    ViewBag.Title = "Store";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<link href="~/css/jquery-ui.min.css" rel="stylesheet" />
+<script type="text/javascript">
+
+
+    //globals start
+    var companyId = null;
+    var bunchSelect = 0;
+    var curCommand = '';
+    //globals end
+
+    //gvStationString start
+
+    function OnStringBeginCallback(s, e)
+    {
+        debugger;
+        curCommand = e.command;
+        e.customArgs["stationId"] = gvStation.GetRowKey(gvStation.editingItemVisibleIndex);        
+        e.customArgs["bunchSelect"] = bunchSelect;
+        e.customArgs["selectAll"] = $('#chcSelAll')[0].checked;        
+    }
+    function OnStringEndCallback(s, e) {
+        debugger;
+        if (curCommand != "CUSTOMCALLBACK")
+        {
+            curCommand = "";
+            bunchSelect = 0;
+        }
+        
+	}
+
+
+   
+    //gvStationString end
+
+    //gvCompany start
+
+    function SelectAllString()
+    {
+        bunchSelect = 1;
+        gvStationStr.PerformCallback();
+    }
+    
+    function OnCompanySelected (s, e) {
+
+        if (gvStation.batchEditApi.HasChanges()) {
+            gvStation.CancelEdit();
+        }
+        s.GetRowValues(s.GetFocusedRowIndex(), 'ID', OnGetCompValues);
+    }
+
+    function OnGetCompValues(values) {
+        companyId = values;
+        gvStation.Refresh();
+        //gvStation.PerformCallback();
+    }
+
+    var commandName;
+    function OnCompanyBeginCallBack(s, e) {
+        commandName = e.command;
+    }
+
+    function OnCompanyEndCallBack(s, e) {
+        if (commandName == "DELETEROW")
+        {
+            companyId = 0;
+            gvStation.Refresh();
+        }
+    }
+    //gvCompany end
+
+    //gvStation start
+
+    function OnStationBeginCallback(s, e) {
+        e.customArgs["companyId"] = companyId;
+    }
+
+    //function OnStationStartEditing(s, e) {
+    //    debugger;
+    //    if (e.buttonID == 'EditButton')
+    //    {
+    //        stationId == s.GetRowKey(e.visibleIndex);
+    //    }
+    //    stationId = s.GetRowKey(e.visibleIndex);
+    //}
+    
+    function ApplyTemplate() {
+
+        var stationId = gvStation.GetRowKey(gvStation.editingItemVisibleIndex);
+        var _templateId = cmbTagTemplate.GetValueString()
+     
+        if (_templateId && _templateId > 0 && stationId && stationId > 0) {
+            $('#btnAssigntemp').prop('disabled', true);
+            //gvInverters.CollapseAllDetailRows();
+            var warning = $('#warningA');
+            warning.css('display', 'block');
+           
+            warning.text("Please wait...");
+            $.ajax({
+                url: "/TagTemplate/AssignTagTemplateToStation?stationId=" + stationId + "&templateId=" + _templateId,
+                data: { stationId: stationId, templateId: _templateId },
+                type: "POST",
+                success: function (a, b)
+                {
+                    $('#btnAssigntemp').prop('disabled', false);
+                    if (a.length > 0) {
+                        alert(a);
+                    }
+                    else
+                    {                        
+                        warning.text("Assigned!");
+                        
+                        setTimeout(function () { warning.css('display', 'none'); }, 3000);
+                        gvInverters.CollapseAllDetailRows();
+                    }
+                },
+                error: function (err) {
+                    $('#btnAssigntemp').prop('disabled', false);
+                    alert("Fail:" + err.statusText)
+                }
+            });
+
+        }
+       
+    }
+
+
+    //gvStation end
+
+
+    //Station Group Popup Start
+
+    //function onActiveTabChanging(a,b,c)
+    //{
+    //    if (a.activeTabIndex == 1) {
+    //        debugger;
+    //    }
+      
+    //}
+
+      $(function () {
+        $('#dialog').dialog({
+            autoOpen: false,
+            width: 500,
+            resizable: false,
+            title: 'Add Plant Group',
+            modal: true,
+            open: function(event, ui) {
+                $(this).load("@Url.Action("CreateStationGroupPartial", "StationGroup")" + "?companyId=" + companyId );
+            },
+            buttons: {
+                "Create": function () {
+
+                    var form = $("#dialog").find("form");
+                    var dialObject = $(this);
+
+
+                    form.submit($.ajax({
+                        type: "POST",
+                        url: "@Url.Action("SaveStationGroup", "StationGroup")",
+                        data: $(form).serialize(),
+                        success: function (data) {
+                            if (data && data.length > 0) {
+                                alert(data);
+                            }
+                            else
+                            {
+                                dialObject.dialog("close");
+                            }
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            alert(textStatus);
+                        }
+                    }));
+
+
+                },
+                "Close": function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+
+        $('#my-button').click(function () {
+
+            if (!companyId) {
+                console.log("Please select a company first.");
+                return;
+            }
+
+            $('#dialog').dialog('open');
+        });
+    });
+    //Station Group Popup End
+
+
+    //AddressAssign Start
+    
+    //AddressAssign End
+</script>
+
+<button id="my-button">Add Plant Group</button>
+
+<div id="dialog" title="Create Album" style="overflow: hidden;"></div>
+
+    <div class="x_panel">
+        <div class="x_title">
+            <h2>Companies</h2>
+            <ul class="nav navbar-right panel_toolbox">
+                <li>
+                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                </li>
+
+            </ul>
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            @using (Html.BeginForm())
+                {
+                     @Html.Partial("GridCompanyPartial")
+                }
+        </div>
+    </div>
+
+
+    <div class="x_panel">
+        <div class="x_title">
+            <h2>Plants</h2>
+            <ul class="nav navbar-right panel_toolbox">
+                <li>
+                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                </li>
+            </ul>
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            @using (Html.BeginForm())
+            {
+                 Html.RenderAction("GridStationPartial", "Station");
+            }
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+

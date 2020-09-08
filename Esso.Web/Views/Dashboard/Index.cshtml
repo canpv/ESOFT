@@ -1,0 +1,3562 @@
+﻿@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutDashboard.cshtml";
+}
+
+@using language
+
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/annotations.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+<script src="https://code.highcharts.com/modules/accessibility.js"></script>
+<script src="https://code.highcharts.com/modules/full-screen.js"></script>
+
+
+<script src="https://code.highcharts.com/highcharts-more.js"></script>
+<script src="https://code.highcharts.com/modules/solid-gauge.js"></script>
+<script src="https://code.highcharts.com/modules/heatmap.js"></script>
+<script src="https://code.highcharts.com/modules/data.js"></script>
+<script src="https://code.highcharts.com/modules/boost-canvas.js"></script>
+<script src="https://code.highcharts.com/modules/boost.js"></script>
+<script src="https://code.highcharts.com/highcharts-3d.js"></script>
+
+
+
+<style>
+
+    .highcharts-credits {
+        display: none !important;
+    }
+
+    .btn-font {
+        color: #fff;
+        background-color: #178cff;
+        border-color: #57acff;
+    }
+    /*.progress {
+        height: 17px;
+        margin-bottom: 0px;
+        overflow: hidden;
+        background-color: #f5f5f5;
+        border-radius: 4px;
+        -webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,.1);
+        box-shadow: inset 0 1px 2px rgba(0,0,0,.1);
+    }*/
+    .progress-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: #000;
+        margin: 0 0 10px;
+    }
+
+    .progress-outer {
+        border: 0px solid #bebfbf;
+        border-radius: 45px;
+        margin-bottom: 0px;
+        position: relative;
+        width: 100px;
+        /*float:left;*/
+    }
+
+    .progress {
+        background: #d0d0d0;
+        border-radius: 20px;
+        margin: 0;
+        height: 13px;
+    }
+
+        .progress .progress-bar {
+            border-radius: 20px;
+            box-shadow: none;
+            animation: animate-positive 2s;
+        }
+
+        .progress .progress-value {
+            font-size: 11px;
+            font-weight: 700;
+            color: #292929;
+            position: absolute;
+            top: 0px;
+            right: -40px;
+        }
+
+    .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+        padding: 2px;
+        line-height: 1.42857143;
+        /* vertical-align: top; */
+        border-top: 1px solid #ddd;
+    }
+
+    .MeteoImgSize {
+        height: 25px;
+    }
+
+    .well {
+        min-height: 20px;
+        padding: 3px;
+        margin-bottom: 20px;
+        background-color: #eaeaea;
+        border: 0px solid #7dbeff;
+        border-radius: 4px;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.05);
+        box-shadow: inset 0 1px 1px rgba(0,0,0,.05);
+    }
+
+    .wellHeader {
+        min-height: 20px;
+        padding: 6px;
+        margin-bottom: 20px;
+        background-color: #eee;
+        border: 0px solid #7dbeff;
+        border-radius: 4px;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.05);
+        box-shadow: inset 0 1px 1px rgba(0,0,0,.05);
+    }
+</style>
+
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: Helvetica;
+    }
+
+    * {
+        box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        -ms-box-sizing: border-box;
+        -o-box-sizing: border-box;
+    }
+
+    header {
+        position: relative;
+        width: 100%;
+        height: 60px;
+        line-height: 60px;
+        background: #eee;
+        color: #666;
+        padding-left: 20px;
+        border-bottom: 5px solid #ddd
+    }
+
+    .hheader.clone {
+        position: fixed;
+        top: 0;
+        left: 250px; /*0*/
+        right: 0;
+        transform: translateY(-100%);
+        transition: 0.2s transform cubic-bezier(.3,.73,.3,.74);
+    }
+
+    body.down .hheader.clone {
+        transform: translateY(0);
+    }
+
+    .content {
+        padding: 0 20px 20px;
+        background: #fff;
+        line-height: 1.5;
+        color: #333;
+    }
+
+    .hheader {
+        z-index: 10;
+    }
+
+    .btn.btn-app {
+        height: 65px;
+        width: 140px;
+        position: relative;
+        padding: 15px 5px;
+        margin: 0 0 0px 0px;
+        min-width: 60px;
+        box-shadow: none;
+        border-radius: 0;
+        text-align: center;
+        color: #0062b4;
+        border: 1px solid #fff;
+        background-color: #a3b6c540;
+        font-size: 11px;
+        border-radius: 10px;
+    }
+
+
+    .stationName {
+        font-size: 14px;
+    }
+
+    .tableRight {
+        border: 1px solid #b5b5b5;
+        text-align: right;
+        vertical-align: middle;
+    }
+
+    .btnInvStr {
+        margin-bottom: 0px;
+        border: 1px solid #b5b5b5;
+    }
+</style>
+<style>
+
+    .dropdown {
+        position: absolute;
+        display: inline-block;
+    }
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f1f1f1;
+        min-width: 160px;
+        z-index: 1;
+    }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+            .dropdown-content a:hover {
+                background-color: #ddd;
+                cursor: pointer;
+            }
+
+    .dropdown:hover .dropdown-content {
+        display: block;
+    }
+
+    .btn:hover, .dropdown:hover .btn {
+        background-color: #0b7dda;
+    }
+</style>
+<input type="hidden" value="@Resources.Current" id="hdn_current" />
+<input type="hidden" value="@Resources.No_Data" id="hdn_noData" />
+<input type="hidden" value="@Resources.Daily_Production" id="hdn_daily_production" />
+<input type="hidden" value="@Resources.Irradiation" id="hdn_irradiation" />
+<input type="hidden" value="@Resources.Energy" id="hdn_energy" />
+<input type="hidden" value="@Resources.Maximum" id="hdn_maximum" />
+<input type="hidden" value="@Resources.Production" id="hdn_production" />
+<input type="hidden" value="@Resources.Produced_Energy" id="hdn_production_energy" />
+<input type="hidden" value="@Resources.Target" id="hdn_target" />
+<input type="hidden" value="@Resources.Total" id="hdn_total" />
+<input type="hidden" value="@Resources.January" id="hdn_january" />
+<input type="hidden" value="@Resources.February" id="hdn_february" />
+<input type="hidden" value="@Resources.March" id="hdn_march" />
+<input type="hidden" value="@Resources.April" id="hdn_april" />
+<input type="hidden" value="@Resources.May" id="hdn_may" />
+<input type="hidden" value="@Resources.June" id="hdn_june" />
+<input type="hidden" value="@Resources.July" id="hdn_july" />
+<input type="hidden" value="@Resources.August" id="hdn_august" />
+<input type="hidden" value="@Resources.September" id="hdn_september" />
+<input type="hidden" value="@Resources.October" id="hdn_october" />
+<input type="hidden" value="@Resources.November" id="hdn_november" />
+<input type="hidden" value="@Resources.December" id="hdn_december" />
+<input type="hidden" value="@Resources.Monday" id="hdn_monday" />
+<input type="hidden" value="@Resources.Tuesday" id="hdn_tuesday" />
+<input type="hidden" value="@Resources.Wednesday" id="hdn_wednesday" />
+<input type="hidden" value="@Resources.Thursday" id="hdn_thursday" />
+<input type="hidden" value="@Resources.Friday" id="hdn_friday" />
+<input type="hidden" value="@Resources.Saturday" id="hdn_saturday" />
+<input type="hidden" value="@Resources.Sunday" id="hdn_sunday" />
+<input type="hidden" value="@Resources.Humidity" id="hdn_humidity" />
+<input type="hidden" value="@Resources.Pressure" id="hdn_pressure" />
+<input type="hidden" value="@Resources.Cloudiness" id="hdn_cloudiness" />
+<input type="hidden" value="@Resources.Voltage" id="hdn_voltage" />
+<input type="hidden" value="@Resources.Power" id="hdn_power" />
+<input type="hidden" value="@Resources.Specific_Yield" id="hdn_specific_yield" />
+<input type="hidden" value="@Resources.Meteorology" id="hdn_meteorology" />
+<input type="hidden" value="@Resources.Monthly" id="hdn_monthly" />
+<input type="hidden" value="@Resources.Annual" id="hdn_annual" />
+<input type="hidden" value="@Resources.Total" id="hdn_total" />
+<input type="hidden" value="@Resources.Cell_Temp" id="hdn_cell_temp" />
+<input type="hidden" value="@Resources.External_Temp" id="hdn_ext_temp" />
+<input type="hidden" value="@Resources.Wind_Speed" id="hdn_wind_speed" />
+<input type="hidden" value="@Resources.Target" id="hdn_target" />
+<input type="hidden" value="@Resources.Temperature" id="hdn_temperature" />
+<input type="hidden" value="@Resources.Pyranometer" id="hdn_pyranometer" />
+<input type="hidden" value="@Resources.Daily" id="hdn_daily" />
+<input type="hidden" value="@Resources.Detail" id="hdn_detail" />
+<input type="hidden" value="@Resources.Heatmap" id="hdn_heatmap" />
+
+<div class="hheader">
+
+    <div class="wellHeader" style="overflow: auto">
+
+        <button class="btn">
+            <strong class="stationName">-</strong>
+        </button>
+        <div class="dropdown">
+            <button class="btn">
+                <i class="fa fa-caret-down"></i>
+            </button>
+            <div class="dropdown-content"></div>
+        </div>
+        &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+
+        <button class="btn btn-app btnString" style="display:none">
+            <i class="fa fa-bar-chart-o"></i>
+            <b>String <br />  @Resources.Monitoring</b>
+        </button>
+
+        <button class="btn btn-app btnStringDC" style="display:none">
+            <i class="fa fa-bar-chart-o"></i>
+            <b> String DC <br /> @Resources.Monitoring </b>
+        </button>
+
+        <button class="btn btn-app btnMVS" style="display:none">
+            <i class="fa fa-bar-chart"></i>
+            <b>@Resources.Medium_Voltage_Switchgear </b>
+        </button>
+
+        <button class="btn btn-app btnOsos" style="display:none">
+            <i class="fa fa-file"></i>
+            <b> @Resources.Osos_Recording</b>
+        </button>
+
+        <button class="btn btn-app btnCompany">
+            <i class="fa fa-cube"></i>
+            <b> @Resources.Companies </b>
+        </button>
+
+        <button class="btn btn-app btnWago" target="_blank" style="height:60px;display:none;">
+            <img src="~/images/wago.png" />
+        </button>
+
+        <button class="btn btn-app btnJanitza" target="_blank" style="height:60px;display:none;">
+            <img src="~/images/janitza.png" />
+        </button>
+
+        <button class="btn btn-app btnAlarm">
+            <span id="alertBadge" class="badge bg-red">0</span>
+            <i class="fa fa-bell"></i>
+            <b> Alarm </b>
+        </button>
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12">
+        <div class="x_panel">
+
+            <div class="x_content">
+                <div class="row">
+                    <div class="col-md-10 col-sm-8 col-xs-12">
+
+                        <div id="container" style="height:400px;"></div>
+
+
+                        <div class="well" style="overflow: auto">
+                            <div class="col-md-6">
+                                <div class="btn-group">
+                                    <h4 id="bakisTarih"></h4>
+                                </div>
+                                <div class="btn-group">
+                                    @*<input name="dtpDailyProd2" id="single_cal4" class="form-control has-feedback-left input-sm" type="text" />*@
+                                    <input name="dtpicker1" id="datepicker1" class="form-control has-feedback-left btn-sm" type="date" />
+                                </div>
+                                <div class="btn-group">
+                                    <input type="button" class="btn btn-font btn-sm" id="btnShowPart1" value="@Resources.Show" />
+                                </div>
+                                <div class="btn-group">
+                                    <img id="loader1" src="~/images/loaderSpinner.gif" height="35" width="35" />
+                                </div>
+                            </div>
+
+
+                            <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
+                                <button type="button" class="btn btn-font" name="BtnProduction">@Resources.Production</button>
+                                @* <button type="button" class="btn btn-font" name="BtnProduction2">Production 2</button>*@
+                                <button type="button" class="btn btn-font" name="BtnMeteorology">@Resources.Meteorology</button>
+                                @*<button type="button" class="btn btn-font disabled">Hourly</button>*@
+
+                                <button type="button" class="btn btn-font" name="BtnProductionMonthly">@Resources.Monthly</button>
+                                <button type="button" class="btn btn-font" name="BtnProductionAnnual">@Resources.Annual</button>
+                                <button type="button" class="btn btn-font" name="BtnProductionTotal">@Resources.Total</button>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="col-md-2 col-sm-8 col-xs-12">
+
+                        <table class="table">
+
+                            <tr>
+                                <td>@Resources.Irradiation:</td>
+                                <td><b id="irradiation">-</b></td>
+                            </tr>
+                            <tr>
+                                <td>@Resources.Wind_Speed:</td>
+                                <td><b id="wind">-</b></td>
+                            </tr>
+                            <tr>
+                                <td>@Resources.Cell_Temp:</td>
+                                <td><b id="cell">-</b></td>
+                            </tr>
+                            <tr>
+                                <td>@Resources.External_Temp:</td>
+                                <td><b id="external">-</b></td>
+                            </tr>
+                        </table>
+
+                        <figure class="highcharts-figure">
+                            <div id="container-speed" class="chart-container"></div><br />
+                            <div id="container-rpm" class="chart-container"></div>
+                        </figure>
+
+                    </div>
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="row">
+                    <div class="col-md-12 col-sm-12 col-xs-12">
+                        <table class="table tableRight">
+
+                            <tr>
+                                <td>@Resources.Daily_Production:</td>
+                                <td class="tdRight"><b id="dailyEnergy">-</b></td>
+                                <td class="tdCenter">@Resources.Daily_Financial_Income:</td>
+                                <td class="tdRight"><b id="dailyIncome">-</b></td>
+                                <td class="tdCenter">@Resources.Daily PR: </td>
+                                <td>
+                                    <div class="progress-outer">
+                                        <div class="progress">
+                                            <div id="barDailyPR" class="progress-bar progress-bar-striped progress-bar-info" style="width:0%;"></div>
+                                            <div class="progress-value" id="spanDailyPR"></div>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td class="tdCenter">@Resources.Daily @Resources.CF:</td>
+                                <td>
+                                    <div class="progress-outer">
+                                        <div class="progress">
+                                            <div id="barDailyKPF" class="progress-bar progress-bar-striped progress-bar-info" style="width:0%;"></div>
+                                            <div class="progress-value" id="spanDailyKPF"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>@Resources.Monthly_Production: <br /></td>
+                                <td class="tdRight"><b id="aylikEnerji">-</b></td>
+                                <td class="tdCenter">@Resources.Monthly_Financial_Income:</td>
+                                <td class="tdRight"><b id="aylikGelir">-</b></td>
+                                <td class="tdCenter">@Resources.Monthly PR: </td>
+                                <td>
+                                    <div class="progress-outer">
+                                        <div class="progress">
+                                            <div id="barMonthlyPR" class="progress-bar progress-bar-striped progress-bar-info" style="width:0%;"></div>
+                                            <div class="progress-value" id="spanMonthlyPR"></div>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td class="tdCenter">@Resources.Monthly @Resources.CF:</td>
+                                <td>
+                                    <div class="progress-outer">
+                                        <div class="progress">
+                                            <div id="barMonthlyKPF" class="progress-bar progress-bar-striped progress-bar-info" style="width:0%;"></div>
+                                            <div class="progress-value" id="spanMonthlyKPF"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>@Resources.Annual_Production:</td>
+                                <td class="tdRight"><b id="yillikEnerji">-</b></td>
+                                <td class="tdCenter">@Resources.Annual_Financial_Income:</td>
+                                <td class="tdRight"><b id="yillikGelir">-</b></td>
+                                <td class="tdCenter">@Resources.Annual PR: </td>
+                                <td>
+                                    <div class="progress-outer">
+                                        <div class="progress">
+                                            <div id="barAnnualPR" class="progress-bar progress-bar-striped progress-bar-info" style="width:0%;"></div>
+                                            <div class="progress-value" id="spanAnnualPR"></div>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td class="tdCenter">@Resources.Annual @Resources.CF:</td>
+                                <td>
+                                    <div class="progress-outer">
+                                        <div class="progress">
+                                            <div id="barAnnualKPF" class="progress-bar progress-bar-striped progress-bar-info" style="width:0%;"></div>
+                                            <div class="progress-value" id="spanAnnualKPF"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>@Resources.Total_Production: <br /></td>
+                                <td class="tdRight"><b id="toplamEnerji">-</b></td>
+                                <td class="tdCenter">@Resources.Total_Financial_Income:</td>
+                                <td class="tdRight"><b id="toplamGelir">-</b></td>
+                                <td class="tdCenter">@Resources.Total PR: </td>
+                                <td>
+                                    <div class="progress-outer">
+                                        <div class="progress">
+                                            <div id="barTotalPR" class="progress-bar progress-bar-striped progress-bar-info" style="width:0%;"></div>
+                                            <div class="progress-value" id="spanTotalPR"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+
+                        </table>
+
+                    </div>
+
+                </div>
+                <div class="row">
+                    <div class="col-md-12 col-sm-12 col-xs-12">
+                        <table class="table table-striped">
+                            <tbody>
+                                <tr>
+                                    <td>@Resources.Generator_Power Pdc:</td>
+                                    <td><b id="Pdc"></b></td>
+                                    <td>@Resources.Actual_Value:</td>
+                                    <td><b id="ActualValue"></b></td>
+                                    <td>@Resources.Inverter_Efficiency η:</td>
+                                    <td><b id="Efficiency"></b></td>
+                                    <td>@Resources.Specific_Yield :</td>
+                                    <td><b id="specificYield"></b></td>
+                                    <td>
+                                        <select id="selectedCo2" name="selectedTag" class="btn btn-font btn-xs">
+                                            <option value="0">@Resources.lignite</option>
+                                            <option value="1">@Resources.Coal</option>
+                                            <option value="2">@Resources.Natural_Gas</option>
+                                        </select>
+                                        CO₂ @Resources.emissions_avoided_in_total :
+                                    </td>
+                                    <td>
+                                        <b id="Co2"></b>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8 col-sm-12 col-xs-12">
+        <div class="x_panel">
+            <div class="x_content" style="min-height:500px">
+
+                <div id="container2"></div>
+
+                <div class="well" style="overflow: auto">
+                    <div class="col-md-6">
+                        <div class="btn-group">
+                            <h4 id="bakisTarih"></h4>
+                        </div>
+                        <div class="btn-group">
+                            <input name="dtpicker2" id="datepicker2" class="form-control has-feedback-left btn-sm" type="date" />
+                        </div>
+                        <div class="btn-group">
+                            <input type="button" class="btn btn-font btn-sm" id="btnShowPart2" value="Show" />
+                        </div>
+                        <div class="btn-group">
+                            <img id="loader2" src="~/images/loaderSpinner.gif" height="35" width="35" />
+                        </div>
+                    </div>
+                    <div class="btn-group btn-group-sm" role="group" aria-label="">
+                        <button type="button" class="btn btn-font" name="BtnInvProduction">@Resources.Production</button>
+                        <button type="button" class="btn btn-font" name="BtnInvDailyHeatMap">@Resources.Heatmap</button>
+                        <button type="button" class="btn btn-font" name="BtnInvDetail">@Resources.Detail</button>
+                        @*<button type="button" class="btn btn-font disabled">Values</button>*@
+                    </div>
+                    <div class="btn-group">
+                        <select id="selectedTag" name="selectedTag" class="form-control input-sm">
+                            <option value="1">@Resources.Power AC</option>
+                            <option value="2">@Resources.Power DC</option>
+                            <option value="3">@Resources.Current AC</option>
+                            <option value="4">@Resources.Current DC</option>
+                            <option value="5">@Resources.Voltage AC</option>
+                            <option value="6">@Resources.Voltage DC</option>
+                            <option value="7">@Resources.Energy</option>
+                        </select>
+                    </div>
+                </div>
+                <table class="table table-striped table-bordered tableRight">
+                    <tbody id="InvDetailTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 col-sm-12 col-xs-12">
+        <div class="x_panel">
+            <div class="x_content">
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="temperature" id="weatherDate0" data-toggle='tooltip' data-placement='top' title="">
+                            <b>@Resources.Today</b>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 col-sm-4 col-xs-4">
+                        <div class="weather-icon" id="tooltipWeatherState0" data-toggle='tooltip' data-placement='top' title="">
+                            <img class="hava0" width="60%" />
+                        </div>
+                        <div class="weather-text" id="tooltip0" data-toggle='tooltip' data-placement='top' title="">
+                            <div class="weather-text pull-right">
+                                <h4 style="font-weight:bold;" id="temp0"></h4>
+                            </div>
+                            <h4 style="font-weight:bold;" id="City"></h4>
+                            <h5><i id="weatherState0">@Resources.Weather</i></h5>
+                            <h6 id="wind0"></h6>
+                        </div>
+                    </div>
+                    <div class="col-md-8 col-sm-8 col-xs-8">
+                        <table class="table table-responsive">
+                            <tbody>
+                                <tr>
+                                    <td id="tooltip1" data-toggle='tooltip' data-placement='top' title=""><h6 class="day" id="weatherDate1"></h6></td>
+                                    <td id="tooltipWeatherState1" data-toggle='tooltip' data-placement='top' title=""><img class="hava1" height="25" width="25" /></td>
+                                    <td><h6 id="temp1" data-placement='top' title="@Resources.Temperature"></h6></td>
+                                    <td><h6 id="wind1" data-placement='top' title="@Resources.Wind_Speed"></h6></td>
+                                </tr>
+                                <tr>
+                                    <td id="tooltip2" data-toggle='tooltip' data-placement='top' title=""><h6 class="day" id="weatherDate2"></h6></td>
+                                    <td id="tooltipWeatherState2" data-toggle='tooltip' data-placement='top' title=""><img class="hava2" height="25" width="25" /></td>
+                                    <td><h6 id="temp2" data-placement='top' title="@Resources.Temperature"></h6></td>
+                                    <td><h6 id="wind2" data-placement='top' title="@Resources.Wind_Speed"></h6></td>
+                                </tr>
+                                <tr>
+                                    <td id="tooltip3" data-toggle='tooltip' data-placement='top' title=""><h6 class="day" id="weatherDate3"></h6></td>
+                                    <td id="tooltipWeatherState3" data-toggle='tooltip' data-placement='top' title=""><img class="hava3" height="25" width="25" /></td>
+                                    <td><h6 id="temp3" data-placement='top' title="@Resources.Temperature"></h6></td>
+                                    <td><h6 id="wind3" data-placement='top' title="@Resources.Wind_Speed"></h6></td>
+                                </tr>
+                                <tr>
+                                    <td id="tooltip4" data-toggle='tooltip' data-placement='top' title=""><h6 class="day" id="weatherDate4"></h6></td>
+                                    <td id="tooltipWeatherState4" data-toggle='tooltip' data-placement='top' title=""><img class="hava4" height="25" width="25" /></td>
+                                    <td><h6 id="temp4" data-placement='top' title="@Resources.Temperature"></h6></td>
+                                    <td><h6 id="wind4" data-placement='top' title="@Resources.Wind_Speed"></h6></td>
+                                </tr>
+                                <tr>
+                                    <td id="tooltip5" data-toggle='tooltip' data-placement='top' title=""><h6 class="day" id="weatherDate5"></h6></td>
+                                    <td id="tooltipWeatherState5" data-toggle='tooltip' data-placement='top' title=""><img class="hava5" height="25" width="25" /></td>
+                                    <td><h6 id="temp5" data-placement='top' title="@Resources.Temperature"></h6></td>
+                                    <td><h6 id="wind5" data-placement='top' title="@Resources.Wind_Speed"></h6></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 col-sm-12 col-xs-12">
+        <div class="x_panel">
+            <table class="table">
+                <tbody>
+
+                    <tr>
+                        <th>@Resources.Installed_Power AC :</th>
+                        <td id="stInsAC"></td>
+                    </tr>
+                    <tr>
+                        <th>@Resources.Installed_Power DC :</th>
+                        <td id="stInsDC"></td>
+                    </tr>
+                    <tr>
+                        <th>DC / AC</th>
+                        <td id="stInsDCAC"></td>
+                    </tr>
+                    <tr>
+                        <th>@Resources.Tilt :</th>
+                        <td id="stTilt"></td>
+                    </tr>
+                    <tr>
+                        <th>@Resources.Azimuth :</th>
+                        <td id="stAzimuth"></td>
+                    </tr>
+                    <tr>
+                        <th>Inverter @Resources.Manufacturer :</th>
+                        <td id="stInvManu"> </td>
+                    </tr>
+                    <tr>
+                        <th>Module @Resources.Manufacturer:</th>
+                        <td id="stModuleManu"></td>
+                    </tr>
+                    <tr>
+                        <th>@Resources.Module_Type:</th>
+                        <td id="stModuleType"> </td>
+                    </tr>
+                    <tr>
+                        <th>@Resources.Start_Date:</th>
+                        <td id="stStartDate"></td>
+                    </tr>
+                    <tr>
+                        <th>@Resources.Coordinate:</th>
+                        <td id="stCoordinate"></td>
+                    </tr>
+                    <tr>
+                        <th>@Resources.Meteorology:</th>
+                        <td id="stMeteo"></td>
+                    </tr>
+                    <tr>
+                        <th>@Resources.Pyranometer:</th>
+                        <td id="stPyr"></td>
+                    </tr>
+                    <tr>
+                        <th>EKK:</th>
+                        <td id="stEKK"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+
+        var $header = $('.hheader');
+
+        $clone = $header.before($header.clone().addClass("clone"));
+
+        $(window).on("scroll", function () {
+            var fromTop = $(window).scrollTop();
+            $("body").toggleClass("down", (fromTop > 70));
+        });
+
+    });
+
+</script>
+
+<script>
+
+    $(document).ready(function () {
+
+        var PageStationID = 0;
+        PageStationID = @ViewBag.routerStationId;
+
+        var PageCompanyID = 0;
+        //PageCompanyID = @ViewBag.routerStationId;
+
+
+        if (PageStationID != 0) {
+            StationLiActive(PageStationID);
+        }
+
+        var stationName = "";
+        var weatherCity = "";
+        var currentlySelectedChartIdPart1 = 1;
+        var currentlySelectedChartIdPart2 = 1;
+        var currentlySelectedChartNamePart1 = "";
+        var currentlySelectedChartNamePart2 = "";
+
+        //Menu Button
+
+        $('.btnString').click(function () {
+
+            if (PageStationID != 0) {
+                var url = "/String/Index?stationId=" + PageStationID;
+                window.location.href = url;
+            }
+
+        });
+
+        $('.btnStringDC').click(function () {
+
+            if (PageStationID != 0) {
+                var url = "/String_DC/Index?stationId=" + PageStationID;
+                window.location.href = url;
+            }
+
+        });
+
+        $('.btnMVS').click(function () {
+
+            if (PageStationID != 0) {
+                var url = "/MVS/Index?stationId=" + PageStationID;
+                window.location.href = url;
+            }
+
+        });
+
+        $('.btnOsos').click(function () {
+
+            if (PageStationID != 0) {
+                var url = "/Osos/Index?stationId=" + PageStationID;
+                window.location.href = url;
+            }
+
+        });
+
+        $('.btnAlarm').click(function () {
+
+            if (PageStationID != 0) {
+                var url = "/DashboardAlarm/Router?stationId=" + PageStationID;
+                window.location.href = url;
+            }
+
+        });
+
+        $('.btnCompany').click(function () {
+
+            if (PageStationID != 0) {
+                var url = "/DashboardCompany/RouterCompany?companyId=" + PageCompanyID;
+                window.location.href = url;
+            }
+
+        });
+
+        $(document).on('click', '.btnInvStr', function (e) {
+            var invStrNo = e.target.name;
+            currentlySelectedChartIdPart2 = 4;
+            GetChartPart2(PageStationID, 4, invStrNo);
+        });
+
+
+        var wagoUrl = "";
+        var janitzaUrl = "";
+        $('.btnWago').click(function () {
+
+            if (PageStationID != 0) {
+                var url = wagoUrl;
+                window.open(url, '_blank');
+            }
+
+        });
+
+        $('.btnJanitza').click(function () {
+
+            if (PageStationID != 0) {
+                var url = janitzaUrl;
+                window.open(url, '_blank');
+            }
+
+        });
+
+        //Menu Button
+
+        //Dropbox
+        var InvDateList;
+        var InvPowerACList;
+        var InvPowerDCList;
+        var InvCurrentACList;
+        var InvCurrentDCList;
+        var InvVoltageACList;
+        var InvVoltageDCList;
+        var InvEnergyList;
+
+        $('#selectedTag').change(function () {
+            var id = $(this).val();
+            GetChartPart2(PageStationID,3,id)
+        })
+
+        //Dropbox
+
+        //$('#single_cal4').daterangepicker({
+        //    singleDatePicker: true, locale: {
+        //        format: 'DD/MM/YYYY'
+        //    },
+        //    singleClasses: "picker_4"
+        //}, function (start, end, label) {
+        //    console.log(start.toISOString(), end.toISOString(), label);
+        //});
+
+        function StationLiActive(id) {
+
+            var urlNumber = ("#" + id).toString();
+            $(urlNumber).addClass("current-page");
+            var li2 = $(urlNumber).parent();
+            li2.css("display", "block");
+            var li1 = li2.parent();
+            li1.addClass("active");
+        }
+
+
+        $('#btnShowPart1').click(function () {
+            GetChartPart1(PageStationID, currentlySelectedChartIdPart1);
+        });
+
+        $('#btnShowPart2').click(function () {
+            GetChartPart2(PageStationID, currentlySelectedChartIdPart2);
+        });
+
+
+        $('input[name="station"]').click(function () {
+            var btnStId = this.id;
+            PageStationID = btnStId;
+            GetChartPart1(btnStId, currentlySelectedChartIdPart1);
+
+        });
+
+        var timer, delay = 300000;
+        timer = setInterval(function () {
+
+            if (PageStationID > 0) {
+
+                $('.stationLi').removeClass("active");
+                $('.stationLi').removeClass("current-page");
+
+                StationLiActive(PageStationID);
+                GetChartPart1(PageStationID, currentlySelectedChartIdPart1, true);
+                GetChartPart2(PageStationID, currentlySelectedChartIdPart2);
+            }
+        }, delay);
+
+        $('.stationLi').click(function () {
+            delay = 0;
+            var stId = this.id;
+            //RemoveWeather();
+            PageStationID = stId;
+            $('.stationLi').removeClass("active");
+            $('.stationLi').removeClass("current-page");
+
+            GetStation(PageStationID);
+            StationLiActive(PageStationID);
+            GetChartPart1(stId, currentlySelectedChartIdPart1, true);
+            GetChartPart2(stId, 1);
+
+        });
+
+        $(document).on('click', '.btnStation', function (e) {
+            delay = 0;
+            var stId = e.target.name;
+
+            PageStationID = stId;
+            $('.stationLi').removeClass("active");
+            $('.stationLi').removeClass("current-page");
+
+            GetStation(PageStationID);
+            StationLiActive(PageStationID);
+            GetChartPart1(stId, currentlySelectedChartIdPart1, true);
+            GetChartPart2(stId, 1);
+        });
+
+        $('.stationName').click(function () {
+            delay = 0;
+
+            $('.stationLi').removeClass("active");
+            $('.stationLi').removeClass("current-page");
+
+            GetStation(PageStationID);
+            StationLiActive(PageStationID);
+            GetChartPart1(PageStationID, currentlySelectedChartIdPart1, true);
+            GetChartPart2(PageStationID, 1);
+
+        });
+
+
+
+    function checkAlarm()
+          {
+
+                 $.ajax({
+                     url: "/Alarm/GetAlarmCount?stationId=" + PageStationID,
+                    type: "GET",
+                    dataType: "json",
+                    success: function (data) {
+
+                        $("#alertBadge").text(data);
+                        setTimeout(
+                            function () {
+                                checkAlarm();
+                            }, 100000
+                        );
+                    },
+                    error: function (resText)
+                    {
+                        console.log(resText);
+                    }
+                });
+        }
+
+
+        //Languages
+
+        var _productionText = $('#hdn_production').val();
+        var _energyText = $('#hdn_energy').val();
+        var _currentText = $('#hdn_current').val();
+        var _voltageText = $('#hdn_voltage').val();
+        var _powerText = $('#hdn_power').val();
+        var _specificYieldText = $('#hdn_specific_yield').val();
+        var _irradiationText = $('#hdn_irradiation').val();
+        var _meteorologyText = $('#hdn_meteorology').val();
+        var _monthlyText = $('#hdn_monthly').val();
+        var _annualText = $('#hdn_annual').val();
+        var _totalText = $('#hdn_total').val();
+        var _cellTempText = $('#hdn_cell_temp').val();
+        var _extTempText = $('#hdn_ext_temp').val();
+        var _windSpeedText = $('#hdn_wind_speed').val();
+
+        var _pyranometerText = $('#hdn_pyranometer').val();
+        var _detailText = $('#hdn_detail').val();
+        var _tempText = $('#hdn_temperature').val();
+        var _dailyText = $('#hdn_daily').val();
+        var _heatmapText = $('#hdn_heatmap').val();
+        var _targetText = $('#hdn_target').val();
+
+        //Languages
+
+
+        var dtpicker1Type = "date";
+
+        function DateFormat(value) {
+
+            var year = value.getFullYear();
+            var month = (value.getMonth() + 1);
+            var day = value.getDate();
+            if (month < 10)
+                month = "0" + month;
+            if (day < 10)
+                day = "0" + day;
+
+            //var date = day + "." + month + "." + year;
+            var date = year + "-" + month + "-" + day;
+
+            return date;
+        }
+        function TimeFormat(vl) {
+
+            var value = new Date(parseInt(vl.replace(/(^.*\()|([+-].*$)/g, '')));
+
+            var hour = value.getHours();
+            var minute = value.getMinutes();
+
+            if (hour < 10)
+                hour = "0" + hour;
+            if (minute < 10)
+                minute = "0" + minute;
+
+            var time = hour + ":" + minute;
+
+            return time;
+        }
+
+        function MonthYearFormat(f) {
+            var ddata = new Date(f);
+            var _mounth;
+            var monthLength = (ddata.getMonth() + 1).toString().length;
+            if (monthLength == 1) {
+                _mounth = "0" + (ddata.getMonth() + 1).toString();
+            }
+            else {
+                _mounth = (ddata.getMonth() + 1).toString();
+            }
+            var _year = ddata.getFullYear().toString();
+
+            return _year + "-" + _mounth;
+        }
+
+        //var dtp1 = document.querySelector("input[name='dtpicker1']");
+        var dtp1 = $('input[name="dtpicker1"]')[0];
+        var dtp2 = $('input[name="dtpicker2"]')[0];
+
+        function ChangeDtp1Type(typeText) {
+            dtpicker1Type = typeText;
+
+
+            $('input[name="dtpicker1"]')[0].type = typeText;
+
+            if (typeText == "date") {
+
+            }
+            else if (typeText == "month") {
+                dtp1.value = MonthYearFormat(Date.now());
+            }
+            else if (typeText == "number") {
+                dtp1.placeholder = "YYYY";
+                dtp1.min = "2017";
+                dtp1.max = "2020";
+                dtp1.value = "2020";
+            }
+        }
+
+        function ChangeDtp2Type(typeText) {
+            dtpicker1Type = typeText;
+
+
+            $('input[name="dtpicker2"]')[0].type = typeText;
+
+            if (typeText == "date") {
+
+            }
+            else if (typeText == "month") {
+                dtp2.value = MonthYearFormat(Date.now());
+            }
+            else if (typeText == "number") {
+                dtp2.placeholder = "YYYY";
+                dtp2.min = "2017";
+                dtp2.max = "2020";
+                dtp2.value = "2020";
+            }
+        }
+
+
+        $('button[name="BtnProduction"]').click(function () {
+            ChangeDtp1Type("date");
+            currentlySelectedChartIdPart1 = 1;
+            GetChartPart1(PageStationID, currentlySelectedChartIdPart1);
+        });
+
+        $('button[name="BtnProduction2"]').click(function () {
+            ChangeDtp1Type("date");
+            currentlySelectedChartIdPart1 = 45;
+            GetChartPart1(PageStationID, currentlySelectedChartIdPart1);
+        });
+
+        $('button[name="BtnMeteorology"]').click(function () {
+            ChangeDtp1Type("date");
+            currentlySelectedChartIdPart1 = 2;
+            GetChartPart1(PageStationID, currentlySelectedChartIdPart1);
+        });
+
+        $('button[name="BtnProductionMonthly"]').click(function () {
+
+            ChangeDtp1Type("month");
+
+            currentlySelectedChartIdPart1 = 3;
+            GetChartPart1(PageStationID, currentlySelectedChartIdPart1);
+        });
+
+        $('button[name="BtnProductionAnnual"]').click(function () {
+
+            ChangeDtp1Type("number");
+
+            currentlySelectedChartIdPart1 = 4;
+            GetChartPart1(PageStationID, currentlySelectedChartIdPart1);
+        });
+
+        $('button[name="BtnProductionTotal"]').click(function () {
+
+            currentlySelectedChartIdPart1 = 5;
+            GetChartPart1(PageStationID, currentlySelectedChartIdPart1);
+        });
+
+        //Inverter Button Begin
+
+        $('button[name="BtnInvProduction"]').click(function () {
+            ChangeDtp2Type("date");
+            currentlySelectedChartIdPart2 = 1;
+            GetChartPart2(PageStationID, currentlySelectedChartIdPart2);
+        });
+
+        $('button[name="BtnInvDailyHeatMap"]').click(function () {
+            ChangeDtp2Type("date");
+            currentlySelectedChartIdPart2 = 2;
+            GetChartPart2(PageStationID, currentlySelectedChartIdPart2);
+        });
+
+        $('button[name="BtnInvDetail"]').click(function () {
+            ChangeDtp2Type("date");
+            currentlySelectedChartIdPart2 = 3;
+            GetChartPart2(PageStationID, currentlySelectedChartIdPart2);
+        });
+
+        //Inverter Button End
+
+
+        if (PageStationID == 0) {
+
+            //window.location.href = "/";
+
+        }
+        else {
+            GetStation(PageStationID);
+            GetChartPart1(PageStationID, currentlySelectedChartIdPart1, false);
+            GetChartPart2(PageStationID, currentlySelectedChartIdPart2);
+
+        }
+
+
+
+        function GetChartPart1(stId, chartType, isMenuClick) {
+
+            $('#loader1').show();
+
+
+            if (chartType == 1 || chartType == 2) {
+
+                var dtpicker1Val = $('input[name="dtpicker1"]').val();
+
+                if (!dtpicker1Val || dtpicker1Val.length == 0) {
+                    dtpicker1Val = new Date().toISOString();
+                    var nowDate = DateFormat(new Date());
+
+                    dtp1.value = nowDate;
+                    dtpicker1Val = nowDate;
+                }
+            }
+
+            if (chartType != 1 & isMenuClick) {
+
+                var todayDate = new Date().toISOString();
+
+                $.ajax({
+                    type: "get",
+                    url: "/Dashboard/GetDailyProductionChart",
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    data: { beginDate: todayDate, stationId: stId },
+                    success: function (data) {
+
+                        $('.stationName').html(data.stationName);
+
+                        if (data.ErrorMessage == "No Data") {
+                            var gaugeTarget = data._acInstalledPower * 1.20;
+                            var acPower = 0;
+                            var ekkAcPower = 0;
+                            GetGauge(gaugeTarget, acPower, ekkAcPower);
+                        }
+                        else {
+                            var gaugeTarget = data._acInstalledPower * 1.20;
+                            var acPower = data.endData.powerAc;
+                            var ekkAcPower = data.endData.ekkPowerAc;
+                            GetGauge(gaugeTarget, acPower, ekkAcPower);
+                        }
+
+                        //gunluk
+                        $("#dailyEnergy").html(NumberConvert(data._dailyProduction) + " MWh");
+                        $("#dailyIncome").html(NumberConvert(data._dailyIncome) + " $");
+                        //
+                        //aylik
+                        $("#aylikEnerji").html(NumberConvert(data._monthlyProduction) + " MWh");
+                        $("#aylikGelir").html(NumberConvert(data._monthlyIncome) + " $");
+
+                        //yıllık
+                        $("#yillikEnerji").html(NumberConvert(data._annualProduction) + " MWh");
+                        $("#yillikGelir").html(NumberConvert(data._annualIncome) + " $");
+                        //toplam
+                        $("#toplamEnerji").html(NumberConvert(data._totalProduction) + " MWh");
+                        $("#toplamGelir").html(NumberConvert(data._totalIncome) + " $");
+
+                        //Progresbar PR
+                        $("#barDailyPR").css("width", data._dailyPr + "%");
+                        $("#spanDailyPR").text(NumberConvert(data._dailyPr) + "%");
+                        $("#barMonthlyPR").css("width", data._monthlyPr + "%");
+                        $("#spanMonthlyPR").text(NumberConvert(data._monthlyPr) + "%");
+                        $("#barAnnualPR").css("width", data._annualPr + "%");
+                        $("#spanAnnualPR").text(NumberConvert(data._annualPr) + "%");
+                        $("#barTotalPR").css("width", data._totalPr + "%");
+                        $("#spanTotalPR").text(NumberConvert(data._totalPr) + "%");
+                        //Progresbar KPF
+                        $("#barDailyKPF").css("width", data._dailyKF + "%");
+                        $("#spanDailyKPF").text(NumberConvert(data._dailyKF) + "%");
+                        $("#barMonthlyKPF").css("width", data._monthlyKF + "%");
+                        $("#spanMonthlyKPF").text(NumberConvert(data._monthlyKF) + "%");
+                        $("#barAnnualKPF").css("width", data._annualKF + "%");
+                        $("#spanAnnualKPF").text(NumberConvert(data._annualKF) + "%");
+
+                        //Meteorology
+                        $("#irradiation").html(data.endData == null ? "-" : NumberConvert(data.endData.irradiation) + " W/m²");
+                        $("#wind").html(data.endData == null ? "-" : NumberConvert(data.endData.wind) + " m/s");
+                        $("#cell").html(data.endData == null ? "-" : NumberConvert(data.endData.cellTemp) + " °C");
+                        $("#external").html(data.endData == null ? "-" : NumberConvert(data.endData.extTemp) + " °C");
+
+                        //Current
+                        $("#Pdc").html(data.endData == null ? "-" : NumberConvert(data.endData.powerDc) + " kW");
+                        $("#Efficiency").html(NumberConvert(data.efficiency) + " %");
+                        $("#specificYield").html(NumberConvert(data.specificYield) + ' kWh/kWp');
+                        $("#ActualValue").html(NumberConvert(data.actualValue) + ' %');
+                        $("#Co2").html(NumberConvert(data._totalProduction / 1000 * 1054) + ' t');
+                        $('#selectedCo2').on('change', function () {
+
+                            var ss = $('#selectedCo2').val();
+
+                            if (ss == 0) {
+                                $("#Co2").html(NumberConvert(data._totalProduction / 1000 * 1054) + ' t');
+                            }
+                            else if (ss == 1) {
+                                $("#Co2").html(NumberConvert(data._totalProduction / 1000 * 888) + ' t');
+                            }
+                            else if (ss == 2) {
+                                $("#Co2").html(NumberConvert(data._totalProduction / 1000 * 499) + ' t');
+                            }
+
+                        });
+
+
+                    }
+                });
+            }
+
+            if (chartType == 1) {
+
+
+                currentlySelectedChartNamePart1 = _productionText;
+
+                $.ajax({
+                    type: "GET",
+                    url: "/Dashboard/GetDailyProductionChart",
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    data: { beginDate: dtpicker1Val, stationId: stId },
+                    success: function (data) {
+                        $('#loader1').hide();
+
+                        $('.stationName').html(data.stationName);
+
+                        var PowerACList = [];
+                        var IrradiationList = [];
+                        var EnergyList = [];
+                        var MaxList = [];
+                        var EKKPowerACList = [];
+                        var skala1;
+
+                        if (data.ErrorMessage != "No Data") {
+
+                            if (data._acInstalledPower == null) {
+                                skala1 = 1700;
+                            }
+                            else {
+                                skala1 = data._acInstalledPower * 1.45;
+                            }
+
+                            var skala2;
+                            if (data._irradiationScale == null) {
+                                skala2 = 1400;
+                            }
+                            else {
+                                skala2 = data._irradiationScale * 1.3;
+                            }
+
+
+
+                            $.each(data.listData, function (i, item) {
+                                PowerACList.push([item.dateUTC, (item.powerAc)]);
+                                IrradiationList.push([item.dateUTC, (item.irradiation)]);
+                                EnergyList.push([item.dateUTC, (item.energy)]);
+                                MaxList.push([item.dateUTC, (item.maxPowerAc)]);
+                                EKKPowerACList.push([item.dateUTC, (item.ekkPowerAc)]);
+                            });
+                        }
+
+                        if (data.isToday || isMenuClick) {
+
+                            if (data.ErrorMessage == "No Data") {
+                                var gaugeTarget = data._acInstalledPower * 1.20;
+                                var acPower = 0;
+                                var ekkAcPower = 0;
+                                GetGauge(gaugeTarget, acPower, ekkAcPower);
+                            }
+                            else {
+                                var gaugeTarget = data._acInstalledPower * 1.20;
+                                var acPower = data.endData.powerAc;
+                                var ekkAcPower = data.endData.ekkPowerAc;
+                                GetGauge(gaugeTarget, acPower, ekkAcPower);
+                            }
+
+                            //gunluk
+                            $("#dailyEnergy").html(NumberConvert(data._dailyProduction) + " MWh");
+                            $("#dailyIncome").html(NumberConvert(data._dailyIncome) + " $");
+
+                            //aylik
+                            $("#aylikEnerji").html(NumberConvert(data._monthlyProduction) + " MWh");
+                            $("#aylikGelir").html(NumberConvert(data._monthlyIncome) + " $");
+
+                            //yıllık
+                            $("#yillikEnerji").html(NumberConvert(data._annualProduction) + " MWh");
+                            $("#yillikGelir").html(NumberConvert(data._annualIncome) + " $");
+                            //toplam
+                            $("#toplamEnerji").html(NumberConvert(data._totalProduction) + " MWh");
+                            $("#toplamGelir").html(NumberConvert(data._totalIncome) + " $");
+
+                            //Progresbar PR
+                            $("#barDailyPR").css("width", data._dailyPr + "%");
+                            $("#spanDailyPR").text(NumberConvert(data._dailyPr) + "%");
+                            $("#barMonthlyPR").css("width", data._monthlyPr + "%");
+                            $("#spanMonthlyPR").text(NumberConvert(data._monthlyPr) + "%");
+                            $("#barAnnualPR").css("width", data._annualPr + "%");
+                            $("#spanAnnualPR").text(NumberConvert(data._annualPr) + "%");
+                            $("#barTotalPR").css("width", data._totalPr + "%");
+                            $("#spanTotalPR").text(NumberConvert(data._totalPr) + "%");
+                            //Progresbar KPF
+                            $("#barDailyKPF").css("width", data._dailyKF + "%");
+                            $("#spanDailyKPF").text(NumberConvert(data._dailyKF) + "%");
+                            $("#barMonthlyKPF").css("width", data._monthlyKF + "%");
+                            $("#spanMonthlyKPF").text(NumberConvert(data._monthlyKF) + "%");
+                            $("#barAnnualKPF").css("width", data._annualKF + "%");
+                            $("#spanAnnualKPF").text(NumberConvert(data._annualKF) + "%");
+
+                            //Meteorology
+                            $("#irradiation").html(data.endData == null ? "-" : NumberConvert(data.endData.irradiation) + " W/m²");
+                            $("#wind").html(data.endData == null ? "-" : NumberConvert(data.endData.wind) + " m/s");
+                            $("#cell").html(data.endData == null ? "-" : NumberConvert(data.endData.cellTemp) + " °C");
+                            $("#external").html(data.endData == null ? "-" : NumberConvert(data.endData.extTemp) + " °C");
+
+                            //Current
+                            $("#Pdc").html(data.endData == null ? "-" : NumberConvert(data.endData.powerDc) + " kW");
+                            $("#Efficiency").html(NumberConvert(data.efficiency) + " %");
+                            $("#specificYield").html(NumberConvert(data.specificYield) + ' kWh/kWp');
+                            $("#ActualValue").html(NumberConvert(data.actualValue) + ' %');
+                            $("#Co2").html(NumberConvert(data._totalProduction / 1000 * 1054) + ' t');
+                            $('#selectedCo2').on('change', function () {
+
+                                var ss = $('#selectedCo2').val();
+
+                                if (ss == 0) {
+                                    $("#Co2").html(NumberConvert(data._totalProduction / 1000 * 1054) + ' t');
+                                }
+                                else if (ss == 1) {
+                                    $("#Co2").html(NumberConvert(data._totalProduction / 1000 * 888) + ' t');
+                                }
+                                else if (ss == 2) {
+                                    $("#Co2").html(NumberConvert(data._totalProduction / 1000 * 499) + ' t');
+                                }
+
+                            });
+
+                        }
+
+                        Highcharts.setOptions({
+                            lang: {
+                                thousandsSep: '.',
+                                decimalPoint: ','
+                            }
+                        });
+                        var chartDailyProd = Highcharts.chart('container', {
+                            chart: {
+                                zoomType: 'xy'
+                                //borderWidth: 2
+                                //marginRight: 300
+                            },
+                            lang: {
+                                thousandsSep: ','
+                            },
+                            title: {
+                                text: currentlySelectedChartNamePart1
+                            },
+                            subtitle: {
+                                text: ""
+                            },
+                            legend: {
+                                //layout: 'vertical',
+                                align: 'left',
+                                x: 80,
+                                verticalAlign: 'top',
+                                y: 55,
+                                floating: true,
+                                backgroundColor:
+                                    Highcharts.defaultOptions.legend.backgroundColor || // theme
+                                    'rgba(255,255,255,0.25)'
+                                //align: 'center',
+                                //verticalAlign: 'top',
+                                //floating: true,
+                                //x: 0,
+                                //y: 30
+                            },
+                            xAxis: {
+                                type: 'datetime',
+                                dateTimeLabelFormats: { // don't display the dummy year
+                                    month: '%e. %b',
+                                    year: '%b'
+                                },
+                                title: {
+                                    text: ''
+                                },
+                                crosshair: true
+                            },
+                            yAxis: [{
+                                lineWidth: 1,
+                                tickWidth: 1,
+                                title: {
+                                    align: 'high',
+                                    offset: 0,
+                                    text: _powerText + ' AC',
+                                    rotation: 0,
+                                    y: -10,
+                                    style: {
+                                        color: '#399428'
+                                    }
+                                },
+                                min: 0,
+                                max: skala1,
+                                labels: {
+                                    format: '{value} kW',
+                                    style: {
+                                        color: '#399428'
+                                    }
+                                }
+                            }, {
+                                lineWidth: 1,
+                                tickWidth: 1,
+                                title: {
+                                    align: 'high',
+                                    offset: 0,
+                                    text: _irradiationText,
+                                    rotation: 0,
+                                    y: -10,
+                                    style: {
+                                        color: '#4661c3'
+                                    }
+                                },
+                                opposite: true,
+                                min: 0,
+                                max: skala2,
+                                labels: {
+                                    format: '{value} W/m²',
+                                    style: {
+                                        color: '#4661c3'
+                                    }
+                                }
+                            },
+                            {
+                                lineWidth: 1,
+                                tickWidth: 1,
+                                title: {
+                                    align: 'high',
+                                    offset: 0,
+                                    text: _energyText,
+                                    rotation: 0,
+                                    y: -10,
+                                    style: {
+                                        color: '#d59f3b'
+                                    }
+                                },
+                                opposite: true,
+                                min: 0,
+                                labels: {
+                                    format: '{value} MWh',
+                                    style: {
+                                        color: '#d59f3b'
+                                    }
+                                }
+                            }
+                                , {
+
+                                lineWidth: 1,
+                                tickWidth: 1,
+                                visible: false,
+                                title: {
+                                    align: 'high',
+                                    offset: 0,
+                                    text: 'EKK AC ' + _powerText,
+                                    rotation: 0,
+                                    y: -10,
+                                    style: {
+                                        color: '#f33c4d'
+                                    }
+                                },
+                                opposite: true,
+                                min: 0,
+                                labels: {
+                                    format: '{value} MWh',
+                                    style: {
+                                        color: '#f33c4d'
+                                    }
+                                }
+                            }
+                            ],
+                            plotOptions: {
+                                area: {
+                                    //fillColor: {
+                                    //    linearGradient: {
+                                    //        x1: 0,
+                                    //        y1: 0,
+                                    //        x2: 0,
+                                    //        y2: 1
+                                    //    },
+                                    //    stops: [
+                                    //        [0.85, Highcharts.getOptions().colors[2]],
+                                    //        [1, Highcharts.color(Highcharts.getOptions().colors[2]).setOpacity(0).get('rgba')]
+                                    //    ]
+                                    //},
+                                    marker: {
+                                        radius: 2
+                                    },
+                                    lineWidth: 1.5,
+                                    states: {
+                                        hover: {
+                                            lineWidth: 1.5
+                                        }
+                                    },
+                                    threshold: null
+                                },
+                                line: {
+                                    lineWidth: 1.5,
+                                    states: {
+                                        hover: {
+                                            lineWidth: 1.5
+                                        }
+                                    },
+                                    threshold: null
+                                }
+                            },
+                            //tooltip: {
+                            //    headerFormat: '<b>{series.name}</b><br>',
+                            //    pointFormat: '{point.x:%A, %b %e, %H:%M:%S} : {point.y:.2f} '
+                            //},
+                            //tooltip: {
+                            //    formatter: function () {
+                            //        // The first returned item is the header, subsequent items are the
+                            //        // points
+                            //        console.log(this);
+                            //        return ['<b>' + this.x + '</b>'].concat(
+                            //            this.points ?
+                            //                this.points.map(function (point) {
+                            //                    return point.series.name + ': ' + point.y + 'm';
+                            //                }) : []
+                            //        );
+                            //    },
+                            //    split: true,
+                            //    //shared: true
+                            //},
+                            tooltip: {
+                                shared: true,
+                                useHTML: true,
+                                headerFormat: '<b> {point.key} </b><table>',
+                                pointFormat: '<tr><td style="color: {series.color}">{series.name}: </td>' +
+                                    '<td style="text-align: right"><b>{point.y} </b></td></tr>',
+                                footerFormat: '</table>',
+                                valueDecimals: 2
+                            },
+                            series: [{
+                                type: 'area',
+                                name: _powerText + ' AC',
+                                color: '#14d01c',
+                                data: PowerACList,
+                                yAxis: 0,
+                                //format: '{y} mm',
+                                dataLabels: {
+                                    enabled: false,
+                                    format: '{y} kW'
+                                },
+                                tooltip: {
+                                    valueSuffix: ' kW'
+                                }
+                            }, {
+                                type: 'line',
+                                name: _irradiationText,
+                                color: '#052ec7',
+                                data: IrradiationList,
+                                yAxis: 1,
+                                marker: {
+                                    enabled: false
+                                },
+                                //dashStyle: 'shortdot',
+                                tooltip: {
+                                    valueSuffix: ' W/m²'
+                                }
+                            }, {
+                                type: 'line',
+                                name: _energyText,
+                                color: '#fea80c',
+                                data: EnergyList,
+                                yAxis: 2,
+                                tooltip: {
+                                    valueSuffix: ' MWh'
+                                }
+                            }, {
+                                type: 'line',
+                                name: 'Max',
+                                color: '#d400a5',
+                                data: MaxList,
+                                yAxis: 0,
+                                tooltip: {
+                                    valueSuffix: ' kW'
+                                }
+                            }, {
+                                type: 'line',
+                                name: 'EKK ' + _powerText + ' AC',
+                                color: '#f33c4d',
+                                data: EKKPowerACList,
+                                visible: false,
+                                yAxis: 0,
+                                tooltip: {
+                                    valueSuffix: ' MWh'
+                                }
+                            }
+
+                            ]
+
+                        });
+
+                    }
+                });
+            }
+
+            else if (chartType == 2) {
+
+                currentlySelectedChartNamePart1 = _meteorologyText;
+
+                $.ajax({
+                    type: "get",
+                    url: "/Dashboard/GetMeteorologyChart",
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    data: { beginDate: dtpicker1Val, stationId: stId },
+                    success: function (data) {
+                        $('#loader1').hide();
+
+                        var IrradiationList = [];
+                        var CellTempList = [];
+                        var ExtTempList = [];
+                        var WindList = [];
+                        var PyranometerList = [];
+                        $.each(data.listData, function (i, item) {
+                            IrradiationList.push([item.dateUTC, (item.irradiation)]);
+                            CellTempList.push([item.dateUTC, (item.cellTemp)]);
+                            ExtTempList.push([item.dateUTC, (item.extTemp)]);
+                            WindList.push([item.dateUTC, (item.wind)]);
+                            PyranometerList.push([item.dateUTC, (item.pyranometer)]);
+                        });
+
+                        $("#irradiation").html(NumberConvert(data.endData.irradiation) + " W/m²");
+                        $("#wind").html(NumberConvert(data.endData.wind) + " m/s");
+                        $("#cell").html(NumberConvert(data.endData.cellTemp) + " °C");
+                        $("#external").html(NumberConvert(data.endData.extTemp) + " °C");
+
+                        var chartDailyProd = Highcharts.chart('container', {
+                            chart: {
+                                zoomType: 'xy'
+                            },
+                            loading: {
+                                hideDuration: 1000,
+                                showDuration: 1000
+                            },
+                            title: {
+                                text: currentlySelectedChartNamePart1
+                            },
+                            subtitle: {
+                                text: ""
+                            },
+                            xAxis: {
+                                type: 'datetime',
+                                dateTimeLabelFormats: { // don't display the dummy year
+                                    month: '%e. %b',
+                                    year: '%b'
+                                },
+                                title: {
+                                    text: ''
+                                },
+                                crosshair: true
+                            },
+                            yAxis: [{
+                                lineWidth: 1,
+                                tickWidth: 1,
+                                title: {
+                                    align: 'high',
+                                    offset: 0,
+                                    text: _irradiationText + ' (W/m²)',
+                                    rotation: 0,
+                                    y: -10,
+                                    style: {
+                                        color: 'rgba(52,152,219,1)'
+                                    }
+                                },
+                                min: 0,
+                                //max: skala1,
+                                labels: {
+                                    format: '{value} W/m²',
+                                    style: {
+                                        color: 'rgba(52,152,219,1)'
+                                    }
+                                }
+                            }, {
+                                lineWidth: 1,
+                                tickWidth: 1,
+                                title: {
+                                    align: 'high',
+                                    offset: 0,
+                                    text: _tempText + ' (°C)',
+                                    rotation: 0,
+                                    y: -10,
+                                    style: {
+                                        color: '#e74c3c'
+                                    }
+                                },
+                                opposite: true,
+                                min: 0,
+                                //max: skala2,
+                                labels: {
+                                    format: '{value} °C',
+                                    style: {
+                                        color: '#e74c3c'
+                                    }
+                                }
+                            },
+                            {
+                                lineWidth: 1,
+                                tickWidth: 1,
+                                title: {
+                                    align: 'high',
+                                    offset: 0,
+                                    text: _windSpeedText + ' (m/s)',
+                                    rotation: 0,
+                                    y: -10,
+                                    style: {
+                                        color: '#9B59B6'
+                                    }
+                                },
+                                opposite: true,
+                                min: 0,
+                                labels: {
+                                    format: '{value} m/s',
+                                    style: {
+                                        color: '#9B59B6'
+                                    }
+                                }
+                            }
+                            ],
+                            legend: {
+                                enabled: false
+                            },
+                            plotOptions: {
+                                area: {
+                                    //fillColor: {
+                                    //    linearGradient: {
+                                    //        x1: 0,
+                                    //        y1: 0,
+                                    //        x2: 0,
+                                    //        y2: 1
+                                    //    },
+                                    //    stops: [
+                                    //        [0.85, Highcharts.getOptions().colors[2]],
+                                    //        [1, Highcharts.color(Highcharts.getOptions().colors[2]).setOpacity(0).get('rgba')]
+                                    //    ]
+                                    //},
+                                    marker: {
+                                        radius: 2
+                                    },
+                                    lineWidth: 1.5,
+                                    states: {
+                                        hover: {
+                                            lineWidth: 1.5
+                                        }
+                                    },
+                                    threshold: null
+                                },
+                                line: {
+                                    lineWidth: 1.5,
+                                    states: {
+                                        hover: {
+                                            lineWidth: 1.5
+                                        }
+                                    },
+                                    threshold: null
+                                }
+                            },
+                            tooltip: {
+                                shared: true,
+                                useHTML: true,
+                                headerFormat: '<b> {point.key} </b><table>',
+                                pointFormat: '<tr><td style="color: {series.color}">{series.name}: </td>' +
+                                    '<td style="text-align: right"><b>{point.y} </b></td></tr>',
+                                footerFormat: '</table>',
+                                valueDecimals: 2
+                            },
+                            legend: {
+                                //layout: 'vertical',
+                                align: 'left',
+                                x: 80,
+                                verticalAlign: 'top',
+                                y: 55,
+                                floating: true,
+                                backgroundColor:
+                                    Highcharts.defaultOptions.legend.backgroundColor || // theme
+                                    'rgba(255,255,255,0.25)'
+                            },
+                            series: [{
+                                type: 'area',
+                                name: _irradiationText,
+                                color: 'rgba(52,152,219,0.5)',
+                                data: IrradiationList,
+                                yAxis: 0,
+                                //format: '{y} mm',
+                                dataLabels: {
+                                    enabled: false,
+                                    format: '{y} W/m²'
+                                },
+                                tooltip: {
+                                    valueSuffix: ' W/m²'
+                                }
+                            }, {
+                                type: 'line',
+                                name: _cellTempText,
+                                color: '#179e17',
+                                data: CellTempList,
+                                yAxis: 1,
+                                marker: {
+                                    enabled: false
+                                },
+                                //dashStyle: 'shortdot',
+                                tooltip: {
+                                    valueSuffix: ' °C'
+                                }
+                            }, {
+                                type: 'line',
+                                name: _extTempText,
+                                color: '#e74c3c',
+                                data: ExtTempList,
+                                yAxis: 1,
+                                marker: {
+                                    enabled: false
+                                },
+                                //dashStyle: 'shortdot',
+                                tooltip: {
+                                    valueSuffix: ' °C'
+                                }
+                            }, {
+                                type: 'line',
+                                name: _windSpeedText,
+                                color: '#9B59B6',
+                                data: WindList,
+                                yAxis: 2,
+                                tooltip: {
+                                    valueSuffix: ' m/s'
+                                }
+                            }, {
+                                type: 'line',
+                                name: _pyranometerText,
+                                color: '#fea80c',
+                                data: PyranometerList,
+                                visible: false,
+                                yAxis: 0,
+                                dataLabels: {
+                                    enabled: false,
+                                    format: '{y} W/m²'
+                                },
+                                tooltip: {
+                                    valueSuffix: ' W/m²'
+                                }
+                            }
+
+                            ],
+                            responsive: {
+                                rules: [{
+                                    condition: {
+                                        maxWidth: 1500
+                                    },
+                                    chartOptions: {
+                                        legend: {
+                                            floating: false,
+                                            layout: 'horizontal',
+                                            align: 'center',
+                                            verticalAlign: 'bottom',
+                                            x: 0,
+                                            y: 0
+                                        },
+                                        yAxis: [{
+                                            labels: {
+                                                align: 'right',
+                                                x: 0,
+                                                y: -6
+                                            },
+                                            showLastLabel: false
+                                        }, {
+                                            labels: {
+                                                align: 'left',
+                                                x: 0,
+                                                y: -6
+                                            },
+                                            showLastLabel: false
+                                        }, {
+                                            visible: false
+                                        }]
+                                    }
+                                }]
+                            }
+                        });
+
+
+                    }
+                });
+            }
+
+            else if (chartType == 3) {
+
+                currentlySelectedChartNamePart1 = _monthlyText + " " + _productionText;
+
+                $.ajax({
+                    type: "get",
+                    url: "/Dashboard/GetMonthlyProduction",
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    data: { stationId: stId, beginDate: dtp1.value },
+                    success: function (data) {
+                        $('#loader1').hide();
+
+                        var DateList = [];
+                        var ProductionList = [];
+                        var PRList = [];
+                        var TargetList = [];
+
+                        $.each(data.listPR, function (i, item) {
+                            DateList.push(i + 1);
+                            ProductionList.push(item._enerji);
+                            PRList.push(item._pr);
+                            TargetList.push(data._target);
+                        });
+
+                        Highcharts.chart('container', {
+                            chart: {
+                                zoomType: 'xy'
+                            },
+                            title: {
+                                text: currentlySelectedChartNamePart1
+                            },
+                            subtitle: {
+                                text: ""
+                            },
+                            xAxis: [{
+                                categories: DateList,
+                                crosshair: true
+                            }],
+                            yAxis: [{ // Primary yAxis
+                                labels: {
+                                    format: '{value} %',
+                                    style: {
+                                        color: Highcharts.getOptions().colors[0]
+                                    }
+                                },
+                                title: {
+                                    text: 'PR',
+                                    style: {
+                                        color: Highcharts.getOptions().colors[0]
+                                    }
+                                },
+                                opposite: true
+
+                            }, { // Secondary yAxis
+                                gridLineWidth: 0,
+                                    title: {
+                                        text: _productionText,
+                                    style: {
+                                        color: Highcharts.getOptions().colors[2]
+                                    }
+                                },
+                                labels: {
+                                    format: '{value} MWh',
+                                    style: {
+                                        color: Highcharts.getOptions().colors[2]
+                                    }
+                                }
+
+                            }],
+                            tooltip: {
+                                shared: true
+                            },
+                            legend: {
+                                layout: 'vertical',
+                                align: 'left',
+                                x: 80,
+                                verticalAlign: 'top',
+                                y: 55,
+                                floating: true,
+                                backgroundColor:
+                                    Highcharts.defaultOptions.legend.backgroundColor || // theme
+                                    'rgba(255,255,255,0.25)'
+                            },
+                            series: [{
+                                name: _productionText,
+                                type: 'column',
+                                yAxis: 1,
+                                color: Highcharts.getOptions().colors[2],
+                                data: ProductionList,
+                                tooltip: {
+                                    valueSuffix: ' MWh'
+                                }
+
+                            }, {
+                                name: _targetText,
+                                type: 'spline',
+                                yAxis: 1,
+                                color: Highcharts.getOptions().colors[1],
+                                data: TargetList,
+                                tooltip: {
+                                    valueSuffix: ' MWh'
+                                }
+                            }, {
+                                name: 'PR',
+                                type: 'column',
+                                data: PRList,
+                                color: Highcharts.getOptions().colors[0],
+                                marker: {
+                                    enabled: false
+                                },
+                                dashStyle: 'shortdot',
+                                tooltip: {
+                                    valueSuffix: ' %'
+                                }
+
+                            }],
+                            responsive: {
+                                rules: [{
+                                    condition: {
+                                        maxWidth: 500
+                                    },
+                                    chartOptions: {
+                                        legend: {
+                                            floating: false,
+                                            layout: 'horizontal',
+                                            align: 'center',
+                                            verticalAlign: 'bottom',
+                                            x: 0,
+                                            y: 0
+                                        },
+                                        yAxis: [{
+                                            labels: {
+                                                align: 'right',
+                                                x: 0,
+                                                y: -6
+                                            },
+                                            showLastLabel: false
+                                        }, {
+                                            labels: {
+                                                align: 'left',
+                                                x: 0,
+                                                y: -6
+                                            },
+                                            showLastLabel: false
+                                        }, {
+                                            visible: false
+                                        }]
+                                    }
+                                }]
+                            }
+                        });
+                    }
+                });
+
+
+            }
+
+            else if (chartType == 4) {
+
+                currentlySelectedChartNamePart1 = _annualText + " " + _productionText;
+
+                $.ajax({
+                    type: "get",
+                    url: "/Dashboard/GetAnnualProduction",
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    data: { stationId: stId, beginDate: dtp1.value },
+                    success: function (data) {
+                        $('#loader1').hide();
+
+                        var DateList = [];
+                        var ProductionList = [];
+                        var PRList = [];
+                        var TargetList = [];
+
+                        $.each(data.listPR, function (i, item) {
+                            DateList.push(i + 1);
+                            ProductionList.push(item.energy);
+                            PRList.push(item.pr);
+                            TargetList.push(item.target);
+                        });
+
+                        Highcharts.chart('container', {
+                            chart: {
+                                zoomType: 'xy'
+                            },
+                            title: {
+                                text: currentlySelectedChartNamePart1
+                            },
+                            subtitle: {
+                                text: ""
+                            },
+                            xAxis: [{
+                                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                                crosshair: true
+                            }],
+                            yAxis: [{ // Primary yAxis
+                                labels: {
+                                    format: '{value} %',
+                                    style: {
+                                        color: Highcharts.getOptions().colors[0]
+                                    }
+                                },
+                                title: {
+                                    text: 'PR',
+                                    style: {
+                                        color: Highcharts.getOptions().colors[0]
+                                    }
+                                },
+                                opposite: true
+
+                            }, { // Secondary yAxis
+                                gridLineWidth: 0,
+                                title: {
+                                    text: _productionText,
+                                    style: {
+                                        color: Highcharts.getOptions().colors[2]
+                                    }
+                                },
+                                labels: {
+                                    format: '{value} MWh',
+                                    style: {
+                                        color: Highcharts.getOptions().colors[2]
+                                    }
+                                }
+
+                            }],
+                            tooltip: {
+                                shared: true
+                            },
+                            legend: {
+                                layout: 'vertical',
+                                align: 'left',
+                                x: 80,
+                                verticalAlign: 'top',
+                                y: 55,
+                                floating: true,
+                                backgroundColor:
+                                    Highcharts.defaultOptions.legend.backgroundColor || // theme
+                                    'rgba(255,255,255,0.25)'
+                            },
+                            series: [{
+                                name: _productionText,
+                                type: 'column',
+                                yAxis: 1,
+                                color: Highcharts.getOptions().colors[2],
+                                data: ProductionList,
+                                tooltip: {
+                                    valueSuffix: ' MWh'
+                                }
+
+                            }, {
+                                name: _targetText,
+                                type: 'spline',
+                                yAxis: 1,
+                                color: Highcharts.getOptions().colors[1],
+                                data: TargetList,
+                                tooltip: {
+                                    valueSuffix: ' MWh'
+                                }
+                            }, {
+                                name: 'PR',
+                                type: 'column',
+                                data: PRList,
+                                color: Highcharts.getOptions().colors[0],
+                                marker: {
+                                    enabled: false
+                                },
+                                dashStyle: 'shortdot',
+                                tooltip: {
+                                    valueSuffix: ' %'
+                                }
+
+                            }],
+                            responsive: {
+                                rules: [{
+                                    condition: {
+                                        maxWidth: 500
+                                    },
+                                    chartOptions: {
+                                        legend: {
+                                            floating: false,
+                                            layout: 'horizontal',
+                                            align: 'center',
+                                            verticalAlign: 'bottom',
+                                            x: 0,
+                                            y: 0
+                                        },
+                                        yAxis: [{
+                                            labels: {
+                                                align: 'right',
+                                                x: 0,
+                                                y: -6
+                                            },
+                                            showLastLabel: false
+                                        }, {
+                                            labels: {
+                                                align: 'left',
+                                                x: 0,
+                                                y: -6
+                                            },
+                                            showLastLabel: false
+                                        }, {
+                                            visible: false
+                                        }]
+                                    }
+                                }]
+                            }
+                        });
+                    }
+                });
+
+
+            }
+
+            else if (chartType == 5) {
+
+                currentlySelectedChartNamePart1 = _totalText + " " + _productionText;
+
+                $.ajax({
+                    type: "get",
+                    url: "/Dashboard/GetTotalProduction",
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    data: { stationId: stId },
+                    success: function (data) {
+                        $('#loader1').hide();
+
+                        var DateList = [];
+                        var ProductionList = [];
+                        var PRList = [];
+                        var TargetList = [];
+
+                        $.each(data, function (i, item) {
+                            ProductionList.push(item.energy);
+                            PRList.push(item.pr);
+                            TargetList.push(item.target);
+                            DateList.push(item.year)
+                        });
+
+                        Highcharts.chart('container', {
+                            chart: {
+                                zoomType: 'xy'
+                            },
+                            title: {
+                                text: currentlySelectedChartNamePart1
+                            },
+                            subtitle: {
+                                text: ""
+                            },
+                            xAxis: [{
+                                categories: DateList,
+                                crosshair: true
+                            }],
+                            yAxis: [{ // Primary yAxis
+                                labels: {
+                                    format: '{value} %',
+                                    style: {
+                                        color: Highcharts.getOptions().colors[0]
+                                    }
+                                },
+                                title: {
+                                    text: 'PR',
+                                    style: {
+                                        color: Highcharts.getOptions().colors[0]
+                                    }
+                                },
+                                opposite: true
+
+                            }, { // Secondary yAxis
+                                gridLineWidth: 0,
+                                title: {
+                                    text: _productionText,
+                                    style: {
+                                        color: Highcharts.getOptions().colors[2]
+                                    }
+                                },
+                                labels: {
+                                    format: '{value} MWh',
+                                    style: {
+                                        color: Highcharts.getOptions().colors[2]
+                                    }
+                                }
+
+                            }],
+                            tooltip: {
+                                shared: true
+                            },
+                            legend: {
+                                layout: 'vertical',
+                                align: 'left',
+                                x: 80,
+                                verticalAlign: 'top',
+                                y: 55,
+                                floating: true,
+                                backgroundColor:
+                                    Highcharts.defaultOptions.legend.backgroundColor || // theme
+                                    'rgba(255,255,255,0.25)'
+                            },
+                            series: [{
+                                name: _productionText,
+                                type: 'column',
+                                yAxis: 1,
+                                color: Highcharts.getOptions().colors[2],
+                                data: ProductionList,
+                                tooltip: {
+                                    valueSuffix: ' MWh'
+                                }
+
+                            }, {
+                                name: _targetText,
+                                type: 'spline',
+                                yAxis: 1,
+                                color: Highcharts.getOptions().colors[1],
+                                data: TargetList,
+                                tooltip: {
+                                    valueSuffix: ' MWh'
+                                }
+                            }, {
+                                name: 'PR',
+                                type: 'column',
+                                color: Highcharts.getOptions().colors[0],
+                                data: PRList,
+                                marker: {
+                                    enabled: false
+                                },
+                                dashStyle: 'shortdot',
+                                tooltip: {
+                                    valueSuffix: ' %'
+                                }
+
+                            }],
+                            responsive: {
+                                rules: [{
+                                    condition: {
+                                        maxWidth: 500
+                                    },
+                                    chartOptions: {
+                                        legend: {
+                                            floating: false,
+                                            layout: 'horizontal',
+                                            align: 'center',
+                                            verticalAlign: 'bottom',
+                                            x: 0,
+                                            y: 0
+                                        },
+                                        yAxis: [{
+                                            labels: {
+                                                align: 'right',
+                                                x: 0,
+                                                y: -6
+                                            },
+                                            showLastLabel: false
+                                        }, {
+                                            labels: {
+                                                align: 'left',
+                                                x: 0,
+                                                y: -6
+                                            },
+                                            showLastLabel: false
+                                        }, {
+                                            visible: false
+                                        }]
+                                    }
+                                }]
+                            }
+                        });
+                    }
+                });
+
+
+            }
+
+
+        }
+
+
+
+        function GetChartPart2(stId, chartType, slcDropbox) {
+            $('#loader2').show();
+            $('#selectedTag').css('display', 'none');
+
+            if (chartType == 1 || chartType == 2) {
+
+                var dtpicker2Val = $('input[name="dtpicker2"]').val();
+
+                if (!dtpicker2Val || dtpicker2Val.length == 0) {
+                    dtpicker2Val = new Date().toISOString();
+                    var nowDate = DateFormat(new Date());
+
+                    dtp2.value = nowDate;
+                }
+            }
+
+            if (chartType == 1) {
+
+                currentlySelectedChartNamePart2 = _productionText;
+
+                $.ajax({
+                    type: "get",
+                    url: "/DashboardInverter/GetInvProduction",
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    data: { beginDate: dtp2.value, stationId: stId },
+                    success: function (data) {
+                        $('#loader2').hide();
+
+                        var InvName = [];
+                        var ProductionList = [];
+                        var SpecificYieldList = [];
+
+                        $("#InvDetailTable").empty();
+
+                        $("#InvDetailTable").append("<tr>" +
+                            "<th>Inverter</th>" +
+                            "<th>" + _energyText+"</th>" +
+                            "<th>" +_specificYieldText + "</th>" +
+                            "<th>AC " + _powerText + "</th>" +
+                            "<th>DC " + _powerText + "</th>" +
+                            "<th>AC " + _currentText + "</th>" +
+                            "<th>DC " + _currentText + "</th>" +
+                            "<th>AC " + _voltageText + "</th> " +
+                            "<th>DC " + _voltageText + "</th>" +
+                            "</tr>");
+
+                        $.each(data, function (i, item) {
+                            InvName.push(item.inverter_Name)
+                            ProductionList.push(item.dailyProduction);
+                            SpecificYieldList.push(item.specificYield);
+
+                            var invStr = "";
+                            var sum = Math.ceil(parseInt(i) / 2);
+                            if (i % 2 == 0) {
+
+                                invStr = (parseInt(PageStationID) + 1 + sum) + "-" + (i + 1);
+                            }
+                            else {
+                                invStr = (parseInt(PageStationID) + sum)  + "-" + (i + 1);
+                            }
+
+                            $("#InvDetailTable").append("<tr>" +
+                                "<td><button name='" + invStr + "' class='btnInvStr'>" + item.inverter_Name + "</button></td>" +
+                                "<td>" + NumberConvert(item.dailyProduction) + " kWh</td>" +
+                                "<td>" + NumberConvert(item.specificYield) + " kWh/kWp	</td>" +
+                                "<td>" + NumberConvert(item.acPower) + " W</td>" +
+                                "<td>" + NumberConvert(item.dcPower) + " W</td>" +
+                                "<td>" + NumberConvert(item.acCurrent) + " A</td>" +
+                                "<td>" + NumberConvert(item.dcCurrent) + " A</td>" +
+                                "<td>" + NumberConvert(item.acVoltage) + " V</td>" +
+                                "<td>" + NumberConvert(item.dcVoltage) + " V</td>" +
+                                "</tr>");
+                        });
+
+                        Highcharts.chart('container2', {
+                            chart: {
+                                zoomType: 'xy',
+                                renderTo: 'chart_div',
+                                type: 'column',
+                                //options3d: {
+                                //    enabled: true,
+                                //    alpha: 10,
+                                //    beta: 20,
+                                //    depth: 70
+                                //},
+                                style: {
+                                    fontFamily: 'Arial',
+                                    color: '#4c4c4c',
+                                    fontSize: '12px'
+                                },
+                                //plotBorderColor: '#fff',
+                                //plotBorderWidth: 0,
+                                //borderColor: '#fff',
+                                //borderRadius: 0,
+                                //borderWidth: 0,
+                                //marginTop: 20,
+                                //marginRight: 20,
+                                //marginBottom: 20,
+                                //ignoreHiddenSeries: true,
+                            },
+                            title: {
+                                text: "Inverter"
+                            },
+                            subtitle: {
+                                text: currentlySelectedChartNamePart2
+                            },
+                            xAxis: [{
+                                categories: InvName,
+                                crosshair: true
+                            }],
+                            yAxis: [{ // Primary yAxis
+                                labels: {
+                                    format: '{value} kWh/kWp',
+                                    style: {
+                                        color: Highcharts.getOptions().colors[1]
+                                    }
+                                },
+                                title: {
+                                    text: _specificYieldText,
+                                    style: {
+                                        color: Highcharts.getOptions().colors[1]
+                                    },
+                                    align: 'high',
+                                    offset: 0,
+                                    rotation: 0,
+                                    y: -10
+                                },
+                                min: 0,
+                                opposite: true
+                            }, { // Secondary yAxis
+                                title: {
+                                    text: _productionText,
+                                    style: {
+                                        color: Highcharts.getOptions().colors[0]
+                                    },
+                                    align: 'high',
+                                    offset: 0,
+                                    rotation: 0,
+                                    y: -10
+                                },
+                                labels: {
+                                    format: '{value} kWh',
+                                    style: {
+                                        color: Highcharts.getOptions().colors[0]
+                                    }
+                                },
+                                opposite: false
+                            }],
+                            tooltip: {
+                                shared: true
+                            },
+                            legend: {
+                                layout: 'vertical',
+                                align: 'left',
+                                x: 120,
+                                verticalAlign: 'top',
+                                y: 100,
+                                floating: true,
+                                backgroundColor:
+                                    Highcharts.defaultOptions.legend.backgroundColor || // theme
+                                    'rgba(255,255,255,0.25)'
+                            },
+                            series: [{
+                                name: _productionText,
+                                type: 'column',
+                                yAxis: 1,
+                                data: ProductionList,
+                                tooltip: {
+                                    valueSuffix: ' kWh'
+                                },
+                                cursor: 'pointer',
+                                events: {
+                                    click: function (event) {
+                                        var invNumber = event.point.index + 1;
+                                        var invStr = "";
+                                        var sum = Math.ceil(invNumber / 2);
+                                        if (invNumber % 2 == 0) {
+                                                invStr = (parseInt(PageStationID) + sum) + "-" + (invNumber);
+                                            }
+                                            else {
+                                                invStr = (parseInt(PageStationID) + sum) + "-" + (invNumber);
+                                            }
+
+
+                                        GetChartPart2(PageStationID, 4, invStr);
+                                    }
+                                }
+
+                            }, {
+                                name: _specificYieldText ,
+                                type: 'spline',
+                                data: SpecificYieldList,
+                                tooltip: {
+                                    valueSuffix: ' kWh/kWp'
+                                }
+                            }]
+                        });
+
+
+
+                    }
+                });
+
+
+            }
+
+            if (chartType == 2) {
+
+                currentlySelectedChartNamePart2 = _dailyText + " " + _heatmapText;
+
+                $.ajax({
+                    type: "get",
+                    url: "/DashboardInverter/GetDailyHeatMap/",
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    data: { stationId: stId, beginDate: dtp2.value },
+                    //data: "{'slctDate':'" + dtp2.value + "','stationId':'" + stId + "'}",
+                    success: function (data) {
+                        $('#loader2').hide();
+
+                        var json = [];
+                        var Nodata;
+                        var invNameList = [];
+                        if (data.ErrorMessage == "") {
+                            json = {
+                                "Data": []
+                            };
+                            Nodata = "";
+                            var listTime = [];
+                            for (var i = 0; i < data.invModel.series.length; i++) {
+                                var say = 0;
+                                for (var j = 0; j < data.invModel.series[i].values.length; j++) {
+                                    if (i == 0) {
+                                        listTime.push(data.invModel.Hours[j]);
+                                    }
+                                    json.Data.push({ 'x': say, 'y': i + 1, 'value': data.invModel.series[i].values[j] });
+                                    say++;
+                                }
+                                say = 0;
+                            }
+
+                            $.each(data.invModel.InverterList, function (i, item) {
+                                if (i == 0) {
+                                    invNameList.push("");
+                                }
+                                invNameList.push(item);
+                            });
+
+                        }
+                        else {
+                            json.Data = [];
+                            Nodata = _noData;
+                        }
+
+                        Highcharts.chart('container2', {
+                            chart: {
+                                type: 'heatmap',
+                                zoomType: 'xy'
+                                //height: (9 / 16 * 100) + '%', // 16:9 ratio
+                                //height: 600,
+                                //marginTop: 0,
+                                //marginBottom: 120,
+                                //plotBorderWidth: 1,
+                                //zoomType: 'xy',
+                                //resetZoomButton: {
+                                //    position: {
+                                //        x: 0,
+                                //        y: 20
+                                //    }
+                                //}
+
+                            },
+                            title: {
+                                text: "Inverter"
+                            },
+                            subtitle: {
+                                text: currentlySelectedChartNamePart2
+                            },
+                            credits: {
+                                enabled: false
+                            },
+                            xAxis: {
+                                type: 'category',
+                                tickPixelInterval: 200,
+                                categories: listTime,
+                                labels: {
+                                    formatter: function () {
+                                        return this.value;
+                                    }
+                                }
+                            },
+                            yAxis: {
+                                type: 'category',
+                                tickPixelInterval: 200,
+                                title: {
+                                    text: null
+                                },
+                                categories: invNameList,
+                                //labels: {
+                                //    formatter: function (a) {
+                                //        return "Inverter " + a.value;
+                                //    }
+                                //}
+                            },
+                            colorAxis: {
+                                stops: [
+                                    [0, '#af272f'],
+                                    [0.25, '#dd5f03'],
+                                    [0.5, '#ffb549'],
+                                    [0.75, '#f9c335'],
+                                    [1, '#f5e1a4']
+                                ],
+                                min: 0,
+                                max: 1,
+                                startOnTick: false,
+                                endOnTick: false,
+                                labels: {
+                                    format: '{value}'
+                                }
+                            },
+                            legend: {
+                                title: {
+                                    //text: _power + ' AC (normalized) [kW/kWp]'
+                                },
+                                align: 'center',
+                                verticalAlign: 'bottom',
+                                layout: 'horizontal',
+                                x: 0,
+                                y: 0,
+                                symbolWidth: 300
+                            },
+                            tooltip: {
+                                formatter: function () {
+                                    return "<b>Inverter" + [this.point.y] + "<br/>" + this.series.xAxis.categories[this.point.x] + "</b>" +
+                                        "<b> " + this.point.value + ' kW/kWp</b>';
+                                }
+                            },
+                            navigation: {
+                                backgroundColor: {
+                                    linearGradient: [0, 0, 0, 0]
+                                },
+                                buttonOptions: {
+                                    theme: {
+                                        fill: '#f7f7f700'
+                                    },
+                                    symbolStroke: 'black',
+                                    symbolSize: 13
+                                }
+                            },
+                            series: [{
+                                borderWidth: 0,
+                                turboThreshold: 0,
+                                data: json.Data
+                            }]
+                        });
+
+
+
+
+
+                    }
+                });
+
+
+            }
+
+            if (chartType == 3) {
+
+                currentlySelectedChartNamePart2 = _detailText;
+
+                $('#selectedTag').css('display', 'inline-block');
+
+                if (slcDropbox > 0) {
+
+                    if (slcDropbox == 1) {
+                        GetInvChart(InvDateList, InvPowerACList);
+                    }
+                    else if (slcDropbox == 2) {
+                        GetInvChart(InvDateList, InvPowerDCList);
+                    }
+                    else if (slcDropbox == 3) {
+                        GetInvChart(InvDateList, InvCurrentACList);
+                    }
+                    else if (slcDropbox == 4) {
+                        GetInvChart(InvDateList, InvCurrentDCList);
+                    }
+                    else if (slcDropbox == 5) {
+                        GetInvChart(InvDateList, InvVoltageACList);
+                    }
+                    else if (slcDropbox == 6) {
+                        GetInvChart(InvDateList, InvVoltageDCList);
+                    }
+                    else if (slcDropbox == 7) {
+                        GetInvChart(InvDateList, InvEnergyList);
+                    }
+
+                    $('#loader2').hide();
+                }
+                else {
+                    $.ajax({
+                        type: "get",
+                        url: "/DashboardInverter/GetInvDetail",
+                        dataType: "json",
+                        contentType: "application/json; charset=utf-8",
+                        data: { beginDate: dtp2.value, stationId: stId },
+                        success: function (data) {
+                            $('#loader2').hide();
+
+                            InvDateList = [];
+                            InvPowerACList = [];
+                            InvPowerDCList = [];
+                            InvCurrentACList = [];
+                            InvCurrentDCList = [];
+                            InvVoltageACList = [];
+                            InvVoltageDCList = [];
+                            InvEnergyList = [];
+
+                            var powerACList = [];
+                            var powerDCList = [];
+                            var currentACList = [];
+                            var currentDCList = [];
+                            var voltageACList = [];
+                            var voltageDCList = [];
+                            var energyList = [];
+
+                            $.each(data, function (i, item) {
+                                var _name = item.invName;
+                                $.each(item.dataList, function (j, item2) {
+                                    if (i == 0) {
+                                        InvDateList.push(TimeFormat(item2.date));
+                                    }
+
+                                    powerACList.push(item2.powerAC);
+                                    powerDCList.push(item2.powerDC);
+
+                                    currentACList.push(item2.currentAC);
+                                    currentDCList.push(item2.currentDC);
+
+                                    voltageACList.push(item2.voltageAC);
+                                    voltageDCList.push(item2.voltageDC);
+
+                                    energyList.push(item2.energy);
+                                });
+
+                                InvPowerACList.push({
+                                    'name': _name,
+                                    'data': powerACList,
+                                    'tooltip': {
+                                        valueSuffix: ' W'
+                                    }
+                                });
+                                InvPowerDCList.push({
+                                    'name': _name,
+                                    'data': powerDCList,
+                                    'tooltip': {
+                                        valueSuffix: ' W'
+                                    }
+                                });
+                                InvCurrentACList.push({
+                                    'name': _name,
+                                    'data': currentACList,
+                                    'tooltip': {
+                                        valueSuffix: ' A'
+                                    }
+                                });
+                                InvCurrentDCList.push({
+                                    'name': _name,
+                                    'data': currentDCList,
+                                    'tooltip': {
+                                        valueSuffix: ' A'
+                                    }
+                                });
+                                InvVoltageACList.push({
+                                    'name': _name,
+                                    'data': voltageACList,
+                                    'tooltip': {
+                                        valueSuffix: ' V'
+                                    }
+                                });
+                                InvVoltageDCList.push({
+                                    'name': _name,
+                                    'data': voltageDCList,
+                                    'tooltip': {
+                                        valueSuffix: ' V'
+                                    }
+                                });
+                                InvEnergyList.push({
+                                    'name': _name,
+                                    'data': energyList,
+                                    'tooltip': {
+                                        valueSuffix: ' Wh'
+                                    }
+                                });
+
+                                powerACList = [];
+                                powerDCList = [];
+                                currentACList = []
+                                currentDCList = []
+                                voltageACList = []
+                                voltageDCList = []
+                                energyList = [];
+                            });
+
+                            GetInvChart(InvDateList, InvPowerACList);
+                            $('#selectedTag').val(1);
+
+                        }
+                    });
+                }
+
+                function GetInvChart(dateList, valueList) {
+
+                    Highcharts.chart('container2', {
+                        chart: {
+                            zoomType: 'x'
+                        },
+                        title: {
+                            text: 'Inverter'
+                        },
+
+                        subtitle: {
+                            text: currentlySelectedChartNamePart2
+                        },
+
+                        yAxis: {
+                            title: {
+                                text: ''
+                            },
+                            min: 0
+                        },
+
+                        xAxis: {
+                            categories: dateList
+                        },
+
+                        legend: {
+                            layout: 'vertical',
+                            align: 'right',
+                            verticalAlign: 'middle'
+                        },
+
+                        //plotOptions: {
+                        //    series: {
+                        //        label: {
+                        //            connectorAllowed: true
+                        //        },
+                        //        pointStart: 2010
+                        //    }
+                        //},
+                        tooltip: {
+                            shared: true,
+                            useHTML: true,
+                            headerFormat: '<b> {point.key} </b><table>',
+                            pointFormat: '<tr><td style="color: {series.color}">{series.name}: </td>' +
+                                '<td style="text-align: right"><b>{point.y} </b></td></tr>',
+                            footerFormat: '</table>',
+                            valueDecimals: 2
+                        },
+                        series: valueList
+                    });
+                }
+
+            }
+
+            if (chartType == 4) {
+
+                currentlySelectedChartNamePart2 = " String";
+
+
+                if (slcDropbox.indexOf("-") > -1) {
+                    var _stationId = slcDropbox.split("-")[0];
+                    var _invNo = slcDropbox.split("-")[1];
+                }
+                else {
+
+                }
+
+
+                $.ajax({
+                type: "get",
+                url: "/DashboardInverter/GetInvString",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                data: { stationId: _stationId, beginDate: dtp2.value, invNo: _invNo },
+                success: function (data) {
+
+                    $('#loader2').hide();
+                    var _noData = $('#hdn_noData').val();
+                    var _current = $('#hdn_current').val();
+                    $("#LoadingImageHeatMap").hide();
+                    var json = [];
+                    var Nodata;
+                    if (data.ErrorMessage == "") {
+                         json = {
+                            "Data": []
+                        };
+                         Nodata = "";
+                         var listHour = [];
+                         var listStrName = [];
+                         var say = 0;
+                         for (var i = 0; i < data.strModel.Hours.length; i++) {
+                             listHour.push(data.strModel.Hours[i]);
+                             for (var j = 0; j < data.strModel.StringList.length; j++) {
+                                     json.Data.push({ 'x': say, 'y': j, 'value': data.strModel.series[j].values[i] });
+                                     if (i == 0) {
+                                     listStrName.push(data.strModel.StringList[j])
+                                 }
+                            }
+                             say++;
+                        }
+                    }
+                    else {
+                        json.Data = [];
+                        Nodata = _noData;
+                    }
+                    Highcharts.chart('container2', {
+                        chart: {
+                            type: 'heatmap',
+                            //marginBottom: 120,
+                            //height: 820,
+                            zoomType: 'xy',
+                            resetZoomButton: {
+                                position: {
+                                    x: 0,
+                                    y: 20
+                                }
+                            }
+                        },
+                        title: {
+                            text: "Inverter " + _invNo + currentlySelectedChartNamePart2
+                        },
+                        subtitle: {
+                            text: Nodata
+                        },
+                        credits: {
+                            enabled: false
+                        },
+                        xAxis: {
+                            type: 'category',
+                            tickPixelInterval: 200,
+                            categories: listHour,
+                            labels: {
+                                formatter: function () {
+                                    return this.value.toString().substr(0, 2) + ":"+this.value.toString().substr(2, 2);
+                                }
+                            }
+                        },
+                        yAxis: {
+                            type: 'category',
+                            title: {
+                                text: null
+                            },
+                            categories: listStrName,
+                            labels: {
+                                formatter: function (a) {
+                                    return a.value;
+                                }
+                            }
+                        },
+                        colorAxis: {
+                            stops: [
+                                [0, '#af272f'],
+                                [0.25, '#dd5f03'],
+                                [0.5, '#ffb549'],
+                                [0.75, '#f9c335'],
+                                [1, '#f5e1a4']
+                            ],
+                            min: 0,
+                            max: 10,
+                            startOnTick: false,
+                            endOnTick: false,
+                            labels: {
+                                format: '{value} A'
+                            }
+                        },
+                        legend: {
+                            title: {
+                                text: 'String ' + _current +' [A]'
+                            },
+                            align: 'center',
+                            verticalAlign: 'bottom',
+                            layout: 'horizontal',
+                            x: 0,
+                            y: 0,
+                            symbolWidth: 600
+                        },
+                           tooltip: {
+                            formatter: function () {
+                                var _value="";
+                                if (this.point.value == undefined) {
+                                    _value = "-";
+                                }
+                                    else{
+                                    _value = this.point.value;
+                                }
+
+                                return "<b>" + this.series.yAxis.categories[this.point.y] + "</b><br/><table>" +
+                                    "<tr><td></td></tr><tr><td style='color: { series.color }'>" + this.series.xAxis.categories[this.point.x].toString().substr(0, 2) + ":" + this.series.xAxis.categories[this.point.x].toString().substr(2, 2) + " </td>" +
+                                    "<td style='text-align:right'><b>" + _value+" A</b></td></tr></table>";
+                            }
+                        },
+                        navigation: {
+                            backgroundColor: {
+                                linearGradient: [0, 0, 0, 0]
+                            },
+                            buttonOptions: {
+                                theme: {
+                                    fill: '#f7f7f700'
+                                },
+                                symbolStroke: 'black',
+                                symbolSize: 13
+                            }
+                        },
+                        series: [{
+                            borderWidth: 0,
+                            color: '#76232f',
+                            turboThreshold: 0,
+                            data: json.Data
+                        }]
+                    });
+
+                    }
+        });
+
+            }
+
+        }
+
+
+        function GetGauge(target, acPower, ekkAcPower) {
+            Highcharts.setOptions({
+                lang: {
+                    thousandsSep: '.',
+                    decimalPoint: ','
+                }
+            });
+            var gaugeOptions = {
+                chart: {
+                    type: 'solidgauge',
+                    borderColor: '#b5b5b5',
+                    borderWidth: 1,
+                    height: '150px'
+                },
+                lang: {
+                    numericSymbols: ['万', '億'],
+                    numericSymbolMagnitude: 10000
+                },
+
+                title: null,
+
+                pane: {
+                    //center: ['50%', '85%'],
+                    size: '100%',
+                    startAngle: -90,
+                    endAngle: 90,
+                    background: {
+                        backgroundColor:
+                        Highcharts.defaultOptions.legend.backgroundColor || '#EEE',
+                        innerRadius: '60%',
+                        outerRadius: '100%',
+                        shape: 'arc'
+                    }
+                },
+
+                exporting: {
+                    enabled: false
+                },
+
+                //tooltip: {
+                //    enabled: false
+                //},
+                tooltip: {
+                    valueDecimals: 1,
+                    valuePrefix: '',
+                    valueSuffix: ' kW'
+                },
+                // the value axis
+                yAxis: {
+                    stops: [
+                        [0.1, '#a6e421'], // green
+                        [0.5, '#7fcc6c'], // yellow
+                        [0.9, '#55BF3B'] // red
+                    ],
+                    lineWidth: 2,
+                    tickWidth: 2,
+                    minorTickInterval: null,
+                    tickAmount: 2,
+                    title: {
+                        y: 90
+                    },
+                    labels: {
+                        y: 16
+                    }
+                },
+
+                plotOptions: {
+                    solidgauge: {
+                        dataLabels: {
+                            y: 5,
+                            borderWidth: 0,
+                            useHTML: true
+                        }
+                    }
+                }
+            };
+
+            // The speed gauge
+            var chartSpeed = Highcharts.chart('container-speed', Highcharts.merge(gaugeOptions, {
+                yAxis: {
+                    min: 0,
+                    max: target,
+                    title: {
+                        text: 'Inverter AC ' + _powerText,
+                        style: {
+                            color: '#4fdc55',
+                            fontWeight: 'bold'
+                        }
+                    }
+                },
+
+                credits: {
+                    enabled: false
+                },
+
+                series: [{
+                    name: 'Inverter AC ' + _powerText,
+                    data: [acPower],
+                    dataLabels: {
+                        format:
+                            '<div style="text-align:center">' +
+                            '<span style="font-size:11px">{y:,.1f}</span><br/>' +
+                            '<span style="font-size:9px;opacity:0.8">kW</span>' +
+                            '</div>'
+                    }
+                    //tooltip: {
+                    //    valueSuffix: ' kW'
+                    //}
+
+                }]
+
+            }));
+
+            // The RPM gauge
+            var chartRpm = Highcharts.chart('container-rpm', Highcharts.merge(gaugeOptions, {
+                yAxis: {
+                    min: 0,
+                    max: target,
+                    title: {
+                        text: 'EA AC ' + _powerText,
+                        style: {
+                            color: '#ff4c5d',
+                            fontWeight: 'bold'
+                        }
+                    }
+                },
+
+                series: [{
+                    name: 'EA AC ' + _powerText,
+                    data: [ekkAcPower],
+                    dataLabels: {
+                        format:
+                            '<div style="text-align:center">' +
+                            '<span style="font-size:11px">{y:,.1f}</span><br/>' +
+                            '<span style="font-size:9px;opacity:0.8">kW</span>' +
+                            '</div>'
+                    }
+                }]
+
+            }));
+
+        }
+
+
+
+    function NumberConvert(nStr) {
+
+        if (nStr != null) {
+            nStr = nStr.toFixed(2);
+            nStr += '';
+            x = nStr.split('.');
+            x1 = x[0];
+            x2 = x.length > 1 ? ',' + x[1] : '';
+            var rgx = /(\d+)(\d{3})/;
+            while (rgx.test(x1)) {
+                x1 = x1.replace(rgx, '$1' + '.' + '$2');
+            }
+            return x1 + x2;
+        }
+        else {
+            return "-";
+        }
+    }
+
+    function GetStation(id) {
+        $(".dropdown-content").empty();
+        $.ajax({
+            type: "get",
+            url: "/Dashboard/GetStationDetail",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            data: { stationId: id },
+            success: function (data) {
+
+                PageCompanyID = data.COMPANY_ID;
+
+                getWeather(data.WEATHER_LOCATION);
+                $('.stationName').html(data.NAME);
+
+                if (data.IS_STRING) {
+                    $('.btnString').css('display', 'inline-block');
+                }
+                else {
+                    $('.btnString').css('display', 'none');
+                }
+
+                if (data.IS_STRING_DC) {
+                    $('.btnStringDC').css('display', 'inline-block');
+                }
+                else {
+                    $('.btnStringDC').css('display', 'none');
+                }
+
+                if (data.IS_EKK) {
+                    $('.btnMVS').css('display', 'inline-block');
+                }
+                else {
+                    $('.btnMVS').css('display', 'none');
+                }
+
+                if (data.OSOS) {
+                    $('.btnOsos').css('display', 'inline-block');
+                }
+                else {
+                    $('.btnOsos').css('display', 'none');
+                }
+
+                if (data.STATION_TYPE == 3 || data.STATION_TYPE == 4) {
+
+                    $('.btnWago').css('display', 'inline-block');
+                    $('.btnJanitza').css('display', 'inline-block');
+                    wagoUrl = data.PLC_INTERFACE;
+                    janitzaUrl = data.EKK_INTERFACE;
+                }
+                else {
+                    $('.btnWago').css('display', 'none');
+                    $('.btnJanitza').css('display', 'none');
+                }
+
+                var dcAC = data.AC_INSTALLED_POWER == 0 || data.AC_INSTALLED_POWER == null ? 0 : (data.DC_INSTALLED_POWER / data.AC_INSTALLED_POWER).toFixed(2)
+
+                $('#stInsAC').html(data.AC_INSTALLED_POWER + " kWe");
+                $('#stInsDC').html(data.DC_INSTALLED_POWER + " kWp");
+                $('#stInsDCAC').html(dcAC);
+                $('#stTilt').html(data.PITCH_DETAIL + " °");
+                $('#stAzimuth').html(data.ORIENTATION + " °");
+                $('#stInvManu').html(data.INVERTER_MODEL);
+                $('#stModuleManu').html(data.PANEL_BRAND);
+                $('#stModuleType').html(data.PANEL_TYPE);
+                $('#stStartDate').html(data.START_DATE == null ? "-" : ConvertDateJson(data.START_DATE));
+                $('#stCoordinate').html(data.COORDINATE_INFORMATION);
+                var meteo;
+                if (data.IS_METEOROLOGY) {
+                    meteo = "<label><input type = 'checkbox' disabled = 'disabled' checked = 'checked'></label>";
+                }
+                else {
+                    meteo = "<label><input type = 'checkbox' disabled='disabled'></label>";
+                }
+                var pyro;
+                if (data.IS_PYRANOMETER) {
+                    pyro = "<label><input type = 'checkbox' disabled = 'disabled' checked = 'checked'></label>";
+                }
+                else {
+                    pyro = "<label><input type = 'checkbox' disabled='disabled'></label>";
+                }
+                var ekk;
+                if (data.IS_EKK) {
+                    ekk = "<label><input type = 'checkbox' disabled = 'disabled' checked = 'checked'></label>";
+                }
+                else {
+                    ekk = "<label><input type = 'checkbox' disabled='disabled'></label>";
+                }
+
+                $('#stMeteo').html(meteo);
+                $('#stPyr').html(pyro);
+                $('#stEKK').html(ekk);
+
+                checkAlarm();
+                GetCompanyStation(data.COMPANY_ID, id);
+            }
+        });
+    }
+
+    function GetCompanyStation(compId,statId) {
+
+            $.ajax({
+                type: "get",
+                url: "/Dashboard/GetDropdownStationList",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                data: { companyId: compId, stationId: statId },
+                success: function (data) {
+
+                    $(".dropdown-content").empty();
+                    $.each(data, function (i, item) {
+                        $(".dropdown-content").append("<a name='" + item.ID + "' class='btnStation'>" + item.NAME + "</a>");
+                    });
+
+                }
+            });
+        }
+
+    });
+
+</script>
+
+<script src="~/Content/weather/date.js"></script>
+
+<script>
+    function ConvertDateJson(vl) {
+
+        vl = vl.replace("Date", "");
+        vl = vl.replace("/", "");
+        vl = vl.replace("(", "");
+        vl = vl.replace(")", "");
+        vl = vl.replace("/", "").trim();
+
+        var vlDate = new Date(parseInt(vl));
+        return vlDate.toLocaleDateString();
+    }
+
+    function getWeather(cityName) {
+        var openWeatherAppId = 'b7204938043031ab1c7e0eb6df69baef',
+            openWeatherUrl = 'http://api.openweathermap.org/data/2.5/forecast/daily'
+
+        var request = $.ajax({
+            url: openWeatherUrl,
+            dataType: "jsonp",
+            data: { q: cityName, appid: openWeatherAppId, units: 'metric', lang: 'tr' },
+            jsonpCallback: "fetchData",
+            type: "GET"
+        }).fail(function (error) {
+
+            //console.error(error)
+            //alert('Error sending request')
+        })
+    }
+    function fetchData(forecast) {
+
+        //console.log(forecast)
+
+        $('#weatherState0').html(forecast.list[0].weather[0].description)
+        $('#CityCountry').html(forecast.city.country)
+        $('#City').html(forecast.city.name)
+        var _humidity = $('#hdn_humidity').val();
+        var _pressure = $('#hdn_pressure').val();
+        var _cloudiness = $('#hdn_cloudiness').val();
+        for (var i = 0; i < forecast.list.length; i++) {
+
+            var divNum = ".hava" + i;
+            $(divNum).attr('src', "/images/Weather/" + forecast.list[i].weather[0].icon + ".png");
+
+            var divTemp = "#temp" + i;
+            $(divTemp).html(forecast.list[i].temp.day + "°");
+
+            var divWind = "#wind" + i;
+            $(divWind).html(forecast.list[i].speed + " km/h");
+
+            var divDate = "#weatherDate" + i;
+            var date = "/Date(" + forecast.list[i].dt + "000)/";
+            $(divDate).html(ConvertDateJson(date));
+
+            var tooltipWeather = "#tooltipWeatherState" + i;
+            $(tooltipWeather).attr('title', forecast.list[i].weather[0].description);
+
+            var tooltipWeatherInfo = "#tooltip" + i;
+            $(tooltipWeatherInfo).attr('title', _humidity + ' : ' + forecast.list[i].humidity + '% \n' + _pressure + ' : ' + forecast.list[i].pressure + ' hpa \n' + _cloudiness + ' : ' + forecast.list[i].clouds + '%');
+
+        }
+    }
+
+    function RemoveWeather() {
+
+        $('#weatherState0').html("");
+        $('#CityCountry').html("");
+        $('#City').html("");
+
+        for (var i = 0; i < 6; i++) {
+
+            var divNum = ".hava" + i;
+            $(divNum).attr('src', "");
+
+            var divTemp = "#temp" + i;
+            $(divTemp).html("");
+
+            var divWind = "#wind" + i;
+            $(divWind).html("");
+
+            var divDate = "#weatherDate" + i;
+            $(divDate).html("");
+
+            //var tooltipWeather = "#tooltipWeatherState" + i;
+            //$(tooltipWeather).attr('title', forecast.list[i].weather[0].description);
+        }
+    }
+</script>

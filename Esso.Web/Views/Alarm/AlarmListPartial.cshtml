@@ -1,0 +1,365 @@
+﻿@using System.Web.UI.WebControls
+@using Esso.Data
+@using Microsoft.AspNet.Identity.EntityFramework;
+@using Esso.Web.Models
+@using DevExpress.Data.Filtering
+@using Esso.Models
+@using Esso.Web.ViewModels
+@using System.Threading;
+@using System.Globalization;
+
+@model int
+@{
+    Thread.CurrentThread.CurrentCulture = new CultureInfo("tr-TR");
+    DateTime date1 = DateTime.Parse(ViewData["date1"].ToString());
+    DateTime date2 = DateTime.Parse(ViewData["date2"].ToString());
+    DateTime date2_ = date2.Date.AddHours(23);
+    date2_ = date2_.AddMinutes(59);
+
+    EssoEntities DB = new EssoEntities();
+
+    var _station = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+
+    var _list = DB.AlarmStatus.Where(x => x.STATION_ID == Model && x.STATUS != 2).OrderBy(x => x.START_DATE).ToList();
+
+    List<AlarmStatusDTO> _list2 = DB.AlarmLogs.Join(DB.AlarmDefinitions, r => r.ALARM_DEF_ID, ro => ro.ID, (r, ro) => new { r, ro })
+            .Where(x => x.r.STATION_ID == Model && x.r.TAG_ID != 999)
+            .Select(s => new AlarmStatusDTO
+            {
+                ERROR_NUMBER = "0",// s.r.ALARM_DEF_ID.ToString(),
+                STATUS = s.r.STATE,
+                STATION_ID = s.r.STATION_ID,
+                START_DATE = s.r.CREATED_DATE,
+                END_DATE = s.r.END_DATE,
+                INVERTER_ID = s.r.INV_ID,
+                ID = s.r.ID,
+                ALARM_VALUE = s.r.ALARM_VALUE,
+                ALARM_DEF_ID = s.r.ALARM_DEF_ID
+            }).ToList();
+
+    var _listAlarmDesc = DB.AlarmDesc.ToList();
+    var _listAlarmDef = DB.AlarmDefinitions.Where(a => a.IS_DELETED == false).ToList();
+    var _listInv = DB.Inverters.Where(a => a.IS_DELETED == false && a.STATION_ID == Model).ToList();
+
+    List<AlarmStatusDTO> _ListDataSource = new List<AlarmStatusDTO>();
+    //Alarm2 bas.
+    for (int i = 0; i < _list2.Count; i++)
+    {
+        AlarmStatusDTO alarmStatus2 = new AlarmStatusDTO();
+        alarmStatus2.INVERTER_ID = _list2[i].INVERTER_ID;
+
+        TBL_INVERTER _TblInv2 = _listInv.Where(x => x.ID == _list2[i].INVERTER_ID).FirstOrDefault();
+
+        if (_TblInv2 != null)
+        {
+            alarmStatus2.INV_NAME = _TblInv2.NAME;
+        }
+        else
+        {
+            if (User.IsInRole("DEMO"))
+            {
+                alarmStatus2.INV_NAME = _station.DEMO_NAME;
+            }
+            else
+            {
+                alarmStatus2.INV_NAME = _station.NAME;
+            }
+        }
+
+        alarmStatus2.ERROR_NUMBER = _list2[i].ERROR_NUMBER;
+        alarmStatus2.STATUS = _list2[i].STATUS;
+        alarmStatus2.START_DATE = _list2[i].START_DATE;
+        alarmStatus2.END_DATE = _list2[i].END_DATE;
+        alarmStatus2.STATION_ID = _list2[i].STATION_ID;
+        alarmStatus2.ERROR_NUMBER_NAME = _listAlarmDef.Where(a => a.VALUE == _list2[i].ALARM_VALUE).FirstOrDefault().DESC;
+        alarmStatus2.ALARM_MESSAGE = _listAlarmDef.Where(a => a.VALUE == _list2[i].ALARM_VALUE).FirstOrDefault().ALARM_MESSAGE;
+
+        _ListDataSource.Add(alarmStatus2);
+
+    }
+    //Alarm2 bit.
+
+
+    for (int i = 0; i < _list.Count; i++)
+    {
+        AlarmStatusDTO alarmStatus = new AlarmStatusDTO();
+        alarmStatus.INVERTER_ID = _list[i].INVERTER_ID;
+
+        TBL_INVERTER _TblInv = _listInv.Where(x => x.ID == _list[i].INVERTER_ID).FirstOrDefault();
+
+        if (_TblInv != null)
+        {
+            alarmStatus.INV_NAME = _TblInv.NAME;
+        }
+        else
+        {
+            if (User.IsInRole("DEMO"))
+            {
+                alarmStatus.INV_NAME = _station.DEMO_NAME;
+            }
+            else
+            {
+                alarmStatus.INV_NAME = _station.NAME;
+            }
+        }
+
+        alarmStatus.ERROR_NUMBER = _list[i].ERROR_NUMBER;
+        alarmStatus.STATUS = _list[i].STATUS;
+        alarmStatus.START_DATE = _list[i].START_DATE;
+        alarmStatus.END_DATE = _list[i].END_DATE;
+        alarmStatus.STATION_ID = _list[i].STATION_ID;
+        alarmStatus.ERROR_NUMBER_NAME = _listAlarmDesc.Where(a => a.ERROR_NUMBER == _list[i].ERROR_NUMBER).FirstOrDefault().ERROR_DESC;
+        //alarmStatus.ALARM_MESSAGE = "";
+
+        _ListDataSource.Add(alarmStatus);
+
+    }
+
+    var __list = _ListDataSource.Where(x => x.START_DATE >= date1 && x.START_DATE <= date2_).OrderBy(x => x.START_DATE).ToList();
+
+    Esso.Web.App_Start.ApplicationUserManager userManager = new Esso.Web.App_Start.ApplicationUserManager(new UserStore<ApplicationUser>(new ApplicationDbContext()));
+
+    GridViewSettings settings = new Esso.Web.Controllers.AlarmController.GridHelper(Model).GridStationSetting;
+
+    settings.HtmlRowPrepared = (s, e) =>
+    {
+
+        if (e.RowType != GridViewRowType.Data) return;
+
+        var _type = _listAlarmDesc.Where(a => a.ERROR_NUMBER == e.GetValue("ERROR_NUMBER").ToString()).FirstOrDefault();
+        if (_type == null)
+
+        {
+            e.Row.ForeColor = System.Drawing.Color.FromArgb(0, 98, 158, 1);
+            e.Row.Font.Bold = true;
+            e.Row.ToolTip = e.GetValue("ALARM_MESSAGE").ToString();
+        }
+        else
+        {
+            if (_type.TYPE == 1)
+            {
+
+                e.Row.ForeColor = System.Drawing.Color.FromArgb(1, 241, 39, 39);
+                e.Row.Font.Bold = true;
+                e.Row.ToolTip = "";
+            }
+            else if (_type.TYPE == 2)
+            {
+
+                e.Row.ForeColor = System.Drawing.Color.FromArgb(1, 234, 187, 4);
+                e.Row.Font.Bold = true;
+                e.Row.ToolTip = "";
+            }
+            else
+            {
+                e.Row.ForeColor = System.Drawing.Color.FromArgb(0, 0, 0, 1);
+                e.Row.Font.Bold = true;
+                e.Row.ToolTip = "";
+            }
+        }
+
+    };
+
+    settings.ClientSideEvents.EndCallback = "EndCallback";
+
+    settings.Width = Unit.Percentage(100);
+    settings.Height = Unit.Percentage(100);
+    settings.CallbackRouteValues = new { Controller = "Alarm", Action = "AlarmListPartial", stationId = Model };
+
+    //settings.SettingsEditing.BatchUpdateRouteValues = new { Controller = "Alarm", Action = "BatchEditingUpdateModel" };
+    //settings.SettingsEditing.Mode = GridViewEditingMode.Batch;
+    //settings.SettingsEditing.BatchEditSettings.EditMode = GridViewBatchEditMode.Cell;
+    //settings.SettingsEditing.BatchEditSettings.StartEditAction = GridViewBatchStartEditAction.DblClick;
+    //settings.SettingsEditing.BatchEditSettings.HighlightDeletedRows = true;
+    settings.SettingsBehavior.AllowFixedGroups = true;
+    settings.Settings.ShowGroupPanel = false;
+    settings.Settings.ShowGroupButtons = false;
+    settings.Settings.ShowGroupedColumns = false;
+
+    //settings.SettingsPager.Visible = true;
+    //settings.Settings.VerticalScrollBarMode = ScrollBarMode.Visible;
+    //settings.Settings.VerticalScrollableHeight = 500;
+
+
+    settings.ClientSideEvents.Init = "grid_Init";
+
+    //settings.Styles.GroupRow.BackColor = System.Drawing.Color.FromArgb(1, 69, 119, 169);
+    settings.Styles.GroupRow.ForeColor = System.Drawing.Color.White;
+
+
+    settings.Styles.Header.ForeColor = System.Drawing.Color.FromArgb(1, 0, 98, 158);
+    settings.Styles.FilterBar.ForeColor = System.Drawing.Color.FromArgb(1, 0, 98, 158);
+    settings.Styles.PagerBottomPanel.ForeColor = System.Drawing.Color.FromArgb(1, 0, 98, 158);
+
+    settings.ControlStyle.Border.BorderColor = System.Drawing.Color.White;
+
+    settings.Styles.Table.Border.BorderColor = System.Drawing.Color.FromArgb(1, 84, 130, 175);
+
+    settings.Styles.DetailCell.BackColor = System.Drawing.Color.White;
+    settings.Styles.Header.BackColor = System.Drawing.Color.White;
+    settings.Styles.PagerBottomPanel.BackColor = System.Drawing.Color.White;
+    settings.Styles.PagerBottomPanel.BorderBottom.BorderColor = System.Drawing.Color.FromArgb(1, 84, 130, 175);
+
+    settings.Styles.GroupPanel.BorderBottom.BorderColor = System.Drawing.Color.FromArgb(1, 84, 130, 175);
+
+    settings.Styles.Header.Border.BorderColor = System.Drawing.Color.LightGray;
+    settings.Styles.Header.Border.BorderStyle = BorderStyle.Solid;
+
+    settings.Styles.PagerTopPanel.BackColor = System.Drawing.Color.White;
+
+    settings.Styles.Table.BackColor = System.Drawing.Color.White;
+    settings.Styles.Table.ForeColor = System.Drawing.Color.FromArgb(1, 0, 98, 158);
+
+    settings.Styles.CommandColumnItem.BackColor = System.Drawing.Color.White;
+    settings.Styles.GroupPanel.BackColor = System.Drawing.Color.White;
+
+    settings.Styles.FilterRow.BackColor = System.Drawing.Color.White;
+
+    settings.Styles.CommandColumn.BackColor = System.Drawing.Color.White;
+    settings.Settings.GridLines = System.Web.UI.WebControls.GridLines.None;
+
+    settings.ClientSideEvents.BeginCallback = "GridBgCallBack";
+
+    settings.ClientSideEvents.ToolbarItemClick = "OnToolbarItemClick1";
+
+    //settings.SettingsPager.PageSize = 30;
+
+    settings.CommandColumn.Visible = false;
+
+    settings.SettingsBehavior.AllowGroup = true;
+    settings.SettingsBehavior.AllowSort = true;
+    settings.Settings.ShowFilterRow = true;
+
+    settings.ClientSideEvents.ColumnGrouping = "function(s,e){ grid.ExpandAll(); }";
+
+    settings.Styles.AlternatingRow.BackColor = System.Drawing.Color.FromArgb(237, 237, 237);
+    //settings.SettingsPager.Mode = GridViewPagerMode.ShowPager;
+
+    settings.SettingsExport.Landscape = true;
+
+    if (settings.Toolbars.Count == 0)
+    {
+        settings.Toolbars.Add(toolbar =>
+        {
+            toolbar.Enabled = true;
+            toolbar.Position = GridToolbarPosition.Top;
+            toolbar.ItemAlign = GridToolbarItemAlign.Right;
+            toolbar.Items.Add(GridViewToolbarCommand.Refresh, true);
+
+
+            toolbar.Items.Add(i =>
+            {
+                i.Text = "Export to";
+                i.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ActionsDownload16x16office2013;
+                i.BeginGroup = true;
+                i.Items.Add(exportitem =>
+                {
+                    exportitem.Name = "Pdf";
+                    exportitem.Text = "PDF";
+                    exportitem.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ExportExporttopdf16x16office2013;
+                });
+                //i.Items.Add(exportitem =>
+                //{
+                //	exportitem.Name = "Xlsx";
+                //	exportitem.Text = "XLSX";
+                //	exportitem.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ExportExporttoxlsx16x16office2013;
+                //});
+                i.Items.Add(exportitem =>
+                {
+                    exportitem.Name = "Xls";
+                    exportitem.Text = "XLS";
+                    exportitem.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ExportExporttoxls16x16office2013;
+                });
+
+            });
+
+
+        });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "ERROR_NUMBER";
+            c.Caption = "Error Description";
+            c.Width = Unit.Percentage(70);
+            c.Visible = false;
+
+
+
+        });
+
+        settings.Columns.Add(c =>
+        {
+            c.Caption = "Error Description Name";
+            c.FieldName = "ERROR_NUMBER_NAME";
+            c.Width = Unit.Percentage(70);
+
+        });
+
+        settings.Columns.Add(c =>
+        {
+            c.Caption = "Device";
+            c.FieldName = "INV_NAME";
+            c.Width = Unit.Pixel(200);
+
+        });
+
+        //settings.Columns.Add( c =>
+        //{
+        //	c.FieldName = "ASSIGNEE_ID";
+        //	c.Caption = "Assignee";
+        //	c.Width = Unit.Pixel(300);
+        //	c.EditorProperties().ComboBox(p =>
+        //	{
+        //		p.TextField = "NAME";
+        //		p.ValueField = "ID";
+        //		p.DataSource = (from u in userManager.Users
+        //						where u.IS_DELETED == false
+        //						select new
+        //						{
+        //							ID = u.Id,
+        //							NAME = u.UserName
+        //						}).ToList();
+        //	});
+
+        //});
+
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "START_DATE";
+            c.Width = Unit.Pixel(200);
+            c.Caption = "Alert Start Date ";
+            c.SortOrder = DevExpress.Data.ColumnSortOrder.Descending;
+            //c.GroupIndex = 0;
+
+        });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "END_DATE";
+            c.Width = Unit.Pixel(200);
+            c.Caption = "Alert End Date ";
+            c.SortOrder = DevExpress.Data.ColumnSortOrder.Descending;
+            //c.GroupIndex = 0;
+
+        });
+
+        settings.CellEditorInitialize += (s, e) =>
+        {
+
+            ASPxEdit editor = (ASPxEdit)e.Editor;
+            editor.ValidationSettings.Display = Display.None;
+            if (e.Column.FieldName == "START_DATE" || e.Column.FieldName == "END_DATE")
+            {
+                e.Editor.ReadOnly = true;
+            }
+        };
+
+
+    }
+}
+
+
+@(Html.DevExpress().GridView(settings)
+                    .BindToEF(string.Empty, string.Empty, (s, e) =>
+                    {
+                        e.KeyExpression = "Id";
+                    }).Bind(__list)
+                    .GetHtml())

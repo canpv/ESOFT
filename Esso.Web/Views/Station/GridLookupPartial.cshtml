@@ -1,0 +1,55 @@
+@using System.Web.UI.WebControls;
+@model List<string>
+
+@{
+    int cmpId = int.Parse( ViewData["companyId"].ToString());
+
+    var gridLookup = Html.DevExpress().GridLookup(settings =>
+    {
+        settings.Name = "USERS";
+        settings.KeyFieldName = "Id";
+        settings.GridViewProperties.CallbackRouteValues = new { Controller = "Station", Action = "GridLookupPartial" , companyId = cmpId };
+        settings.Properties.SelectionMode = GridLookupSelectionMode.Multiple;
+        settings.Properties.TextFormatString = "{1}";
+        settings.Width = Unit.Percentage(96);
+
+
+
+
+        settings.CommandColumn.Visible = false;
+        settings.CommandColumn.ShowNewButton = false;
+        settings.CommandColumn.ShowDeleteButton = false;
+        settings.CommandColumn.ShowEditButton = false;
+
+        settings.GridViewProperties.SettingsPager.Visible = true;
+        settings.GridViewProperties.SettingsPager.PageSize = 3;
+
+        settings.GridViewProperties.Settings.ShowGroupPanel = false;
+        settings.GridViewProperties.Settings.ShowFilterRow = false;
+        settings.Columns.Add(c =>
+        { c.FieldName = "Id";
+            c.Visible = false;
+        });
+
+        settings.Columns.Add(c =>
+        { c.FieldName = "UserName";
+        });
+
+        settings.Properties.ClientSideEvents.Init = "function(s, e) { s.GetGridView().SetWidth(s.GetWidth()); }";
+
+        settings.PreRender = (s, e) =>
+        {
+            if (Model != null && Model.Count() > 0)
+            {
+                MVCxGridLookup gl = (MVCxGridLookup)s;
+                foreach (object key in Model)
+                {
+                    gl.GridView.Selection.SelectRowByKey(key);
+                }
+            }
+        };
+    });
+
+
+}
+@gridLookup.BindList(ViewBag.List).Bind(Model).GetHtml()

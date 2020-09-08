@@ -1,0 +1,578 @@
+﻿@using Esso.Data;
+@using Esso.Models;
+@using Microsoft.AspNet.Identity;
+@using System.Web.UI.WebControls;
+@using System.Data;
+
+@model int
+
+@using language
+<style>
+    #myChart {
+        height: 750px;
+        width: 1000px;
+    }
+
+    div[id$="license"] {
+        display: none !important;
+    }
+
+    #myChart-license-text {
+        display: none !important;
+    }
+</style>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/heatmap.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+@{
+    EssoEntities DB = new EssoEntities();
+
+    #region User yetkileri kontrol
+    TBL_STATION stat = new TBL_STATION();
+    stat = null;
+    string _hour = "";
+    var userId = User.Identity.GetUserId();
+    //User yetkileri kontrol ediliyor
+    try
+    {
+        if (User.IsInRole("M_ADMIN"))
+        {
+            stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+        }
+        else if (User.IsInRole("COMP_ADMIN"))
+        {
+            int cmpId = DB.Stations.Where(a => a.ID == Model && a.IS_DELETED == false).FirstOrDefault().COMPANY_ID;
+
+            if (DB.CompanyUsers.Any(a => a.COMPANY_ID == cmpId && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+        else if (User.IsInRole("COMP_USER"))
+        {
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+
+            }
+        }
+        else if (User.IsInRole("DEMO"))
+        {
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+    }
+    catch (Exception)
+    {
+
+    }
+    #endregion
+}
+
+@{
+    if (stat == null)
+    {
+        @Html.Partial("~/Views/Home/_ErrorPagePartial.cshtml")
+    }
+    else
+    {
+        var _stationDetail = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+        <div class="page-title">
+            <div class="title_left">
+                @if (User.IsInRole("DEMO"))
+                {
+                    <h3>@_stationDetail.DEMO_NAME</h3>
+                }
+                else
+                {
+                    <h3>@_stationDetail.NAME</h3>
+                }
+            </div>
+        </div>
+        }
+    }
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <a class="btn btn-app" href='@Url.Content(stat.PLC_INTERFACE.ToString())' target="_blank">
+                <img src="~/images/wago.png" />
+            </a>
+            @if (userId == "09d0d130-22aa-4074-9645-1d28978298c1" || userId == "d718f977-db37-449c-9885-0e9c9ea74499" || userId == "9391ae3d-72aa-4d37-aa0b-d7ccb89db072" || userId == "9acf1393-a895-437f-bd61-e046664211be" || userId == "50a76f25-4e79-4953-8a5f-57c0b165cb0e")
+            {
+        <a class="btn btn-app" href='@Url.Content("~/PanelScada/Index?stationId=" + Model.ToString())'>
+           
+            <img src="~/images/PanelScada/panel.png" />
+        </a>
+            }
+
+            <div class="x_panel">
+                <div class="x_content">
+                    <div class="" role="tabpanel" data-example-id="togglable-tabs">
+                        <ul id="myTab1" class="nav nav-tabs bar_tabs" role="tablist">
+                            <li role="presentation" class="active">
+                                <a href="#tab_contentA" id="profile-tabA" role="tab" data-toggle="tab" aria-controls="home" aria-expanded="true">String @Resources.Data_Table</a>
+                            </li>
+                            <li role="presentation" id="profile-tabB" class="">
+                                <a href="#tab_contentB" role="tab" id="profile-tab3" onclick='GetContent()' data-toggle="tab" aria-expanded="false">String @Resources.Performance_Chart</a>
+                            </li>
+                        </ul>
+                        <div id="myTabContent" class="tab-content">
+                            <div role="tabpanel" class="tab-pane fade active in" id="tab_contentA" aria-labelledby="home-tab">
+                                <div class="x_panel">
+                                    <div class="x_content">
+                                        <div class="well" style="overflow: auto">
+                                            <div class="col-md-12">
+                                                <div class="row">
+                                                    <div class="col-md-12 col-sm-12 col-xs-12">
+                                                        <div class="x_panel">
+                                                            <script type="text/javascript">
+                                                                var filterString = "";
+                                                                function ApplyFilter(dateFrom, dateTo) {
+                                                                    var d1 = dateFrom.GetText();
+                                                                    var d2 = dateTo.GetText();
+                                                                    if (d1 == "" || d2 == "")
+                                                                        return;
+                                                                    filterString = d1 + "|" + d2;
+                                                                    gvString.AutoFilterByColumn("CREATED_DATE", d1 + "|" + d2);
+                                                                }
+                                                                var timeout;
+                                                                function scheduleGridUpdate(grid) {
+                                                                    window.clearTimeout(timeout);
+                                                                    timeout = window.setTimeout(
+                                                                        function () {
+                                                                            grid.Refresh();
+                                                                        }, 120000);
+                                                                }
+
+                                                                function grid_Init(s, e) {
+                                                                    scheduleGridUpdate(s);
+                                                                    gvString.ExpandAll();
+                                                                }
+
+                                                                function EndCallback(s, e) {
+                                                                    scheduleGridUpdate(s);
+                                                                }
+                                                            </script>
+
+                                                            <script type="text/javascript">
+                                                                var datepicker;
+                                                                var cmbCommand = '';
+                                                                var cmbInit;
+	                                                        function dateSelected(s, d, f) {
+                                                                gvString.PerformCallback();
+                                                                //gvString.ExpandAll();
+                                                                }
+
+                                                                function OnDateChanged(s,e) {
+                                                                    datepicker = d_From.GetValue();
+                                                                    OnCBInit(cmbInit,datepicker);
+                                                                }
+
+                                                                function OnCBInit(s, e) {
+                                                                    cmbInit = s;
+                                                                    datepicker = d_From.GetValue();
+                                                                    comboFill(s, datepicker)
+                                                                }
+                                                                function comboFill(_s,_date) {
+                                                                    var today = new Date();
+                                                                    var todayMonth = today.getMonth() + 1;
+                                                                    var todayYear = today.getFullYear();
+                                                                    var ddate = new Date(_date);
+                                                                    var selectMonth = ddate.getMonth() + 1;
+                                                                    var SelectYear = ddate.getFullYear();
+                                                                    var hours = [];
+                                                                    if (todayYear == SelectYear && todayMonth == selectMonth) {
+                                                                        hours = ["05:00", "05:15", "05:30", "05:45", "06:00", "06:15", "06:30", "06:45", "07:00", "07:15", "07:30", "07:45", "08:00", "08:15", "08:30", "08:45", "09:00", "09:15", "09:30", "09:45", "10:00", "10:15", "10:30", "10:45", "11:00", "11:15", "11:30", "11:45", "12:00", "12:15", "12:30", "12:45", "13:00", "13:15", "13:30", "13:45", "14:00", "14:15", "14:30", "14:45", "15:00", "15:15", "15:30", "15:45", "16:00", "16:15", "16:30", "16:45", "17:00", "17:15", "17:30", "17:45", "18:00", "18:15", "18:30", "18:45", "19:00", "19:15", "19:30", "19:45", "20:00", "20:15", "20:30", "20:45", "21:00"];
+                                                                    }
+                                                                    else {
+                                                                        hours = ["05:00", "06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"];
+                                                                    }
+
+                                                                    comboBox1.ClearItems();
+
+                                                                    $.each(hours, function (i, item) {
+
+                                                                        _s.AddItem(item);
+                                                                    });
+                                                                }
+                                                                function GridBgCallBack(s, e) {
+                                                             
+                                                                    e.customArgs["date"] = d_From.GetValue().toLocaleDateString();
+                                                                    e.customArgs["hour"] = comboBox1.GetValue();
+                                                                e.customArgs["stationId"] = @Model;
+	                                                        	window.clearTimeout(timeout);
+                                                            }
+
+                                                            </script>
+                                                            <div class="x_title">
+                                                                <div class="col-sm-6 col-md-6 col-lg-6">
+                                                                    <div>
+                                                                        <ul>
+                                                                            <li><canvas id="myCanvas" width="50" height="10" style=" background-color:#CCEF85; font:bold;"></canvas> &nbsp; @Resources.Average @Resources.Value ±% 5</li>
+                                                                            <li><canvas id="myCanvas" width="50" height="10" style="background-color:#65C508;"></canvas> &nbsp; @Resources.Average @Resources.Value % 5 < String @Resources.Value </li>
+                                                                            <li><canvas id="myCanvas" width="50" height="10" style="background-color:#EEEF23;"></canvas> &nbsp; @Resources.Average @Resources.Value % 5 > String @Resources.Value</li>
+                                                                            <li><canvas id="myCanvas" width="50" height="10" style="background-color:#F99C5D;"></canvas> &nbsp; String @Resources.Value = 0</li>
+                                                                        </ul>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-sm-2 col-md-2 col-lg-2" style="min-width:230px">
+
+                                                                    @Html.DevExpress().Label(s =>
+                                                               {
+                                                                   s.Name = "L1";
+                                                                   s.Text = Resources.Date;
+                                                                   s.Style["color"] = "#00629e";
+                                                                   s.Style["font-weight"] = "bold";
+                                                               }).GetHtml()
+                                                                    @Html.DevExpress().DateEdit(s =>
+                                                               {
+                                                                   s.Name = "d_From";
+                                                                   s.Properties.EditFormat = EditFormat.DateTime;
+                                                                   s.Properties.EditFormatString = "dd/MM/yyyy";
+                                                                   s.Properties.DisplayFormatString = "dd/MM/yyyy";
+                                                                   s.Date = DateTime.Now.Date;
+                                                                   s.Properties.ClientSideEvents.DateChanged = "OnDateChanged";
+                                                                   //s.Properties.MaxDate = DateTime.Now;
+                                                               }).GetHtml()
+                                                                </div>
+                                                                <div class="col-sm-2 col-md-2 col-lg-2" style="min-width:130px">
+                                                                    @Html.DevExpress().Label(s =>
+                                                                            {
+                                                                                s.Name = "L2";
+                                                                                s.Text = Resources.Hour;
+                                                                                s.Style["color"] = "#00629e";
+                                                                                s.Style["font-weight"] = "bold";
+                                                                            }).GetHtml()
+                                                                    @Html.DevExpress().ComboBox(settings =>
+                                                                           {
+                                                                               settings.Name = "comboBox1";
+                                                                               settings.Properties.ClientSideEvents.Init = "OnCBInit";
+                                                                               settings.SelectedIndex = 1;
+                                                                               settings.Properties.DisplayFormatString = "Hour";
+                                                                               settings.Properties.ValueType = typeof(string);
+                                                                           }).GetHtml()
+                                                                </div>
+                                                                <div class="col-sm-2 col-md-2 col-lg-2" style="padding-top:15px;min-width:230px">
+                                                                    @Html.DevExpress().Button(s =>
+                                                          {
+                                                              s.Name = "btn";
+                                                              s.Images.Image.IconID = IconID.ActionsApply16x16;
+                                                              s.UseSubmitBehavior = false;
+                                                              s.ClientSideEvents.Click = "dateSelected";
+                                                              s.Text = Resources.Apply;
+                                                              s.ControlStyle.ForeColor = System.Drawing.Color.FromArgb(1, 249, 156, 93);
+                                                          }).GetHtml()
+                                                                </div>
+
+                                                                <div class="clearfix"></div>
+                                                            </div>
+                                                            <div class="x_content">
+                                                                @Html.Action("StringGridPartial", "Licensed", new { stationId = Model, date = DateTime.Now.ToString(), hour = _hour })
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div role="tabpanel" class="tab-pane fade" id="tab_contentB" aria-labelledby="home-tab">
+                                <div class="x_panel">
+                                    <div class="x_title">
+                                        @{
+                                            var _stationDetail2 = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+                                            if (@_stationDetail2.NAME.ToString()[@_stationDetail2.NAME.ToString().Length - 1].ToString() == "1")
+                                            {
+                                                <h3 style="text-align: center;">Inverter 1-2</h3>
+                                            }
+                                            if (@_stationDetail2.NAME.ToString()[@_stationDetail2.NAME.ToString().Length - 1].ToString() == "2")
+                                            {
+                                                <h3 style="text-align: center;">Inverter 3-4</h3>
+                                            }
+                                            if (@_stationDetail2.NAME.ToString()[@_stationDetail2.NAME.ToString().Length - 1].ToString() == "3")
+                                            {
+                                                <h3 style="text-align: center;">Inverter 5-6</h3>
+                                            }
+                                        }
+                                    </div>
+                                    <div class="x_content">
+                                        <input type="hidden" value="@Resources.Current" id="hdn_current" />
+                                        <input type="hidden" value="@Resources.No_Data" id="hdn_noData" />
+                                        <div id="container"></div>
+                                        <div class="well" style="overflow: auto">
+                                            <div class="col-md-6">
+                                                <div class="btn-group">
+                                                    <input name="HeatMapDate" id="single_cal5" class="form-control has-feedback-left" type="text" />
+                                                </div>
+                                                <div class="btn-group">
+                                                    <input type="button" class="btn btn-info" id="btnHeatMap" value="@Resources.Show" />
+                                                </div>
+                                                <div class="btn-group">
+                                                    <img id="LoadingImageHeatMap" src="~/images/loader.gif" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    $(document).ready(function () {
+        //HeatMap Bas.
+  $('#btnHeatMap').click(function () {
+            GetStringHeatMap();
+        });
+        GetStringHeatMap();
+            function GetStringHeatMap() {
+                $("#LoadingImageHeatMap").show();
+            var selectDate = $('input[name="HeatMapDate"]').val();
+            if (!selectDate || selectDate.length == 0) {
+                selectDate = new Date().toISOString();
+            }
+            $.ajax({
+                url: "/Licensed/HourlyColorReport2/",
+                type: "POST",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                data: "{'slctDate':'" + selectDate + "','stationId':'" +@Model+ "'}",
+                success: function (data) {
+               
+                    var _noData = $('#hdn_noData').val();
+                    var _current = $('#hdn_current').val();
+                    $("#LoadingImageHeatMap").hide();
+                    var json = [];
+                    var Nodata;
+                    if (data.ErrorMessage == "") {
+                         json = {
+                            "Data": []
+                        };
+                         Nodata = "";
+                         var listHour = [];
+                         var listStrName = [];
+                         var say = 0;
+                         for (var i = 0; i < data.strModel.Hours.length; i++) {
+                             listHour.push(data.strModel.Hours[i]);
+                             for (var j = 0; j < data.strModel.StringList.length; j++) {
+                                     json.Data.push({ 'x': say, 'y': j, 'value': data.strModel.series[j].values[i] });
+                                     if (i == 0) {
+                                     listStrName.push(data.strModel.StringList[j])
+                                 }
+                            }
+                             say++;
+                        }
+                    }
+                    else {
+                        json.Data = [];
+                        Nodata = _noData;
+                    }
+                    Highcharts.chart('container', {
+                        chart: {
+                            type: 'heatmap',
+                            //marginTop: -4,
+                            marginBottom: 120,
+                            //plotBorderWidth: 3,
+                            //height: (9 / 16 * 100) + '%', // 16:9 ratio
+                            height: 820,
+                            zoomType: 'xy',
+                            resetZoomButton: {
+                                position: {
+                                    x: 0,
+                                    y: 20
+                                }
+                            }
+                        },
+                        title: {
+                            text: Nodata
+                        },
+                        credits: {
+                            enabled: false
+                        },
+                        xAxis: {
+                            type: 'category',
+                            tickPixelInterval: 200,
+                            categories: listHour,
+                            labels: {
+                                formatter: function () {
+                                    return this.value.toString().substr(0, 2) + ":"+this.value.toString().substr(2, 2);
+                                }
+                            }
+                        },
+                        yAxis: {
+                            type: 'category',
+                            title: {
+                                text: null
+                            },
+                            categories: listStrName,
+                            labels: {
+                                formatter: function (a) {
+                                    return a.value;
+                                }
+                            }
+                        },
+                        colorAxis: {
+                            stops: [
+                                [0, '#af272f'],
+                                [0.25, '#dd5f03'],
+                                [0.5, '#ffb549'],
+                                [0.75, '#f9c335'],
+                                [1, '#f5e1a4']
+                            ],
+                            min: 0,
+                            max: 10,
+                            startOnTick: false,
+                            endOnTick: false,
+                            labels: {
+                                format: '{value} A'
+                            }
+                        },
+                        legend: {
+                            title: {
+                                text: 'String ' + _current +' [A]'
+                            },
+                            align: 'center',
+                            verticalAlign: 'bottom',
+                            layout: 'horizontal',
+                            x: 0,
+                            y: 0,
+                            symbolWidth: 600
+                        },
+                           tooltip: {
+                            formatter: function () {
+                                var _value="";
+                                if (this.point.value == undefined) {
+                                    _value = "-";
+                                }
+                                    else{
+                                    _value = this.point.value;
+                                }
+
+                                return "<b>" + this.series.yAxis.categories[this.point.y] + "</b><br/><table>" +
+                                    "<tr><td></td></tr><tr><td style='color: { series.color }'>" + this.series.xAxis.categories[this.point.x].toString().substr(0, 2) + ":" + this.series.xAxis.categories[this.point.x].toString().substr(2, 2) + " </td>" +
+                                    "<td style='text-align:right'><b>" + _value+" A</b></td></tr></table>";
+                            }
+                        },
+                        navigation: {
+                            backgroundColor: {
+                                linearGradient: [0, 0, 0, 0]
+                            },
+                            buttonOptions: {
+                                theme: {
+                                    fill: '#f7f7f700'
+                                },
+                                symbolStroke: 'black',
+                                symbolSize: 13
+                            }
+                        },
+                        series: [{
+                            borderWidth: 0,
+                            color: '#76232f',
+                            turboThreshold: 0,
+                            data: json.Data
+                        }]
+                    });
+
+                    }
+        });
+        }
+        //HeatMap Bit.
+        //Datetime bas.
+        $('#single_cal4').daterangepicker({
+            singleDatePicker: true, locale: {
+                format: 'DD/MM/YYYY'
+            },
+            singleClasses: "picker_4"
+        }, function (start, end, label) {
+            console.log(start.toISOString(), end.toISOString(), label);
+        });
+        $('#single_cal_heatMap').daterangepicker({
+            singleDatePicker: true, locale: {
+                format: 'DD/MM/YYYY'
+            },
+            singleClasses: "picker_4"
+        }, function (start, end, label) {
+            console.log(start.toISOString(), end.toISOString(), label);
+        });
+        $('#single_cal5').daterangepicker({
+            singleDatePicker: true, locale: {
+                format: 'DD/MM/YYYY'
+            },
+            singleClasses: "picker_4"
+        }, function (start, end, label) {
+            console.log(start.toISOString(), end.toISOString(), label);
+        });
+
+        $('#single_cal3').daterangepicker({
+            singleDatePicker: true, locale: {
+                format: 'DD/MM/YYYY'
+            },
+            singleClasses: "picker_4"
+        }, function (start, end, label) {
+            console.log(start.toISOString(), end.toISOString(), label);
+        });
+        //Datetime bit.
+    });
+
+    </script>
+
+
+<style>
+    .dxgvHeader {
+        /*background: linear-gradient(90deg,#3b6792 -50%,#c0d5ea 100%);*/
+        background: linear-gradient(#3b6792,#9cb0bd,#3b6792);
+    }
+
+    .dxgvFooter {
+        /*background: linear-gradient(90deg,#3b6792 -50%,#c0d5ea    #c0d5ea       100%);*/
+        background: linear-gradient(#3b6792,#9cb0bd,#3b6792);
+    }
+</style>
+<style>
+    #comboBox1 {
+        border-radius: 25px;
+        height: 22px;
+        width: 120px;
+        border-color: #adaeb1;
+    }
+
+    #d_From {
+        border-radius: 20px;
+        height: 22px;
+        width: 180px;
+        border-color: #adaeb1;
+    }
+
+    #d_From_B-1 {
+        border-radius: 20px;
+        height: 1px;
+    }
+
+    #comboBox1_B-1 {
+        border-radius: 20px;
+        height: 1px;
+    }
+
+    #d_From_B-1Img {
+        background-color: whitesmoke;
+        border-radius: 25px;
+    }
+
+    #btn {
+        border-color: #adaeb1;
+        color: black;
+        border-radius: 25px;
+        align-content: center;
+        width: 100px;
+        height: 20px;
+        font-size: 11px;
+        font: bold;
+    }
+</style>

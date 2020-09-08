@@ -1,0 +1,526 @@
+﻿@using Esso.ViewModels;
+@using Esso.Web.ViewModels;
+@using Microsoft.AspNet.Identity
+@using Esso.Data;
+@using Esso.Models;
+@using Z.EntityFramework.Plus;
+@using language
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@ViewBag.Title</title>
+    <link rel="icon" href="@Url.Content("~/images/EsoftLogo/esoft_icon1.png")" type="image/x-icon" />
+    <link rel="shortcut icon" href="@Url.Content("~/images/EsoftLogo/esoft_icon1.png")" type="image/x-icon" />
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("StyleSheets", required: false)
+    @RenderSection("scripts", required: false)
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+
+    @Html.DevExpress().GetStyleSheets(
+    new StyleSheet { ExtensionSuite = ExtensionSuite.NavigationAndLayout },
+    new StyleSheet { ExtensionSuite = ExtensionSuite.GridView }
+    )
+    @Html.DevExpress().GetScripts(
+    new Script { ExtensionSuite = ExtensionSuite.NavigationAndLayout },
+    new Script { ExtensionSuite = ExtensionSuite.GridView }
+    )
+
+    <!-- Gentello Start -->
+    <link href="~/Content/custom.min.css" rel="stylesheet" />
+    <link href="~/Content/vendors/animate.css/animate.min.css" rel="stylesheet" />
+    <link href="~/Content/pnotify.buttons.css" rel="stylesheet" />
+    <link href="~/Content/pnotify.css" rel="stylesheet" />
+    <link href="~/Content/pnotify.nonblock.css" rel="stylesheet" />
+    <link href="~/Content/vendors/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    @*<link href="~/Content/nprogress.css" rel="stylesheet" />
+        <link href="~/Content/bootstrap-progressbar-3.3.4.min.css" rel="stylesheet" />*@
+    <link href="~/Content/daterangepicker.css" rel="stylesheet" />
+    @*<link href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" rel="stylesheet" />
+        <link href="https://cdn.datatables.net/1.10.19/css/dataTables.jqueryui.min.css" rel="stylesheet" />
+
+
+        <link href="https://code.jquery.com/jquery-3.3.1.js" rel="stylesheet" />
+        <link href="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js" rel="stylesheet" />
+        <link href="https://cdn.datatables.net/1.10.19/js/dataTables.jqueryui.min.js" rel="stylesheet" />
+        <link src="https://cdn.datatables.net/plug-ins/1.10.19/dataRender/percentageBars.js" rel="stylesheet" />*@
+
+    <!-- Gentello End -->
+    <style>
+        #sidebar-menu {
+            height: 100vh;
+            width: 100%;
+            overflow-y: auto;
+        }
+        /* Scrollbar styles */
+        ::-webkit-scrollbar {
+            width: 12px;
+            height: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            border: 0px solid yellowgreen;
+            border-radius: 0px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #178cff;
+            border-radius: 0px;
+        }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #578fc1;
+            }
+
+        #menu :hover {
+            background-color: #172d44;
+        }
+
+        .selectStation {
+            background-color: #9acd32;
+        }
+
+        .default {
+            cursor: default;
+        }
+
+        #leftMenuStatic {
+            position: -webkit-sticky;
+            position: sticky;
+            top: 0px;
+        }
+
+        .nav > li > a {
+            padding: 8px 10px 8px;
+        }
+
+        #search {
+            border-radius: 25px 25px 25px 25px;
+        }
+
+        .Loading {
+            display: none;
+        }
+    </style>
+</head>
+<body class="nav-md">
+    <div class="container body">
+        <div class="main_container">
+            <div id="leftMenuStatic">
+                <div class="col-md-3 left_col">
+                    <div class="left_col scroll-view" id="sidebar-menu">
+                        <div class="navbar nav_title">
+                            <a href="/" class="site_title">
+                                <img src="~/images/EsoftLogo/EsoftLogo.png" height="40px" />
+                            </a>
+                        </div>
+                        <div class="clearfix"></div>
+                        <!-- menu profile quick info -->
+                        <div class="profile clearfix">
+                            <div class="profile_pic">
+                                <img src="~/images/EsoftLogo/esoft_icon1.png" class="img-circle profile_img">
+                            </div>
+                            <div class="profile_info">
+                                <span>@Resources.Welcome</span>
+                                <h2>@User.Identity.GetUserName()</h2>
+                            </div>
+                        </div>
+                        <!-- /menu profile quick info -->
+                        <br />
+                        <!-- sidebar menu -->
+                        <div id="sidebar-menu99" class="main_menu_side hidden-print ">
+                            <div class="menu_section">
+                                <nav>
+                                    <ul class="nav side-menu">
+                                        @{ EssoEntities DB = new EssoEntities();
+                                            var culture = System.Threading.Thread.CurrentThread.CurrentUICulture.Name.ToLowerInvariant();
+
+                                            @helper selected(string c, string culture)
+                                            {
+
+                                                if (c == culture)
+                                                {
+                                                    @:checked="checked"
+                                                }
+                                            }
+
+                                            var userId = User.Identity.GetUserId();
+                                            bool isUserAuthority = false;
+
+
+                                            if (User.IsInRole("M_ADMIN") || User.IsInRole("COMP_ADMIN"))
+                                            {
+                                                isUserAuthority = true;
+                                            }
+                                            else
+                                            {
+                                                isUserAuthority = false;
+                                            }
+                                            var compList = DB.Companies.Where(a => a.IS_DELETED == false).ToList();
+                                            var groupList = DB.StationGroups.Where(a => a.IS_DELETED == false).ToList();
+                                            List<TBL_STATION> stations = new List<TBL_STATION>();
+                                            List<Layout_Station_DTO> stations_dto = new List<Layout_Station_DTO>();
+                                            if (User.IsInRole("M_ADMIN"))
+                                            {
+                                                stations = DB.Stations.Where(a => a.IS_DELETED == false && a.IS_ACTIVE == true).ToList();
+                                            }
+                                            else if (User.IsInRole("COMP_ADMIN"))
+                                            {
+                                                int[] ib = DB.CompanyUsers.Where(a => a.USER_ID == userId && a.IS_DELETED == false).Select(a => a.COMPANY_ID).ToArray();
+                                                stations = DB.Stations.Where(a => a.IS_DELETED == false && a.IS_ACTIVE == true && ib.Contains(a.COMPANY_ID)).ToList();
+                                            }
+                                            else if (User.IsInRole("COMP_USER"))
+                                            {
+                                                int[] ibs = DB.StationUsers.Where(a => a.USER_ID == userId && a.IS_DELETED == false).Select(a => a.STATION_ID).ToArray();
+                                                stations = DB.Stations.Where(a => a.IS_DELETED == false && a.IS_ACTIVE == true && ibs.Contains(a.ID)).ToList();
+                                            }
+                                            else if (User.IsInRole("DEMO"))
+                                            {
+                                                int[] ibs = DB.StationUsers.Where(a => a.USER_ID == userId && a.IS_DELETED == false).Select(a => a.STATION_ID).ToArray();
+                                                stations = DB.Stations.Where(a => a.IS_DELETED == false && a.IS_ACTIVE == true && ibs.Contains(a.ID)).ToList();
+                                            }
+
+                                            stations_dto = stations.Where(a => a.IS_DELETED == false && a.IS_ACTIVE == true).Select(a =>
+                                                  new Layout_Station_DTO
+                                                  {
+                                                      STATION_NAME = (User.IsInRole("DEMO")) ? a.DEMO_NAME : a.NAME.ToString(),
+                                                      STATION_ID = a.ID,
+                                                      GROUP_ID = a.GROUP_ID,
+                                                      COMPANY_ID = a.COMPANY_ID,
+                                                      STATION_TYPE = a.STATION_TYPE
+                                                  }).OrderBy(a => a.STATION_NAME).ToList();
+
+                                            List<Layout_Group_DTO> gdtlist = new List<Layout_Group_DTO>();
+                                            foreach (Layout_Station_DTO st in stations_dto)
+                                            {
+                                                Layout_Group_DTO gdt = new Layout_Group_DTO();
+                                                gdt.listStation.Add(new Layout_Station_DTO { STATION_ID = st.STATION_ID, STATION_NAME = st.STATION_NAME, COMPANY_ID = st.COMPANY_ID, GROUP_ID = st.GROUP_ID, STATION_TYPE = st.STATION_TYPE });
+                                                gdt.GROUP_ID = st.GROUP_ID;
+                                                gdt.COMPANY_ID = st.COMPANY_ID;
+                                                if (User.IsInRole("DEMO"))
+                                                {
+                                                    gdt.GROUP_NAME = groupList.Where(c => c.ID == st.GROUP_ID).FirstOrDefault() == null ? "BB" : groupList.Where(c => c.ID == st.GROUP_ID).FirstOrDefault().DEMO_NAME;
+                                                }
+                                                else
+                                                {
+                                                    gdt.GROUP_NAME = groupList.Where(c => c.ID == st.GROUP_ID).FirstOrDefault() == null ? "BB" : groupList.Where(c => c.ID == st.GROUP_ID).FirstOrDefault().NAME;
+                                                }
+
+                                                if (gdtlist.Where(a => a.GROUP_ID == st.GROUP_ID).FirstOrDefault() == null)
+                                                {
+                                                    gdtlist.Add(gdt);
+                                                }
+                                                else
+                                                {
+                                                    gdtlist.Where(a => a.GROUP_ID == st.GROUP_ID).FirstOrDefault().listStation.Add(st);
+                                                }
+
+                                            }
+                                            List<Layout_Company_DTO> compdtList = new List<Layout_Company_DTO>();
+                                            foreach (Layout_Group_DTO grp in gdtlist.OrderBy(a => a.GROUP_NAME))
+                                            {
+                                                Layout_Company_DTO compdt = new Layout_Company_DTO();
+                                                compdt.GROUP_ID = grp.GROUP_ID;
+                                                compdt.COMPANY_ID = grp.COMPANY_ID;
+                                                if (User.IsInRole("DEMO"))
+                                                {
+                                                    compdt.COMPANY_NAME = compList.Where(b => b.ID == grp.COMPANY_ID).FirstOrDefault() == null ? "AA" : compList.Where(b => b.ID == grp.COMPANY_ID).FirstOrDefault().DEMO_NAME;
+                                                }
+                                                else
+                                                {
+
+                                                    compdt.COMPANY_NAME = compList.Where(b => b.ID == grp.COMPANY_ID).FirstOrDefault() == null ? "AA" : compList.Where(b => b.ID == grp.COMPANY_ID).FirstOrDefault().NAME;
+
+                                                }
+                                                if (compdtList.Where(a => a.COMPANY_ID == grp.COMPANY_ID).FirstOrDefault() == null)
+                                                {
+
+                                                    compdtList.Add(compdt);
+                                                    compdtList.Where(a => a.COMPANY_ID == grp.COMPANY_ID).FirstOrDefault().listGroup.Add(grp);
+
+                                                }
+                                                else
+                                                {
+
+                                                    compdtList.Where(a => a.COMPANY_ID == grp.COMPANY_ID).FirstOrDefault().listGroup.Add(grp);
+
+                                                }
+                                            }
+
+                                        }
+                                        @if (User.IsInRole("M_ADMIN"))
+                                        {
+                                            <li>
+                                                <a><i class="fa fa-cogs"></i> @Resources.Settings <span class="fa fa-chevron-down"></span></a>
+                                                <ul class="nav child_menu">
+                                                    <li><a href="~/AlarmDefinition/Index">@Resources.Alarm_Settings</a></li>
+                                                    <li><a href="~/Company/Index">@Resources.Companies</a></li>
+                                                    <li><a href="~/Account/Index">@Resources.Users</a></li>
+                                                    <li><a href="~/Role/Index">@Resources.User_Roles</a></li>
+                                                    <li><a href="~/Tag/index">@Resources.Tags</a></li>
+                                                    <li><a href="~/TagTemplate/Index">@Resources.Tag_Templates</a></li>
+                                                </ul>
+                                            </li>
+                                        }
+                                        <li>
+                                            <a><i class="fa fa-sticky-note-o"></i> @Resources.Reports <span class="fa fa-chevron-down"></span></a>
+                                            <ul class="nav child_menu">
+                                                <li><a href="~/Report/ChartList">@Resources.Create_Your_Chart</a></li>
+                                                <li><a href="~/Report/Chart">@Resources.Chart_List</a></li>
+                                                <li><a href="~/ReportTable/TableList">@Resources.Create_Your_Report</a></li>
+                                                <li><a href="~/ReportTable/Table">@Resources.Table_Report_List</a></li>
+                                                <li><a href="~/ReportTable/ProductionTable">@Resources.Production @Resources.Table_Report_List</a></li>
+                                            </ul>
+                                        </li>
+                                        @{
+                                            if (isUserAuthority == true)
+                                            {
+                                                <li>
+                                                    <a><i class="fa fa-user"></i> @Resources.Users <span class="fa fa-chevron-down"></span></a>
+                                                    <ul class="nav child_menu">
+                                                        <li><a href="~/Account/UserBasedInsertion">@Resources.List</a></li>
+                                                    </ul>
+                                                </li>
+                                            }
+                                        }
+
+                                        @{foreach (var compItem in compdtList.OrderBy(a => a.COMPANY_NAME))
+                                            {
+                                                <text>
+                                                    <li>
+                                                        <a><i class="fa fa-table"></i> @compItem.COMPANY_NAME <span class="fa fa-chevron-down"></span></a>
+                                                        <ul id="@compItem.COMPANY_ID" class="nav child_menu">
+                                                            @foreach (var grpItem in compItem.listGroup)
+                                                            {
+                                                                <li><a class="default" style="color:#178cff"><ins> @grpItem.GROUP_NAME</ins></a></li>
+                                                                foreach (var stItem in grpItem.listStation)
+                                                                {
+                                                                    if (stItem.STATION_TYPE == 2)
+                                                                    {
+                                                                        <li class="stationLi" id="@stItem.STATION_ID"><a>@stItem.STATION_NAME</a></li>
+                                                                    }
+                                                                    else if (stItem.STATION_TYPE == 4)
+                                                                    {
+                                                                        <li class="" id="@stItem.STATION_ID"><a href="~/Licensed/String?stationId=@stItem.STATION_ID">@stItem.STATION_NAME</a></li>
+                                                                    }
+                                                                    else if (stItem.STATION_TYPE == 5)
+                                                                    {
+                                                                        <li class="" id="@stItem.STATION_ID"><a href="~/HES/Index?stationId=@stItem.STATION_ID">@stItem.STATION_NAME</a></li>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <li class="stationLi" id="@stItem.STATION_ID"><a>@stItem.STATION_NAME</a></li>
+                                                                    }
+                                                                }
+                                                            }
+                                                        </ul>
+                                                    </li>
+                                                </text>
+                                            }
+
+                                        }
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                        <!-- /sidebar menu -->
+                        <!-- /menu footer buttons -->
+                        <div class="sidebar-footer hidden-small">
+                            <a data-toggle="tooltip" data-placement="top" title="@Resources.Settings">
+                                <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
+                            </a>
+                            <a data-toggle="tooltip" data-placement="top" title="@Resources.Full_Screen">
+                                <span class="glyphicon glyphicon-fullscreen" aria-hidden="true"></span>
+                            </a>
+                            <a data-toggle="tooltip" data-placement="top" title="@Resources.Account">
+                                <span class="glyphicon glyphicon-user" aria-hidden="true"></span>
+                            </a>
+                            <a data-toggle="tooltip" data-placement="top" title="@Resources.Log_out" href="javascript:document.getElementById('logoutForm').submit()" ">
+                                <span class="glyphicon glyphicon-off" aria-hidden="true"></span>
+                            </a>
+                        </div>
+                        <!-- /menu footer buttons -->
+                    </div>
+                </div>
+            </div>
+            <!-- top navigation -->
+            <div class="top_nav">
+                <div class="nav_menu">
+                    <nav>
+                        <div class="nav toggle">
+                            <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+                        </div>
+                        <ul class="nav navbar-nav navbar-right">
+                            @*
+                                <li>@Html.ActionLink("English", ViewContext.RouteData.Values["action"].ToString(), ViewContext.RouteData.Values["controller"].ToString(), new { language = "en-US" }, null)</li>
+                                <li>@Html.ActionLink("Turkish", ViewContext.RouteData.Values["action"].ToString(), ViewContext.RouteData.Values["controller"].ToString(), new { language = "tr-TR" }, null)</li>*@
+                            <li class="">
+                                <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                    <img src="@Url.Content("~/images/EsoftLogo/esoft_icon1.png")" alt="">
+                                    @User.Identity.GetUserName()
+                                    <span class=" fa fa-angle-down"></span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-usermenu pull-right">
+                                    @*
+                                        <li>
+                                            <a href="/Home/Profile">
+                                                <span>Profile</span>
+                                            </a>
+                                        </li>*@
+                                    <li>
+                                        <a href="/Home/Help">
+                                            <span class="badge bg-red pull-right">@Resources.Support</span>
+                                            <span>@Resources.Contact</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <form id="logoutForm" action="/Account/LogOff" method="post" enctype="multipart/form-data">
+                                            @Html.AntiForgeryToken()
+                                            <a href="javascript:document.getElementById('logoutForm').submit()"><i class="fa fa-sign-out pull-right"></i>@Resources.Log_out</a>
+                                        </form>
+                                        <br />
+                                    </li>
+                                </ul>
+                            </li>
+                            <li role="presentation" class="dropdown">
+                                <a>
+                                    <img src="@Url.Content("~/images/dolar.png")" alt="">&nbsp;<b id="dolarKuru" style="color:#5a82bd"></b>
+                                </a>
+                            </li>
+                            <li role="presentation" class="dropdown">
+                                <a href="javascript:;" class="dropdown-toggle info-number" data-toggle="dropdown" aria-expanded="false">
+                                    <img src="@Url.Content("~/images/languages/"+culture+".png")" alt="">
+                                </a>
+                                <ul id="menu1" class="dropdown-menu list-unstyled msg_list" role="menu">
+                                    @using (Html.BeginForm("SetCulture", "Home"))
+                                    {
+                                        <li>
+                                            <label for="en-us">
+                                                <input name="culture" id="en-us" value="en-us" type="radio" @selected("en-us", culture) />
+                                                <img src="~/images/languages/en-US.png" />
+                                                @Resources.English
+                                            </label>
+                                        </li>
+                                        <li>
+                                            <label for="en-us">
+                                                <input name="culture" id="tr" value="tr" type="radio" @selected("tr", culture) />
+                                                <img src="~/images/languages/tr.png" />
+                                                @Resources.Turkish
+                                            </label>
+                                        </li>
+                                    }
+                                </ul>
+                            </li>
+                            @*<li role="presentation" class="dropdown">
+                                    <a href="/Map">
+                                        <img src="@Url.Content("~/images/maps_icon.png")" alt="">
+                                    </a>
+                                </li>*@
+                            <li role="presentation" class="dropdown">
+                                <a href="/">
+                                    <img height="24" width="24" src="/images/homepage.png" alt="">
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+            <!-- /top navigation -->
+            <!-- page content -->
+            <div class="right_col" role="main">
+                <div class="">
+                    <div class="clearfix"></div>
+                    <div class="row">
+                        <div class="col-md-12 col-sm-12 col-xs-12">
+                            @RenderBody()
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /page content -->
+            <!-- footer content -->
+            <footer>
+                <div class="pull-right">
+                    www.e-soft.com.tr
+                </div>
+                <div class="clearfix"></div>
+            </footer>
+            <!-- /footer content -->
+        </div>
+    </div>
+    <div class="Loading">
+        <div id="Gif">
+            <img src="~/images/loading.gif" />
+        </div>
+    </div>
+</body>
+</html>
+
+<script src="~/Content/echarts.min.js"></script>
+<script src="~/js/moment.min.js"></script>
+<script src="~/js/daterangepicker.js"></script>
+<script src="~/Content/custom.min.js"></script>
+<script src="//cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+<script src="//cdn.datatables.net/plug-ins/1.10.19/dataRender/percentageBars.js"></script>
+<script>
+    //var url = window.location.search.split("=");
+    //var urlNumber = ("#" + url[1]).toString();
+    //$(urlNumber).addClass("current-page");
+    //var li2 = $(urlNumber).parent();
+    //li2.css("display", "block");
+    //var li1 = li2.parent();
+    //li1.addClass("active");
+
+    GetUSD();
+    function GetUSD() {
+        $.ajax({
+            url: "/HomePage/GetUSDValue",
+            type: "POST",
+            dataType: "json",
+            success: function (data) {
+                $("#dolarKuru").html(data);
+            }
+        });
+    }
+    var timer, delay = 600000;
+    timer = setInterval(function () {
+        GetUSD();
+    }, delay);
+</script>
+<script>
+    function ShowLoading() {
+
+        var _width = $(window).width();
+        var _height = $(window).height();
+
+        var _margin = (_height - 50) / 2;
+
+        $('#Gif').css('margin-top', _margin.toString() + 'px');
+
+        $('body').css('overflow', 'hidden');
+        $('.Loading').height(_height);
+        $('.Loading').width(_width);
+        $('.Loading').show();
+
+    }
+    function HideLoading() {
+
+        $('body').css('overflow', 'auto');
+        $('.Loading').hide();
+    }
+
+</script>
+
+<script type="text/javascript">
+    (function ($) {
+        $("input[type = 'radio']").click(function () {
+            $(this).parents("form").submit(); //Languages click radio button post form
+        });
+
+    })(jQuery);
+</script>

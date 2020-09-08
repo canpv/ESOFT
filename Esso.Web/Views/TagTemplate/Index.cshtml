@@ -1,0 +1,212 @@
+﻿@using System.Web.UI.WebControls;
+
+@model List<Esso.Models.TBL_TAG>
+
+<script type="text/javascript">
+
+    //Global Start
+    //var companyId;
+    var templateId;
+    var tags = [];
+    var newData = false;
+    var commandName;
+    //Global End
+
+    //Company combo start
+        //function onCompanySelected(e)
+        //{
+        //    lastFocusedRow = gvTemplate.GetFocusedRowIndex();
+        //    //gvTemplate.SetFocusedRowIndex(-1);
+        //    companyId = e.GetValue();
+        //    gvTemplate.Refresh();
+
+        //    newData = false;
+        //    templateId = 0;
+        //    //gvTemplateDet.Refresh();
+        //}
+    //Company combo end
+
+    //Templategrid start
+
+        //function onTemplateGridCallback(s, e) {
+        //    commandName = e.command;
+        //    e.customArgs["companyId"] = companyId;
+        //}
+        function onTemplateGridEndCallback(s, e) {
+
+            debugger;
+            if (commandName == "REFRESH") {
+                newData = false;
+                templateId = 0;
+                gvTemplate.SetFocusedRowIndex(-1);
+                gvTemplateDet.Refresh();
+                gvTemplateGen.Refresh();
+                gvTemplateDig.Refresh();
+            }
+            
+            //if (lastFocusedRow >= 0) {
+            //    onTemplateSelected();
+            //    lastFocusedRow = -1;
+            //}
+            //gvTemplate.SetFocusedRowIndex(lastFocusedRow);
+        }
+        
+
+        function onTemplateSelected(s, e) {
+       
+            if (gvTemplate.GetFocusedRowIndex() >= 0) {
+                if (gvTemplateDet.batchEditApi.HasChanges()) {
+                    gvTemplateDet.CancelEdit();
+                }
+                gvTemplate.GetRowValues(gvTemplate.GetFocusedRowIndex(), 'ID', OnGetTempValues);
+            }           
+        }
+
+        function OnGetTempValues(values) {
+           
+            templateId = values;
+            if (templateId && templateId >= 0) {
+                
+            }
+            else
+            {
+                templateId = -1;
+            }
+
+            newData = false;
+            
+            gvTemplateGen.Refresh();
+        }
+
+    //Templategrid end
+
+     //TemplateGenGrid start
+
+        function onTemplateGenGridCallback(s, e) {
+
+            e.customArgs["newData"] = newData;
+            e.customArgs["templateId"] = templateId;
+         
+        }
+
+        function onTemplateGenGridEndCallback(s, e) {
+
+            newData = false;
+            SetColumnValue("ADDRESS", null, gvTemplateGen);
+            gvTemplateDet.Refresh();            
+
+        }
+
+    //TemplateGenGrid end
+
+    //TemplateDetGrid start
+
+        var detCommand;
+        function onTemplateDetGridCallback(s, e) {
+          
+            detCommand = e.command;
+            e.customArgs["newData"] = newData;
+            e.customArgs["templateId"] = templateId;            
+        }
+
+        function onTemplateDetGridEndCallback(s, e) {
+            debugger;
+            newData = false;
+            SetColumnValue("ADDRESS", null, gvTemplateDet);
+
+            if (detCommand == "REFRESH") {
+                gvTemplateDig.Refresh();
+            }
+        }
+
+        function SetColumnValue(fieldName, value, grid) {
+            var column = grid.GetColumnByField(fieldName);
+            for (var row = 0; row < grid.GetVisibleRowsOnPage(); row++) {
+                var cellValue = grid.batchEditApi.GetCellValue(row, column);
+                if (!cellValue)
+                    grid.batchEditApi.SetCellValue(row, column, value);
+            }
+        }
+
+    //TemplateDetGrid End
+
+
+        //TemplateDetDig start
+        function onTemplateDigGridCallback(s, e) {            
+            e.customArgs["templateId"] = templateId;
+            e.customArgs["newData"] = false;
+            e.customArgs["isDigital"] = true;  
+        }
+
+       
+
+        function SetColumnValue(fieldName, value, grid) {
+            var column = grid.GetColumnByField(fieldName);
+            for (var row = 0; row < grid.GetVisibleRowsOnPage(); row++) {
+                var cellValue = grid.batchEditApi.GetCellValue(row, column);
+                if (!cellValue)
+                    grid.batchEditApi.SetCellValue(row, column, value);
+            }
+        }
+
+    //TemplateDetGrid End
+
+    //TemplateDet start
+        $(document).ready(function () {
+            @{ 
+                if (Model != null && Model.Count > 0)
+                {
+                    foreach (Esso.Models.TBL_TAG tag in Model)
+                    {
+                        <text>                            
+                            tags.push({ NAME: '@tag.NAME' });
+                        </text>
+                    }
+
+
+                }
+
+            }
+                            $('#btnAddInv').click(function () {
+                                newData = true;
+                                gvTemplateDet.Refresh();
+                            });
+        });
+    //TemplateDet start
+
+</script>
+
+
+
+@*@{Html.RenderAction("CompanyPartial", "TagTemplate");}*@
+@{Html.RenderAction("GridTagTemplatePartial", "TagTemplate");}
+<hr>
+
+
+@Html.DevExpress().PageControl(
+            settings =>
+            {
+                settings.Name = "pcFeatures";
+                settings.Width = Unit.Percentage(100);
+                settings.Height = Unit.Pixel(500);
+                settings.TabPages.Add("General Tags").SetContent(() =>
+                {
+                    Html.RenderAction("GridTagTemplateGenPartial", "TagTemplate");
+
+                });
+                settings.TabPages.Add("Inverter Based Tags").SetContent(() =>
+                {
+                    ViewContext.Writer.Write(
+                        "<button id='btnAddInv'>Add Inverter</button>"
+                    );
+                    Html.RenderAction("GridTagTemplateDetPartial", "TagTemplate");
+                });
+                settings.TabPages.Add("Digital Input Tags").SetContent(() =>
+                {
+                   
+                    Html.RenderAction("GridTagTemplateDigPartial", "TagTemplate");
+                });
+            }).GetHtml()
+
+
+

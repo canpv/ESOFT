@@ -1,0 +1,1018 @@
+﻿@using System.Web.UI.WebControls
+@using Esso.Data
+@using Esso.ViewModels
+@using Microsoft.AspNet.Identity;
+@model List<Esso.ViewModels.StationGridModel>
+@{
+    int companyId = ViewData["companyId"] == null ? 0 : int.Parse(ViewData["companyId"].ToString());
+    var users = ViewData["users"];
+    EssoEntities DB = new EssoEntities();
+    string curUserId = User.Identity.GetUserId();
+
+
+    var DEVELOPER = DB.UserEntity.Where(X => X.USER_ID == curUserId ).Select(X=>X.DEVELOPER).FirstOrDefault();
+
+    GridViewSettings gridSettings = new Esso.Web.Controllers.StationController.GridHelper(companyId).GridStationSettings;
+    gridSettings.Settings.ShowGroupPanel = false;
+    gridSettings.CommandColumn.Visible = true;
+    gridSettings.CommandColumn.ShowEditButton = true;
+
+    if (DEVELOPER == 1)
+    {
+        gridSettings.CommandColumn.ShowDeleteButton = true;
+    }
+    else
+    {
+        gridSettings.CommandColumn.ShowDeleteButton = false;
+    }
+
+    gridSettings.CommandColumn.ButtonRenderMode = GridCommandButtonRenderMode.Image;
+    gridSettings.SettingsCommandButton.NewButton.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ActionsAdd16x16;
+    gridSettings.SettingsCommandButton.DeleteButton.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ActionsTrash16x16;
+    gridSettings.SettingsCommandButton.EditButton.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ActionsEditname16x16;
+    gridSettings.CommandColumn.ShowNewButtonInHeader = true;
+    gridSettings.CommandColumn.Width = Unit.Point(75);
+
+
+    gridSettings.SetEditFormTemplateContent(c =>
+
+    {
+
+        StationGridModel curTask = c.Grid.GetRow(c.ItemIndex) as StationGridModel;
+
+        curTask = curTask == null ? new StationGridModel() : curTask;
+
+        Html.DevExpress().FormLayout(formLayoutSettings =>
+
+        {
+            formLayoutSettings.Name = "FormLayoutProducts";
+            formLayoutSettings.Width = Unit.Percentage(100);
+            formLayoutSettings.ColCount = 1;
+            formLayoutSettings.TabIndex = 0;
+
+            formLayoutSettings.SettingsItems.ShowCaption = DefaultBoolean.True;
+            formLayoutSettings.SettingsItemCaptions.Location = LayoutItemCaptionLocation.Left;
+            formLayoutSettings.RequiredMarkDisplayMode = RequiredMarkMode.None;
+            formLayoutSettings.AlignItemCaptionsInAllGroups = true;
+
+            formLayoutSettings.Items.AddTabbedGroupItem(t =>
+            {
+                t.Name = "tabbedGroup";
+                t.Width = Unit.Percentage(100);
+
+                t.ShowGroupDecoration = true;
+
+                //t.ClientSideEvents.ActiveTabChanging = "onActiveTabChanging";
+                t.Items.AddGroupItem(g =>
+                {
+                    g.GroupBoxDecoration = GroupBoxDecoration.None;
+                    g.SettingsItems.ShowCaption = DefaultBoolean.True;
+                    g.ColCount = 4;
+                    g.Caption = "Plant Informations";
+                    g.Height = Unit.Pixel(350);
+
+                    g.Items.Add(i =>
+                    {
+                        i.Caption = "";
+                        i.FieldName = "PHOTO";
+                        i.RowSpan = 10;
+                        i.NestedExtensionType = FormLayoutNestedExtensionItemType.BinaryImage;
+                        BinaryImageEditSettings img = (BinaryImageEditSettings)i.NestedExtensionSettings;
+                        img.Width = 180;
+                        img.Height = 190;
+                        img.Properties.EnableServerResize = true;
+                        img.Properties.ImageSizeMode = ImageSizeMode.FitProportional;
+                        img.Properties.EditingSettings.Enabled = true;
+                        img.Properties.EditingSettings.UploadSettings.UploadValidationSettings.MaxFileSize = 4194304;
+                        img.CallbackRouteValues = new { Action = "BinaryImageColumnPhotoUpdate", Controller = "Station" };
+                    });
+
+                    g.Items.Add(i =>
+                    {
+                        i.Caption = "Plant Name";
+                        i.FieldName = "NAME";
+
+                        i.NestedExtension().TextBox(s =>
+                        {
+                            s.Width = Unit.Percentage(100);
+                            s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                            s.ShowModelErrors = true;
+                        });
+                    });
+
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "DEMO_NAME";
+                        i.Caption = "Demo Name";
+                        i.NestedExtension().TextBox(p =>
+                        {
+                            p.Properties.ValidationSettings.Display = Display.Dynamic;
+                            p.Width = Unit.Percentage(100);
+                        });
+                    });
+                    //g.Items.Add(i =>
+                    //{
+                    //    i.FieldName = "GROUP_ID";
+                    //    i.Caption = "Group";
+
+                    //    i.NestedExtension().ComboBox(p =>
+                    //    {
+                    //        p.Width = Unit.Percentage(96);
+                    //        p.Properties.TextField = "NAME";
+                    //        p.Properties.ValueField = "ID";
+                    //        p.Properties.ValueType = typeof(int);
+                    //        p.Properties.DataSource = Esso.Service.StationGroupService.GetStationGroupsByCompanyId(companyId);
+
+                    //    });
+                    //});
+
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "GROUP_ID";
+                        i.NestedExtension().ComboBox(s =>
+                        {
+                            s.Properties.TextField = "NAME";
+                            s.Properties.ValueField = "ID";
+                            s.Properties.ValueType = typeof(int);
+                            s.Properties.DataSource = DB.StationGroups.Where(x => x.IS_DELETED == false).ToList();
+                            s.ShowModelErrors = true;
+                            s.Width = Unit.Percentage(100);
+                        });
+                    });
+
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "METEROROLOGY_PLANT";
+                        i.Caption = "Meterology Plant";
+
+                        i.NestedExtension().ComboBox(p =>
+                        {
+                            p.Width = Unit.Percentage(96);
+                            p.Properties.TextField = "NAME";
+                            p.Properties.ValueField = "ID";
+                            p.Properties.ValueType = typeof(int);
+                            p.Properties.DataSource = (from s in DB.Stations
+                                                       where
+                                                       s.COMPANY_ID == companyId &&
+                                                       s.IS_DELETED == false
+                                                       select new
+                                                       {
+                                                           ID = s.ID,
+                                                           NAME = s.NAME
+                                                       }).ToList();
+                        });
+                    });
+
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "TAG_TEMP_ID";
+                        i.Caption = "Tag Şablonu";
+
+                        i.NestedExtension().ComboBox(p =>
+                        {
+                            p.Width = Unit.Percentage(96);
+                            p.Properties.TextField = "NAME";
+                            p.Properties.ValueField = "ID";
+                            p.Properties.ValueType = typeof(int);
+                            p.Properties.DataSource = (from at in DB.TagTemplates
+                                                       where at.IS_DELETED == false
+                                                       select at).ToList();
+                        });
+                    });
+
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "ALARM_TEMP_ID";
+                        i.Caption = "Alarm Şablonu";
+
+                        i.NestedExtension().ComboBox(p =>
+                        {
+                            p.Width = Unit.Percentage(96);
+                            p.Properties.TextField = "NAME";
+                            p.Properties.ValueField = "ID";
+                            p.Properties.ValueType = typeof(int);
+                            p.Properties.DataSource = (from at in DB.AlarmTemplate
+                                                       where at.IS_DELETED == false
+                                                       select at).ToList();
+                        });
+                    });
+
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "SIZE";
+                        i.Caption = "Size(m2)";
+                        i.NestedExtension().SpinEdit(s =>
+                        {
+                            s.Width = Unit.Percentage(100);
+                            s.Properties.MinValue = 0;
+                            s.Properties.MaxValue = 1000000;
+                            s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                            s.ShowModelErrors = true;
+                        });
+                    });
+
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "AC_INSTALLED_POWER";
+                        i.Caption = "AC Ins. Power(kWe)";
+                        i.NestedExtension().SpinEdit(s =>
+                        {
+                            s.Width = Unit.Percentage(100);
+                            s.Properties.MinValue = 0;
+                            s.Properties.MaxValue = 1000000;
+                            s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                            s.ShowModelErrors = true;
+                        });
+                    });
+
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "DC_INSTALLED_POWER";
+                        i.Caption = "DC Ins. Power(kWp)";
+                        i.NestedExtension().SpinEdit(s =>
+                        {
+                            s.Width = Unit.Percentage(100);
+                            s.Properties.MinValue = 0;
+                            s.Properties.MaxValue = 1000000;
+                            s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                            s.ShowModelErrors = true;
+                        });
+                    });
+
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "INVERTER_TYPE";
+                        i.Caption = "Inverter Type";
+                        i.NestedExtension().SpinEdit(s =>
+                        {
+                            s.Width = Unit.Percentage(100);
+                            s.Properties.MinValue = 0;
+                            s.Properties.MaxValue = 1000000;
+                            s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                            s.ShowModelErrors = true;
+                        });
+                    });
+
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "ORIENTATION";
+                        i.Caption = "Orientation(°)";
+                        i.NestedExtension().SpinEdit(s =>
+                        {
+                            s.Width = Unit.Percentage(100);
+                            s.Properties.MinValue = 0;
+                            s.Properties.MaxValue = 1000000;
+                            s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                            s.ShowModelErrors = true;
+                        });
+                    });
+
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "PITCH_DETAIL";
+                        i.Caption = "Pitch Detail (°)";
+
+                        i.NestedExtension().TextBox(s =>
+                        {
+                            s.Width = Unit.Percentage(100);
+                            s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                            s.ShowModelErrors = true;
+                        });
+                    });
+
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "COORDINATE_INFORMATION";
+                        i.Caption = "Coordinate";
+                        i.NestedExtension().TextBox(p =>
+                        {
+                            p.Properties.ValidationSettings.Display = Display.Dynamic;
+                            p.Width = Unit.Percentage(97);
+                        });
+                    });
+
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "INVERTER_MODEL";
+                        i.Caption = "Inverter Model";
+                        i.NestedExtension().TextBox(p =>
+                        {
+                            p.Properties.ValidationSettings.Display = Display.Dynamic;
+                            p.Width = Unit.Percentage(100);
+                        });
+                    });
+
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "PANEL_BRAND";
+                        i.Caption = "Panel Brand";
+                        i.NestedExtension().TextBox(p =>
+                        {
+                            p.Properties.ValidationSettings.Display = Display.Dynamic;
+                            p.Width = Unit.Percentage(100);
+                        });
+                    });
+
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "PANEL_TYPE";
+                        i.Caption = "Panel Type";
+                        i.NestedExtension().TextBox(p =>
+                        {
+                            p.Properties.ValidationSettings.Display = Display.Dynamic;
+                            p.Width = Unit.Percentage(100);
+                        });
+                    });
+
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "WEATHER_LOCATION";
+                        i.Caption = "Weather Location";
+                        i.NestedExtension().TextBox(p =>
+                        {
+                            p.Properties.ValidationSettings.Display = Display.Dynamic;
+                            p.Width = Unit.Percentage(100);
+                        });
+                    });
+
+
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "EXCHANGE_RATE";
+                        i.Caption = "Exchange Rate($)";
+                        i.NestedExtension().SpinEdit(s =>
+                        {
+                            s.Width = Unit.Percentage(100);
+                            s.Properties.MinValue = 0;
+                            s.Properties.MaxValue = 1000000;
+                            s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                            s.ShowModelErrors = true;
+                        });
+                    });
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "TAX";
+                        i.Caption = "TAX($)";
+                        i.NestedExtension().SpinEdit(s =>
+                        {
+                            s.Width = Unit.Percentage(100);
+                            s.Properties.MinValue = 0;
+                            s.Properties.MaxValue = 1000000;
+                            s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                            s.ShowModelErrors = true;
+                        });
+                    });
+
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "IP_ADDRESS";
+                        i.Caption = "IP";
+                        i.NestedExtension().TextBox(s =>
+                        {
+                            s.Width = Unit.Percentage(100);
+                            s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                            s.ShowModelErrors = true;
+                        });
+                    });
+
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "PORT";
+                        i.Caption = "PORT";
+                        i.NestedExtension().TextBox(s =>
+                        {
+                            s.Width = Unit.Percentage(100);
+                            s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                            s.ShowModelErrors = true;
+                        });
+                    });
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "EXE_NUMBER";
+                        i.Caption = "EXE NUMBER";
+                        i.NestedExtension().TextBox(s =>
+                        {
+                            s.Width = Unit.Percentage(100);
+                            s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                            s.ShowModelErrors = true;
+                        });
+                    });
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "STATION_TYPE";
+                        i.Caption = "STATION TYPE";
+                        i.NestedExtension().TextBox(s =>
+                        {
+                            s.Width = Unit.Percentage(100);
+                            s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                            s.ShowModelErrors = true;
+                        });
+                    });
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "USERS";
+                        i.Caption = "User";
+                        i.SetNestedContent(() =>
+                        {
+                            int _stationId = 0;
+                            if (c.KeyValue != null)
+                            {
+                                _stationId = (int)c.KeyValue;
+                            }
+                            Html.RenderAction("GridLookupPartial", new { cmpanyId = companyId, stationId = _stationId });
+                        });
+                    });
+
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "INSTALL_DATE";
+                        i.Caption = "Installation Date";
+                        i.NestedExtension().DateEdit(s =>
+                        {
+                            s.Width = Unit.Percentage(100);
+                        });
+                    });
+
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "START_DATE";
+                        i.Caption = "Start Date";
+                        i.NestedExtension().DateEdit(s =>
+                        {
+                            s.Width = Unit.Percentage(100);
+                        });
+                    });
+
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "ADDRESS";
+                        i.Caption = "Address";
+                        i.NestedExtension().Memo(s =>
+                        {
+                            s.Width = Unit.Percentage(95);
+                            s.Height = Unit.Pixel(100);
+                        });
+                    });
+
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "DESCRIPTION";
+                        i.Caption = "Description";
+                        i.NestedExtension().Memo(s =>
+                        {
+                            s.Width = Unit.Percentage(100);
+                            s.Height = Unit.Pixel(100);
+                        });
+                    });
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "PLC_INTERFACE";
+                        i.Caption = "PLC INTERFACE";
+                        i.NestedExtension().Memo(s =>
+                        {
+                            s.Width = Unit.Percentage(100);
+                            s.Height = Unit.Pixel(100);
+                        });
+                    });
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "EKK_INTERFACE";
+                        i.Caption = "EKK INTERFACE";
+                        i.NestedExtension().Memo(s =>
+                        {
+                            s.Width = Unit.Percentage(100);
+                            s.Height = Unit.Pixel(100);
+                        });
+                    });
+
+                    g.Items.Add(i =>
+                    {
+                        i.FieldName = "IRRADIATION_SCALE";
+                        i.Caption = "Irradiation Scale(%)";
+                        i.NestedExtension().SpinEdit(s =>
+                        {
+                            s.Width = Unit.Percentage(100);
+                            s.Properties.MinValue = -100;
+                            s.Properties.MaxValue = 100;
+                            s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                            s.ShowModelErrors = true;
+                        });
+                    });
+
+                    g.Items.Add(x => { x.FieldName = "IS_CENTRAL_INV"; x.Caption = "Single Inverter"; x.NestedExtension().CheckBox(s => { s.Enabled = true; }); });
+                    g.Items.Add(x => { x.FieldName = "IS_ACTIVE"; x.Caption = "Active"; x.NestedExtension().CheckBox(s => { s.Enabled = true; }); });
+                    g.Items.Add(x => { x.FieldName = "IS_LOCKED"; x.Caption = "Locked"; x.NestedExtension().CheckBox(s => { s.Enabled = true; }); });
+                    g.Items.Add(x => { x.FieldName = "IS_EKK"; x.Caption = "EKK"; x.NestedExtension().CheckBox(s => { s.Enabled = true; }); });
+                    g.Items.Add(x => { x.FieldName = "IS_METEOROLOGY"; x.Caption = "METEOROLOGY"; x.NestedExtension().CheckBox(s => { s.Enabled = true; }); });
+                    g.Items.Add(x => { x.FieldName = "IS_PYRANOMETER"; x.Caption = "PYRANOMETER"; x.NestedExtension().CheckBox(s => { s.Enabled = true; }); });
+                    g.Items.Add(x => { x.FieldName = "IS_STRING"; x.Caption = "STRING"; x.NestedExtension().CheckBox(s => { s.Enabled = true; }); });
+                    g.Items.Add(x => { x.FieldName = "IS_STRING_DC"; x.Caption = "STRING DC"; x.NestedExtension().CheckBox(s => { s.Enabled = true; }); });
+                    g.Items.Add(x => { x.FieldName = "OSOS"; x.Caption = "OSOS"; x.NestedExtension().CheckBox(s => { s.Enabled = true; }); });
+                });
+
+                if (c.KeyValue != null)
+                {
+                    t.Items.AddGroupItem(g =>
+                    {
+                        g.GroupBoxDecoration = GroupBoxDecoration.None;
+                        g.SettingsItems.ShowCaption = DefaultBoolean.True;
+                        g.ColCount = 2;
+                        g.Name = "tbInverters";
+                        g.Caption = "Inverters";
+                        g.Height = Unit.Pixel(350);
+                        g.Items.Add(i =>
+                        {
+                            i.Caption = "";
+                            i.SetNestedContent(() =>
+                            {
+                                //ViewContext.Writer.Write("<table>");
+                                //ViewContext.Writer.Write("<tr>");
+                                //ViewContext.Writer.Write("<td valign='middle'>");
+                                ////Html.RenderAction("TagTemplateComboPartial", "TagTemplate", new { companyId = companyId });
+                                //ViewContext.Writer.Write("</td>");
+                                //ViewContext.Writer.Write("<td  style='padding-left:20px;padding-top:12px'>");
+                                //ViewContext.Writer.Write("<input id='btnAssigntemp' type='button' onclick='ApplyTemplate()' value='Assign' />");
+                                //ViewContext.Writer.Write("</td>");
+                                //ViewContext.Writer.Write("<td  style='padding-left:20px;padding-top:12px'> <a id='warningA' style='display:none;color:#56a537;'></a> </td>");
+
+                                //ViewContext.Writer.Write("</tr>");
+                                //ViewContext.Writer.Write("</table>");
+                                Html.RenderAction("GridInverterPartial", "Inverter", new { stationId = c.KeyValue });
+                            });
+                        });
+                    });
+
+                    t.Items.AddGroupItem(g =>
+                    {
+                        g.GroupBoxDecoration = GroupBoxDecoration.None;
+                        g.SettingsItems.ShowCaption = DefaultBoolean.True;
+                        g.ColCount = 2;
+                        g.Name = "tbString";
+                        g.Caption = "Strings";
+                        g.Height = Unit.Pixel(350);
+                        g.Items.Add(i =>
+                        {
+                            i.Caption = "";
+                            i.SetNestedContent(() =>
+                            {
+                                using (Html.BeginForm())
+                                {
+
+                                }
+                                ViewContext.Writer.Write("<input id='chcSelAll' type='checkbox' onchange='SelectAllString()' /> Select all. <hr/>");
+                                Html.RenderAction("GridStationStringPartial", "station", new { stationId = c.KeyValue, selectAll = false });
+                            });
+                        });
+                    });
+
+                }
+
+                if (curTask.ID != 0)
+                {
+                    t.Items.AddGroupItem(g =>
+                    {
+                        g.GroupBoxDecoration = GroupBoxDecoration.None;
+                        g.SettingsItems.ShowCaption = DefaultBoolean.True;
+                        g.ColCount = 3;
+                        g.Name = "tbTarget";
+                        g.Caption = "Monthly Target";
+                        g.Height = Unit.Pixel(350);
+
+                        g.Items.Add(i =>
+                        {
+                            i.FieldName = "JAN_PRODUCTION";
+                            i.Caption = "January Production";
+                            i.NestedExtension().SpinEdit(s =>
+                            {
+                                s.Width = Unit.Percentage(100);
+                                s.Properties.NumberType = SpinEditNumberType.Float;
+                                s.Properties.SpinButtons.ShowLargeIncrementButtons = true;
+                                s.Properties.MinValue = 0;
+                                s.Properties.MaxValue = 1000000;
+                                s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                                s.ShowModelErrors = true;
+                            });
+                        }); g.Items.Add(i =>
+                        {
+                            i.FieldName = "FEB_PRODUCTION";
+                            i.Caption = "February Production";
+                            i.NestedExtension().SpinEdit(s =>
+                            {
+                                s.Width = Unit.Percentage(100);
+                                s.Properties.NumberType = SpinEditNumberType.Float;
+                                s.Properties.SpinButtons.ShowLargeIncrementButtons = true;
+                                s.Properties.MinValue = 0;
+                                s.Properties.MaxValue = 1000000;
+                                s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                                s.ShowModelErrors = true;
+                            });
+                        }); g.Items.Add(i =>
+                        {
+                            i.FieldName = "MARCH_PRODUCTION";
+                            i.Caption = "March Production";
+                            i.NestedExtension().SpinEdit(s =>
+                            {
+                                s.Width = Unit.Percentage(100);
+                                s.Properties.NumberType = SpinEditNumberType.Float;
+                                s.Properties.SpinButtons.ShowLargeIncrementButtons = true;
+                                s.Properties.MinValue = 0;
+                                s.Properties.MaxValue = 1000000;
+                                s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                                s.ShowModelErrors = true;
+                            });
+                        }); g.Items.Add(i =>
+                        {
+                            i.FieldName = "APRIL_PRODUCTION";
+                            i.Caption = "April Production";
+                            i.NestedExtension().SpinEdit(s =>
+                            {
+                                s.Width = Unit.Percentage(100);
+                                s.Properties.NumberType = SpinEditNumberType.Float;
+                                s.Properties.SpinButtons.ShowLargeIncrementButtons = true;
+                                s.Properties.MinValue = 0;
+                                s.Properties.MaxValue = 1000000;
+                                s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                                s.ShowModelErrors = true;
+                            });
+                        }); g.Items.Add(i =>
+                        {
+                            i.FieldName = "MAY_PRODUCTION";
+                            i.Caption = "May Production";
+                            i.NestedExtension().SpinEdit(s =>
+                            {
+                                s.Width = Unit.Percentage(100);
+                                s.Properties.NumberType = SpinEditNumberType.Float;
+                                s.Properties.SpinButtons.ShowLargeIncrementButtons = true;
+                                s.Properties.MinValue = 0;
+                                s.Properties.MaxValue = 1000000;
+                                s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                                s.ShowModelErrors = true;
+                            });
+                        }); g.Items.Add(i =>
+                        {
+                            i.FieldName = "JUNE_PRODUCTION";
+                            i.Caption = "June Production";
+                            i.NestedExtension().SpinEdit(s =>
+                            {
+                                s.Width = Unit.Percentage(100);
+                                s.Properties.NumberType = SpinEditNumberType.Float;
+                                s.Properties.SpinButtons.ShowLargeIncrementButtons = true;
+                                s.Properties.MinValue = 0;
+                                s.Properties.MaxValue = 1000000;
+                                s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                                s.ShowModelErrors = true;
+                            });
+                        }); g.Items.Add(i =>
+                        {
+                            i.FieldName = "JULY_PRODUCTION";
+                            i.Caption = "July Production";
+                            i.NestedExtension().SpinEdit(s =>
+                            {
+                                s.Width = Unit.Percentage(100);
+                                s.Properties.NumberType = SpinEditNumberType.Float;
+                                s.Properties.SpinButtons.ShowLargeIncrementButtons = true;
+                                s.Properties.MinValue = 0;
+                                s.Properties.MaxValue = 1000000;
+                                s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                                s.ShowModelErrors = true;
+                            });
+                        }); g.Items.Add(i =>
+                        {
+                            i.FieldName = "AUGUST_PRODUCTION";
+                            i.Caption = "August Production";
+                            i.NestedExtension().SpinEdit(s =>
+                            {
+                                s.Width = Unit.Percentage(100);
+                                s.Properties.NumberType = SpinEditNumberType.Float;
+                                s.Properties.SpinButtons.ShowLargeIncrementButtons = true;
+                                s.Properties.MinValue = 0;
+                                s.Properties.MaxValue = 1000000;
+                                s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                                s.ShowModelErrors = true;
+                            });
+                        }); g.Items.Add(i =>
+                        {
+                            i.FieldName = "SEP_PRODUCTION";
+                            i.Caption = "September Production";
+                            i.NestedExtension().SpinEdit(s =>
+                            {
+                                s.Width = Unit.Percentage(100);
+                                s.Properties.NumberType = SpinEditNumberType.Float;
+                                s.Properties.SpinButtons.ShowLargeIncrementButtons = true;
+                                s.Properties.MinValue = 0;
+                                s.Properties.MaxValue = 1000000;
+                                s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                                s.ShowModelErrors = true;
+                            });
+                        }); g.Items.Add(i =>
+                        {
+                            i.FieldName = "OKT_PRODUCTION";
+                            i.Caption = "October Production";
+                            i.NestedExtension().SpinEdit(s =>
+                            {
+                                s.Width = Unit.Percentage(100);
+                                s.Properties.NumberType = SpinEditNumberType.Float;
+                                s.Properties.SpinButtons.ShowLargeIncrementButtons = true;
+                                s.Properties.MinValue = 0;
+                                s.Properties.MaxValue = 1000000;
+                                s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                                s.ShowModelErrors = true;
+                            });
+                        }); g.Items.Add(i =>
+                        {
+                            i.FieldName = "NOV_PRODUCTION";
+                            i.Caption = "November Production";
+                            i.NestedExtension().SpinEdit(s =>
+                            {
+                                s.Width = Unit.Percentage(100);
+                                s.Properties.NumberType = SpinEditNumberType.Float;
+                                s.Properties.SpinButtons.ShowLargeIncrementButtons = true;
+                                s.Properties.MinValue = 0;
+                                s.Properties.MaxValue = 1000000;
+                                s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                                s.ShowModelErrors = true;
+                            });
+                        }); g.Items.Add(i =>
+                        {
+                            i.FieldName = "DEC_PRODUCTION";
+                            i.Caption = "December Production";
+                            i.NestedExtension().SpinEdit(s =>
+                            {
+                                s.Width = Unit.Percentage(100);
+                                s.Properties.NumberType = SpinEditNumberType.Float;
+                                s.Properties.SpinButtons.ShowLargeIncrementButtons = true;
+                                s.Properties.MinValue = 0;
+                                s.Properties.MaxValue = 1000000;
+                                s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                                s.ShowModelErrors = true;
+                            });
+                        });
+
+                        g.Items.AddEmptyItem();
+                        g.Items.AddEmptyItem();
+                        g.Items.AddEmptyItem();
+
+
+                        g.Items.Add(i =>
+                        {
+                            i.FieldName = "JAN_IRRADIATION";
+                            i.Caption = "January Irradition";
+                            i.NestedExtension().SpinEdit(s =>
+                            {
+                                s.Width = Unit.Percentage(100);
+                                s.Properties.NumberType = SpinEditNumberType.Float;
+                                s.Properties.SpinButtons.ShowLargeIncrementButtons = true;
+                                s.Properties.MinValue = 0;
+                                s.Properties.MaxValue = 1000000;
+                                s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                                s.ShowModelErrors = true;
+                            });
+                        }); g.Items.Add(i =>
+                        {
+                            i.FieldName = "FEB_IRRADIATION";
+                            i.Caption = "February Irradition";
+                            i.NestedExtension().SpinEdit(s =>
+                            {
+                                s.Width = Unit.Percentage(100);
+                                s.Properties.NumberType = SpinEditNumberType.Float;
+                                s.Properties.SpinButtons.ShowLargeIncrementButtons = true;
+                                s.Properties.MinValue = 0;
+                                s.Properties.MaxValue = 1000000;
+                                s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                                s.ShowModelErrors = true;
+                            });
+                        }); g.Items.Add(i =>
+                        {
+                            i.FieldName = "MARCH_IRRADIATION";
+                            i.Caption = "March Irradition";
+                            i.NestedExtension().SpinEdit(s =>
+                            {
+                                s.Width = Unit.Percentage(100);
+                                s.Properties.NumberType = SpinEditNumberType.Float;
+                                s.Properties.SpinButtons.ShowLargeIncrementButtons = true;
+                                s.Properties.MinValue = 0;
+                                s.Properties.MaxValue = 1000000;
+                                s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                                s.ShowModelErrors = true;
+                            });
+                        }); g.Items.Add(i =>
+                        {
+                            i.FieldName = "APRIL_IRRADIATION";
+                            i.Caption = "April Irradition";
+                            i.NestedExtension().SpinEdit(s =>
+                            {
+                                s.Width = Unit.Percentage(100);
+                                s.Properties.NumberType = SpinEditNumberType.Float;
+                                s.Properties.SpinButtons.ShowLargeIncrementButtons = true;
+                                s.Properties.MinValue = 0;
+                                s.Properties.MaxValue = 1000000;
+                                s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                                s.ShowModelErrors = true;
+                            });
+                        }); g.Items.Add(i =>
+                        {
+                            i.FieldName = "MAY_IRRADIATION";
+                            i.Caption = "May Irradition";
+                            i.NestedExtension().SpinEdit(s =>
+                            {
+                                s.Width = Unit.Percentage(100);
+                                s.Properties.NumberType = SpinEditNumberType.Float;
+                                s.Properties.SpinButtons.ShowLargeIncrementButtons = true;
+                                s.Properties.MinValue = 0;
+                                s.Properties.MaxValue = 1000000;
+                                s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                                s.ShowModelErrors = true;
+                            });
+                        }); g.Items.Add(i =>
+                        {
+                            i.FieldName = "JUNE_IRRADIATION";
+                            i.Caption = "June Irradition";
+                            i.NestedExtension().SpinEdit(s =>
+                            {
+                                s.Width = Unit.Percentage(100);
+                                s.Properties.NumberType = SpinEditNumberType.Float;
+                                s.Properties.SpinButtons.ShowLargeIncrementButtons = true;
+                                s.Properties.MinValue = 0;
+                                s.Properties.MaxValue = 1000000;
+                                s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                                s.ShowModelErrors = true;
+                            });
+                        }); g.Items.Add(i =>
+                        {
+                            i.FieldName = "JULY_IRRADIATION";
+                            i.Caption = "July Irradition";
+                            i.NestedExtension().SpinEdit(s =>
+                            {
+                                s.Width = Unit.Percentage(100);
+                                s.Properties.NumberType = SpinEditNumberType.Float;
+                                s.Properties.SpinButtons.ShowLargeIncrementButtons = true;
+                                s.Properties.MinValue = 0;
+                                s.Properties.MaxValue = 1000000;
+                                s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                                s.ShowModelErrors = true;
+                            });
+                        }); g.Items.Add(i =>
+                        {
+                            i.FieldName = "AUGUST_IRRADIATION";
+                            i.Caption = "August Irradition";
+                            i.NestedExtension().SpinEdit(s =>
+                            {
+                                s.Width = Unit.Percentage(100);
+                                s.Properties.NumberType = SpinEditNumberType.Float;
+                                s.Properties.SpinButtons.ShowLargeIncrementButtons = true;
+                                s.Properties.MinValue = 0;
+                                s.Properties.MaxValue = 1000000;
+                                s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                                s.ShowModelErrors = true;
+                            });
+                        }); g.Items.Add(i =>
+                        {
+                            i.FieldName = "SEP_IRRADIATION";
+                            i.Caption = "September Irradition";
+                            i.NestedExtension().SpinEdit(s =>
+                            {
+                                s.Width = Unit.Percentage(100);
+                                s.Properties.NumberType = SpinEditNumberType.Float;
+                                s.Properties.SpinButtons.ShowLargeIncrementButtons = true;
+                                s.Properties.MinValue = 0;
+                                s.Properties.MaxValue = 1000000;
+                                s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                                s.ShowModelErrors = true;
+                            });
+                        }); g.Items.Add(i =>
+                        {
+                            i.FieldName = "OKT_IRRADIATION";
+                            i.Caption = "October Irradition";
+                            i.NestedExtension().SpinEdit(s =>
+                            {
+                                s.Width = Unit.Percentage(100);
+                                s.Properties.NumberType = SpinEditNumberType.Float;
+                                s.Properties.SpinButtons.ShowLargeIncrementButtons = true;
+                                s.Properties.MinValue = 0;
+                                s.Properties.MaxValue = 1000000;
+                                s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                                s.ShowModelErrors = true;
+                            });
+                        });
+
+
+                        g.Items.Add(i =>
+                        {
+                            i.FieldName = "NOV_IRRADIATION";
+                            i.Caption = "November Irradition";
+                            i.NestedExtension().SpinEdit(s =>
+                            {
+                                s.Width = Unit.Percentage(100);
+                                s.Properties.NumberType = SpinEditNumberType.Float;
+                                s.Properties.SpinButtons.ShowLargeIncrementButtons = true;
+                                s.Properties.MinValue = 0;
+                                s.Properties.MaxValue = 1000000;
+                                s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                                s.ShowModelErrors = true;
+                            });
+                        }); g.Items.Add(i =>
+                        {
+                            i.FieldName = "DEC_IRRADIATION";
+                            i.Caption = "December Irradition";
+                            i.NestedExtension().SpinEdit(s =>
+                            {
+                                s.Width = Unit.Percentage(100);
+                                s.Properties.NumberType = SpinEditNumberType.Float;
+                                s.Properties.SpinButtons.ShowLargeIncrementButtons = true;
+                                s.Properties.MinValue = 0;
+                                s.Properties.MaxValue = 1000000;
+                                s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                                s.ShowModelErrors = true;
+                            });
+                        });
+                        g.Items.AddEmptyItem();
+                        g.Items.AddEmptyItem();
+                        g.Items.AddEmptyItem();
+                        g.Items.Add(i =>
+                        {
+                            i.FieldName = "YEAR_PRODUCTION";
+                            i.Caption = "YEAR PRODUCTION";
+                            i.NestedExtension().SpinEdit(s =>
+                            {
+                                s.Width = Unit.Percentage(100);
+                                s.Properties.NumberType = SpinEditNumberType.Float;
+                                s.Properties.SpinButtons.ShowLargeIncrementButtons = true;
+                                s.Properties.MinValue = 0;
+                                s.Properties.MaxValue = 1000000;
+                                s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                                s.ShowModelErrors = true;
+                            });
+                        });
+
+                        g.Items.Add(i =>
+                        {
+                            i.FieldName = "YEAR_IRRADIATION";
+                            i.Caption = "YEAR IRRADITION";
+                            i.NestedExtension().SpinEdit(s =>
+                            {
+                                s.Width = Unit.Percentage(100);
+                                s.Properties.NumberType = SpinEditNumberType.Float;
+                                s.Properties.SpinButtons.ShowLargeIncrementButtons = true;
+                                s.Properties.MinValue = 0;
+                                s.Properties.MaxValue = 1000000;
+                                s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+                                s.ShowModelErrors = true;
+                            });
+                        });
+                    });
+                };
+
+
+
+
+            });
+
+            formLayoutSettings.Items.AddEmptyItem();
+            formLayoutSettings.Items.Add(i =>
+            {
+                i.ShowCaption = DefaultBoolean.False;
+            }).SetNestedContent(() =>
+            {
+                ViewContext.Writer.Write("<div style='float:right'>");
+                Html.DevExpress().Button(
+                    btnSettings =>
+                    {
+                        btnSettings.Name = "btnUpdate";
+                        btnSettings.Text = "Save";
+                        btnSettings.ClientSideEvents.Click = "function(s, e){ if(tabbedGroup.activeTabIndex == 0 || tabbedGroup.activeTabIndex == 1 || tabbedGroup.activeTabIndex == 3){ gvStation.UpdateEdit(); }   }";
+                    }).Render();
+                Html.DevExpress().Button(
+                    btnSettings =>
+                    {
+                        btnSettings.Name = "btnCancel";
+                        btnSettings.Text = "Cancel";
+                        btnSettings.Style[HtmlTextWriterStyle.MarginLeft] = "5px";
+                        btnSettings.ClientSideEvents.Click = @"function(s, e)
+														{
+																gvStation.CancelEdit();
+
+														}";
+                    }).Render();
+                ViewContext.Writer.Write("</div>");
+            });
+        })
+.Bind(ViewData["EditableProduct"] ?? c.DataItem)
+.Render();
+    });
+
+    var grid = @Html.DevExpress().GridView(gridSettings);
+
+    if (ViewData["EditError"] != null)
+        grid.SetEditErrorText((string)ViewData["EditError"]);
+
+}
+
+@grid.Bind(Model).GetHtml()
+
+@*@grid.BindToLINQ(string.Empty, string.Empty, (s, e) =>
+	{
+		e.KeyExpression = "ID";
+		e.QueryableSource = Esso.Service.StationService.GetStationsAsQuery().Where(x => x.COMPANY_ID == Model).OrderByDescending(x => x.NAME);
+	}).GetHtml()*@
+
+

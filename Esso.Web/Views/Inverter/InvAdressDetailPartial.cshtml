@@ -1,0 +1,15 @@
+﻿@using System.Web.UI.WebControls;
+@Html.DevExpress().GridView(
+    settings =>
+    {
+        settings.Name = "detailGrid_" + ViewData["invId"];
+        settings.SettingsDetail.MasterGridName = "grid";
+        settings.CallbackRouteValues = new { Controller = "Inverter", Action = "InvAdressDetailPartial", inverterId = ViewData["invId"] };
+        settings.Width = Unit.Percentage(100);
+
+        settings.KeyFieldName = "ID";
+        settings.Columns.Add(c => { c.FieldName = "TAG_NAME"; c.Caption = "Tag"; });
+        settings.Columns.Add(c => { c.FieldName = "ADDRESS"; c.Caption = "Address"; });
+
+        settings.Settings.ShowFooter = true;
+    }).Bind(Model).GetHtml()

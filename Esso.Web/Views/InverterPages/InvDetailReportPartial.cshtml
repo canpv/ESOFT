@@ -1,0 +1,296 @@
+﻿@using Esso.Models
+@using Esso.Data
+@using System.Web.UI.WebControls;
+@using DevExpress.Data.Filtering
+@using System.Threading;
+@using System.Globalization;
+
+@model int
+
+@{
+    Thread.CurrentThread.CurrentCulture = new CultureInfo("tr-TR");
+    DateTime date1 = DateTime.Parse(ViewData["date1"].ToString());
+    DateTime date2 = DateTime.Parse(ViewData["date2"].ToString());
+
+    DateTime date1_ = date1.Date;
+    DateTime date2_ = date2.Date;
+    date2_ = date2_.AddHours(23);
+    date2_ = date2_.AddMinutes(59);
+
+    EssoEntities DB = new EssoEntities();
+    GridViewSettings settings = new Esso.Web.Controllers.InverterPagesController.GridHelper(Model).GridStationSettings;
+
+    if (settings.Toolbars.Count == 0)
+    {
+        settings.ClientSideEvents.BeginCallback = "repGridBgCallBack";
+
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "Inv_Id";
+            c.Caption = "Inverter Name";
+            c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            c.EditorProperties().ComboBox(s =>
+            {
+                s.TextField = "NAME";
+                s.ValueField = "ID";
+                s.ValueType = typeof(int);
+                s.DataSource = DB.Inverters.Where(x => x.STATION_ID == Model && x.IS_DELETED == false).Select(x => new { x.NAME, x.ID }).OrderBy(x => x.ID).ToList();
+                s.Width = Unit.Percentage(100);
+            });
+        });
+
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "Tarih";
+            c.Caption = "Date";
+            c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+    //c.Name = "filter_String";
+    c.SortOrder = DevExpress.Data.ColumnSortOrder.Descending;
+    //c.PropertiesEdit.DisplayFormatString = "C2";
+    c.PropertiesEdit.DisplayFormatString = "dd/MM/yyyy HH:mm";
+    #region Date_Filter_Settings
+    //	c.SetFilterTemplateContent(content =>
+    //	{
+    //		Html.DevExpress().DropDownEdit(set =>
+    //		{
+    //			set.Name = "dde";
+    //			set.SetDropDownWindowTemplateContent(cc =>
+    //			{
+    //				Html.DevExpress().Label(s =>
+    //				{
+    //					s.Name = "L1";
+    //					s.Text = "From:";
+    //				}).Render();
+    //				Html.DevExpress().DateEdit(s =>
+    //				{
+    //					s.Name = "dFrom";
+    //					//s.Date = DateTime.Now;
+
+    //					s.Properties.EditFormat = EditFormat.Custom;
+    //					s.Properties.EditFormatString = "dd/MM/yyyy";
+    //					s.Properties.DisplayFormatString = "dd/MM/yyyy";
+    //					s.Date = DateTime.Now.Date;
+    //					s.Properties.MaxDate = DateTime.Now;
+
+    //				}).Render();
+    //				Html.DevExpress().Label(s =>
+    //				{
+    //					s.Name = "L2";
+    //					s.Text = "To:";
+    //				}).Render();
+    //				Html.DevExpress().DateEdit(s =>
+    //				{
+    //					s.Name = "dTo";
+    //					//s.Date = DateTime.Now;
+
+    //					s.Properties.EditFormat = EditFormat.Custom;
+    //					s.Properties.EditFormatString = "dd/MM/yyyy";
+    //					s.Properties.DisplayFormatString = "dd/MM/yyyy";
+    //					s.Date = DateTime.Now.Date;
+    //					s.Properties.MaxDate = DateTime.Now;
+    //				}).Render();
+    //				Html.DevExpress().Button(s =>
+    //				{
+    //					s.Name = "btn";
+    //					s.UseSubmitBehavior = false;
+    //					s.ClientSideEvents.Click = "function (s, e) { ApplyFilter( dFrom, dTo ); }";
+
+    //					s.Text = "Apply";
+    //				}).Render();
+    //			});
+    //		}).Render();
+    //	});
+    #endregion
+});
+
+        #region Date_Filter_Settings
+        settings.ClientSideEvents.EndCallback = "EndCallback";
+
+
+        //settings.ProcessColumnAutoFilter = (s, e) =>
+        //{
+        //	if (e.Value == "|") return;
+
+        //	if (e.Column.FieldName != "Tarih")
+        //		return;
+        //	if (e.Kind == GridViewAutoFilterEventKind.CreateCriteria)
+        //	{
+        //		String[] dates = e.Value.Split('|');
+        //		DateTime dateFrom = Convert.ToDateTime(dates[0]), dateTo = Convert.ToDateTime(dates[1]);
+        //		e.Criteria = (new OperandProperty("Tarih") >= dateFrom) & (new OperandProperty("Tarih") <= dateTo);
+        //	}
+        //};
+        //settings.CustomJSProperties = (s, e) =>
+        //{
+        //	MVCxGridView g = s as MVCxGridView;
+        //	if (g.FilterExpression.Contains("Tarih"))
+        //		e.Properties["cpFilter"] = "filter";
+        //	else
+        //		e.Properties["cpFilter"] = null;
+        //};
+        #endregion
+
+        //settings.SettingsCommandButton.UpdateButton.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ActionsApply32x32;
+
+        settings.SettingsAdaptivity.AdaptivityMode = GridViewAdaptivityMode.HideDataCells;
+        settings.SettingsAdaptivity.AllowOnlyOneAdaptiveDetailExpanded = true;
+        //settings.SettingsPager.NumericButtonCount = 50;
+        settings.SettingsPager.EnableAdaptivity = true;
+
+        settings.SettingsPager.FirstPageButton.Visible = true;
+        settings.SettingsPager.LastPageButton.Visible = true;
+        settings.SettingsPager.NextPageButton.Visible = true;
+        settings.SettingsPager.PrevPageButton.Visible = true;
+        settings.SettingsPager.PageSizeItemSettings.Caption = "Show";
+        //settings.SettingsPager.Summary.Text = " Showing {0} to {1} of {2} entries"; //new prop added
+
+        settings.Styles.AlternatingRow.BackColor = System.Drawing.Color.FromArgb(237, 237, 237);
+
+
+
+
+        settings.Settings.GridLines = System.Web.UI.WebControls.GridLines.None;
+        settings.Styles.Table.Border.BorderStyle = System.Web.UI.WebControls.BorderStyle.None;
+        settings.Styles.Header.Border.BorderColor = System.Drawing.Color.Transparent;
+
+        settings.Styles.Header.BackColor = System.Drawing.Color.FromArgb(1, 0, 98, 158);
+        settings.Styles.Table.ForeColor = System.Drawing.Color.FromArgb(1, 0, 98, 158);
+        settings.Styles.Footer.ForeColor = System.Drawing.Color.WhiteSmoke;
+        settings.Styles.Header.Font.Bold = true;
+        settings.Styles.Footer.Font.Bold = true;
+        settings.Styles.Header.ForeColor = System.Drawing.Color.WhiteSmoke/*FromArgb(1, 90, 115, 142)*/;
+        settings.Styles.FilterRow.BackColor = System.Drawing.Color.White;
+        settings.Styles.PagerBottomPanel.BackColor = System.Drawing.Color.White;
+        settings.Styles.PagerBottomPanel.Border.BorderStyle = System.Web.UI.WebControls.BorderStyle.None;
+        settings.Styles.PagerBottomPanel.ForeColor = System.Drawing.Color.FromArgb(1, 0, 98, 158);
+
+
+
+        settings.SettingsBehavior.AllowFocusedRow = false;
+        settings.Settings.ShowGroupPanel = false;
+
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "Akim_AC";
+            c.Caption = "Current AC (A)";
+            c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "Akim_DC";
+            c.Caption = "Current DC (A)";
+            c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "Gerilim_AC";
+            c.Caption = "VOLTAGE AC (V)";
+            c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "Gerilim_DC";
+            c.Caption = "VOLTAGE DC (V)";
+            c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "Guc_AC";
+            c.Caption = "POWER AC (W)";
+            c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "Guc_DC";
+            c.Caption = "POWER DC (W)";
+            c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "Gunluk_Enerji";
+            c.Caption = "DAILY YIELD (Wh)";
+            c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+        });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "Toplam_Enerji";
+            c.Caption = "TOTAL YIELD (Wh)";
+            c.CellStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Center;
+            c.PropertiesEdit.DisplayFormatString = "#.00";
+        });
+        settings.SettingsExport.Landscape = true;
+
+        settings.Toolbars.Add(toolbar =>
+        {
+            toolbar.Enabled = true;
+            toolbar.Position = GridToolbarPosition.Top;
+            toolbar.ItemAlign = GridToolbarItemAlign.Right;
+    //toolbar.Items.Add(GridViewToolbarCommand.New);
+    //toolbar.Items.Add(GridViewToolbarCommand.Edit);
+    //toolbar.Items.Add(GridViewToolbarCommand.Delete);
+    toolbar.Items.Add(GridViewToolbarCommand.Refresh, true);
+            toolbar.Items.Add(i =>
+            {
+                i.Text = "Export to";
+                i.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ActionsDownload16x16office2013;
+                i.BeginGroup = true;
+                i.Items.Add(exportitem =>
+                {
+                    exportitem.Name = "Pdf";
+                    exportitem.Text = "PDF";
+                    exportitem.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ExportExporttopdf16x16office2013;
+                });
+        //i.Items.Add(exportitem =>
+        //{
+        //	exportitem.Name = "Xlsx";
+        //	exportitem.Text = "XLSX";
+        //	exportitem.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ExportExporttoxlsx16x16office2013;
+        //});
+        i.Items.Add(exportitem =>
+                {
+                    exportitem.Name = "Xls";
+                    exportitem.Text = "XLS";
+                    exportitem.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ExportExporttoxls16x16office2013;
+                });
+            });
+
+
+    //toolbar.Items.Add(i =>
+    //{
+    //    i.BeginGroup = true;
+    //    i.SetTemplateContent(c =>
+    //    {
+    //        Html.DevExpress().DateEdit(s =>
+    //        {
+    //            s.Name = "dtStartDate";
+    //            s.Properties.NullText = "Select Date...";
+    //            s.Properties.MaxDate = DateTime.Now.Date;
+    //            s.Properties.Buttons
+    //                .Add()
+    //                .Image.IconID = DevExpress.Web.ASPxThemes.IconID.FindFind16x16gray;
+    //        }).Render();
+    //    });
+    //});
+});
+    }
+
+
+    settings.Settings.ShowFilterRow = true;
+    settings.Settings.ShowGroupPanel = false;
+    settings.Settings.ShowFooter = true;
+
+    settings.ClientSideEvents.ToolbarItemClick = "OnToolbarItemClick";
+
+
+
+}
+
+@(Html.DevExpress().GridView(settings)
+                                .BindToEF(string.Empty, string.Empty, (s, e) =>
+                                {
+                                    e.KeyExpression = "Id";
+                                    DateTime nw = DateTime.Now;
+                                    e.QueryableSource = DB.InvSums
+                                    .Where(x => x.STATION_ID == Model && (x.Tarih.Value >= date1_) && (x.Tarih.Value <= date2_));
+                                })
+                            .GetHtml())

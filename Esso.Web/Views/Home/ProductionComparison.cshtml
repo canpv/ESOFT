@@ -1,0 +1,590 @@
+﻿@model int
+@using Esso.Data;
+@using Microsoft.AspNet.Identity;
+@using language
+@{
+    ViewBag.Title = "ProductionComparison";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@{
+    EssoEntities DB = new EssoEntities();
+    var companyName = DB.Companies.Where(x => x.ID == Model).FirstOrDefault().NAME;
+    var companyName2 = DB.Companies.Where(x => x.ID == Model).FirstOrDefault().ID;
+    var userId = User.Identity.GetUserId();
+}
+
+<style>
+    tfoot {
+        color: black;
+        background: #9c9c9c;
+    }
+</style>
+
+<div class="page-title">
+    <div class="title_left">
+       @if (User.IsInRole("DEMO"))
+       {
+            <h3>Company @companyName2</h3>
+        }
+        else
+        {
+            <h3>@companyName</h3>
+        }
+    </div>
+</div>
+<div class="clearfix"></div>
+<div class="row">
+    <input type="hidden" value="@Resources.Production" id="hdn_production" />
+    <input type="hidden" value="@Resources.Maximum" id="hdn_maximum" />
+    <input type="hidden" value="@Resources.Average" id="hdn_average" />
+    <div class="col-md-12 col-sm-12 col-xs-12">
+        <div class="x_panel">        
+            <div class="x_content">
+                <div id="mainb" style="height:350px;"></div>      
+                <div class="well" style="overflow: auto">
+                    <div class="col-md-12">
+                        <div class="btn-group">                        
+                        </div>
+                        <div class="btn-group">
+                            <input name="selectDate" id="single_cal4" class="form-control has-feedback-left" type="text" />
+                        </div>
+                        <div class="btn-group">
+                            <input type="button" class="btn btn-info" id="btnChart" value="@Resources.Show" />
+                        </div>
+                        <div class="btn-group">
+                            <img id="LoadingImage" src="~/images/loader.gif" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="x_panel">
+                <div class="x_content">
+     
+                    <div class="table-responsive">
+                        <table class="table table-striped jambo_table bulk_action" style=" background-color: rgba(111, 126, 141, 0.05);">
+                            <thead>
+                                <tr>
+                                    <th>@Resources.Station</th>
+                                    <th>@Resources.Daily_Production (MWh)</th>
+                                    <th>AC @Resources.Power</th>
+                                    <th>DC @Resources.Power</th>
+                                    <th>PR</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ProductionDetail"></tbody>
+                            <tfoot id="totalFooter"></tfoot>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+</div>
+<br />
+
+<script src="~/Content/raphael.min.js"></script>
+<script src="~/Content/morris.min.js"></script>
+
+
+<script>
+    function ConvertDay(vl) {
+        var value = new Date
+            (
+            parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+            );
+        return value.getDate()
+    }
+
+    function ConvertDateMonth(vl) {
+        var value = new Date
+            (
+            parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+            );
+        var ay = (value.getMonth() + 1);
+        if (ay == 1) { sonuc = 31; }
+        else if (ay == 2) { sonuc = 28; }
+        else if (ay == 3) { sonuc = 31; }
+        else if (ay == 4) { sonuc = 30; }
+        else if (ay == 5) { sonuc = 31; }
+        else if (ay == 6) { sonuc = 30; }
+        else if (ay == 7) { sonuc = 31; }
+        else if (ay == 8) { sonuc = 31; }
+        else if (ay == 9) { sonuc = 30; }
+        else if (ay == 10) { sonuc = 31; }
+        else if (ay == 11) { sonuc = 30; }
+        else if (ay == 12) { sonuc = 31; }
+        return sonuc;
+    }
+    function ConvertNumberMonth(vln) {
+
+        if (vln == 1) { sonuc = 31; }
+        else if (vln == 2) { sonuc2 = 28; }
+        else if (vln == 3) { sonuc2 = 31; }
+        else if (vln == 4) { sonuc2 = 30; }
+        else if (vln == 5) { sonuc2 = 31; }
+        else if (vln == 6) { sonuc2 = 30; }
+        else if (vln == 7) { sonuc2 = 31; }
+        else if (vln == 8) { sonuc2 = 31; }
+        else if (vln == 9) { sonuc2 = 30; }
+        else if (vln == 10) { sonuc2 = 31; }
+        else if (vln == 11) { sonuc2 = 30; }
+        else if (vln == 12) { sonuc2 = 31; }
+        return sonuc2;
+    }
+
+
+    function ConvertTicksToTime(vl) {
+        vl = vl.replace("Date", "");
+        vl = vl.replace("/", "");
+        vl = vl.replace("(", "");
+        vl = vl.replace(")", "");
+        vl = vl.replace("/", "").trim();
+
+        var vlDate = new Date(parseInt(vl));
+        return vlDate.toLocaleTimeString();
+    }
+    function DateFormat(vl) {
+        var value = new Date
+            (
+            parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+            );
+        var dat = value.getDate() +
+            "/" +
+            (value.getMonth() + 1) +
+            "/" +
+            value.getFullYear();
+
+        var time = value.getHours() +
+            ":" +
+            value.getMinutes()
+        return time.toString();
+    }
+    function ConvertTicksToDate(vl) {
+        vl = vl.replace("Date", "");
+        vl = vl.replace("/", "");
+        vl = vl.replace("(", "");
+        vl = vl.replace(")", "");
+        vl = vl.replace("/", "").trim();
+
+        var vlDate = new Date(parseInt(vl));
+        return vlDate.toLocaleDateString();
+    }
+        //DailyChartData();
+</script>
+<script>
+    var theme = {
+        //renkler
+        color: [
+            '#26B99A', '#052ec7', '#fea80c', '#d400a5',
+            '#9B59B6', '#8abb6f', '#759c6a', '#bfd3b7'
+        ],
+        title: {
+            itemGap: 8,
+            textStyle: {
+                fontWeight: 'normal',
+                color: '#408829'
+            }
+        },
+
+        dataRange: {
+            color: ['#1f610a', '#97b58d']
+        },
+
+        toolbox: {
+            color: ['#408829', '#408829', '#408829', '#408829']
+        },
+
+        tooltip: {
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            axisPointer: {
+                type: 'line',
+                lineStyle: {
+                    color: '#408829',
+                    type: 'dashed'
+                },
+                crossStyle: {
+                    color: '#408829'
+                },
+                shadowStyle: {
+                    color: 'rgba(200,200,200,0.3)'
+                }
+            }
+        },
+
+        dataZoom: {
+            dataBackgroundColor: '#eee',
+            fillerColor: 'rgba(64,136,41,0.2)',
+            handleColor: '#408829'
+        },
+        grid: {
+            borderWidth: 0
+        },
+
+        categoryAxis: {
+            axisLine: {
+                lineStyle: {
+                    color: '#408829'
+                }
+            },
+            splitLine: {
+                lineStyle: {
+                    color: ['#eee']
+                }
+            }
+        },
+
+        valueAxis: {
+            axisLine: {
+                lineStyle: {
+                    color: '#408829'
+                }
+            },
+            splitArea: {
+                show: true,
+                areaStyle: {
+                    color: ['rgba(250,250,250,0.1)', 'rgba(200,200,200,0.1)']
+                }
+            },
+            splitLine: {
+                lineStyle: {
+                    color: ['#eee']
+                }
+            }
+        },
+        timeline: {
+            lineStyle: {
+                color: '#408829'
+            },
+            controlStyle: {
+                normal: { color: '#408829' },
+                emphasis: { color: '#408829' }
+            }
+        },
+
+
+        textStyle: {
+            fontFamily: 'Arial, Verdana, sans-serif'
+        }
+    };
+
+    $(document).ready(function () {
+
+        function NumberConvert(nStr) {
+            if (nStr != null) {
+                nStr = nStr.toFixed(2);
+                nStr += '';
+                x = nStr.split('.');
+                x1 = x[0];
+                x2 = x.length > 1 ? ',' + x[1] : '';
+                var rgx = /(\d+)(\d{3})/;
+                while (rgx.test(x1)) {
+                    x1 = x1.replace(rgx, '$1' + '.' + '$2');
+                }
+                return x1 + x2;
+            }
+            else {
+                return "-";
+            }
+        }
+        function NumberConvert2(nStr) {
+            if (nStr != null) {
+                nStr += '';
+                x = nStr.split('.');
+                x1 = x[0];
+                x2 = x.length > 1 ? ',' + x[1] : '';
+                var rgx = /(\d+)(\d{3})/;
+                while (rgx.test(x1)) {
+                    x1 = x1.replace(rgx, '$1' + '.' + '$2');
+                }
+                return x1 + x2;
+            }
+            else {
+                return "-";
+            }
+        }
+
+        //Aylık Grafik bas.
+        //CallMonthlyChartData();
+        $('#btnList2').click(function () {
+            $("#aylikDetay").empty();
+            CallMonthlyChartData();
+        });
+        function getMonth(vl) {
+            var value = new Date
+                (
+                parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+                );
+            var ay = (value.getMonth() + 1);
+            return ay;
+        }
+        function getDay(vl) {
+            var value = new Date
+                (
+                parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+                );
+            var gun = (value.getDate());
+
+            return gun;
+        }
+        StationBar();
+        $('#btnChart').click(function () {
+
+            StationBar();
+        });
+
+        function StationBar() {
+
+            var beginDate = $('input[name="selectDate"]').val();
+
+
+            if (!beginDate || beginDate.length == 0) {
+                beginDate = new Date().toISOString();
+            }
+            $("#LoadingImage").show();
+            $.ajax({
+                url: "/Home/CompanyPro?companyId",
+                type: "POST",
+                data: { beginDate: beginDate, companyId: @Model },
+                dataType: "json",
+                success: function (data) {
+                    var _production = $('#hdn_production').val();
+                    var _average = $('#hdn_average').val();
+                    var _maximum = $('#hdn_maximum').val();
+                    $("#LoadingImage").hide();
+                    $("#ProductionDetail").empty();
+                    $("#totalFooter").empty();
+                    var totalPro = 0;
+                    var totalIncome = 0;
+                    var listProd = [];
+                    var listStation = [];
+                    var listIncome = [];
+                    var listPR = [];
+                    var listPAC = [];
+                    var listPDC = [];
+
+                    for (var i = 0; i < data.length; i++) {
+                        $("#ProductionDetail").append("<tr><td>" + data[i].STATION_NAME + "</td><td>" + (data[i].Enerji).toFixed(2).replace(".", ",") + " MWh" + "</td><td>" + (data[i].P_AC).toFixed(2).replace(".", ",") + " W" + "</td><td>" + (data[i].P_DC).toFixed(2).replace(".", ",") + " W" + "</td><td>" + (data[i].PR).toFixed(2).replace(".", ",") + " %" + "</td></tr>");
+                        listProd.push(data[i].Enerji.toFixed(2));
+                        listStation.push(data[i].STATION_NAME);
+                        listIncome.push(data[i].Income.toFixed(2));
+                        listPR.push(data[i].PR.toFixed(1));
+                        listPAC.push(data[i].P_AC.toFixed(1));
+                        listPDC.push(data[i].P_DC.toFixed(1));
+                        totalPro += data[i].Enerji;
+                        totalIncome += data[i].Income;
+                    }
+
+                    $("#totalFooter").append("<tr><td><b>Total:</b></td><td><b>" + totalPro.toFixed(2).replace(".", ",") + " MWh" + "</b></td><td></td><td></td><td></td></tr>");
+
+                    var echartBar = echarts.init(document.getElementById('mainb'), theme);
+
+                    echartBar.setOption({
+                        title: {
+
+                        },
+                        tooltip: {
+                            trigger: 'axis',
+                            axisPointer: {
+                                animation: true
+                            },
+                            formatter: function (params) {
+                                let ItemsArray = ['MWh', '%', 'MWh'];
+                                var tooltipText = "";
+                                tooltipText += params[0].name;
+                                for (var i = 0; i < params.length; i++) {
+                                    tooltipText += "<br/>"+ '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background-color:' + params[i].color + '"></span>' + params[i].seriesName + " : " + NumberConvert2(params[i].value) + " " + ItemsArray[i].Item;
+                                }
+                                return tooltipText;
+                            }
+                        },
+                        legend: {
+                            data: [_production, 'PR (%)']
+                        },
+                        toolbox: {
+                            show: true,
+                            feature: {
+                                mark: { show: false },
+                                dataZoom: { show: false },
+                                dataView: { show: false },
+                                magicType: {
+                                    show: true,
+                                    title: {
+                                        line: 'Line',
+                                        bar: 'Bar'
+                                    },
+                                    type: ['line', 'bar']
+                                },
+                                restore: {
+                                    show: true,
+                                    title: "Restore"
+                                },
+                                saveAsImage: {
+                                    show: true,
+                                    title: "Save Image"
+                                }
+                            }
+                        },
+                        calculable: false,
+                        xAxis: [{
+                            type: 'category',
+                            data: listStation,
+                            axisLabel: {
+                                show: true,
+                                interval: 0,
+                                rotate: 30,
+                                clickable: false,
+                                formatter: null,
+                                textStyle: {
+                                    fontSize: 11,
+                                    fontStyle: 'normal',
+                                    fontWeight: 'normal',
+                                },
+                            }
+                        }],
+                        yAxis: [{
+                            type: 'value',
+                            name: _production,
+                            axisLabel: {
+                                formatter: '{value} MWh'
+                            }
+                        }, {
+                            type: 'value',
+                            name: 'PR',
+                            yAxisIndex: 1,
+                            axisLabel: {
+                                formatter: '{value} %'
+                            }
+                        }],
+                        series: [{
+                            name: _production,
+                            type: 'bar',
+                            yAxisIndex: 0,
+                            data: listProd,
+                            markPoint: {
+                                label: {
+                                    normal: {
+                                        textStyle: {
+                                            color: '#000',
+                                            fontWeight: 'bold',
+                                            fontSize: 10
+                                        }
+                                    }
+                                },
+                                data: [{
+                                    type: 'max',
+                                    name: 'MAX'
+                                }, {
+                                    type: 'min',
+                                    name: 'MIN'
+                                }]
+
+                            },
+                            markLine: {
+                                data: [{
+                                    type: 'average',
+                                    name: _average
+                                }]
+                            }
+                        },
+                        {
+                            name: 'PR (%)',
+                            type: 'bar',
+                            yAxisIndex: 1,
+                            data: listPR,
+                            markPoint: {
+                                label: {
+                                    normal: {
+                                        textStyle: {
+                                            color: '#fff',
+                                            fontWeight: 'bold',
+                                            fontSize: 9
+                                        }
+                                    }
+                                },
+                                data: [{
+                                    type: 'max',
+                                    name: 'MAX'
+                                }, {
+                                    type: 'min',
+                                    name: 'MIN'
+                                }]
+
+                            },
+                            markLine: {
+                            data: [{
+                                type: 'average',
+                                name: _average
+                            }]
+                        }
+                            }
+                        ]
+                    });
+
+                }
+            });
+        }
+        var timer, delay = 300000;
+        timer = setInterval(function () {
+            StationBar();
+        }, delay)
+    //Aylık Grafik bit.
+        $('#profile-tab21').click(function () {
+            setTimeout(function () { CallAnnualyChartData(); }, 250);
+        });
+
+
+    //DateTimePicker bas.
+        $('#single_cal4').daterangepicker({
+            singleDatePicker: true, locale: {
+                format: 'DD/MM/YYYY'
+            },
+            singleClasses: "picker_4"
+        }, function (start, end, label) {
+            console.log(start.toISOString(), end.toISOString(), label);
+        });
+        $('#single_cal5').daterangepicker({
+            singleDatePicker: true, locale: {
+                format: 'DD/MM/YYYY'
+            },
+            singleClasses: "picker_4"
+        }, function (start, end, label) {
+            console.log(start.toISOString(), end.toISOString(), label);
+        });
+
+        $('#inpHour').daterangepicker({
+            singleDatePicker: true, locale: {
+                format: 'DD/MM/YYYY'
+            },
+            singleClasses: "picker_4"
+        }, function (start, end, label) {
+            console.log(start.toISOString(), end.toISOString(), label);
+        });
+
+        $('#inpAkim').daterangepicker({
+            singleDatePicker: true, locale: {
+                format: 'DD/MM/YYYY'
+            },
+            singleClasses: "picker_4"
+        }, function (start, end, label) {
+            console.log(start.toISOString(), end.toISOString(), label);
+        });
+
+        $('#inpHour').daterangepicker({
+            singleDatePicker: true, locale: {
+                format: 'DD/MM/YYYY'
+            },
+            singleClasses: "picker_4"
+        }, function (start, end, label) {
+            console.log(start.toISOString(), end.toISOString(), label);
+        });
+       //DateTimePicker bit.
+        });
+
+
+</script>
+

@@ -1,0 +1,591 @@
+﻿@model int
+@using Esso.Data;
+@using Esso.Models;
+@using Microsoft.AspNet.Identity;
+@using language
+@{
+    ViewBag.Title = "OnlyInverterDetail";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@{
+    EssoEntities DB = new EssoEntities();
+
+    #region User yetkileri kontrol
+    TBL_STATION stat = new TBL_STATION();
+    stat = null;
+
+    var userId = User.Identity.GetUserId();
+
+    //User yetkileri kontrol ediliyor
+    try
+    {
+        if (User.IsInRole("M_ADMIN"))
+        {
+            stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+        }
+        else if (User.IsInRole("COMP_ADMIN"))
+        {
+            int cmpId = DB.Stations.Where(a => a.ID == Model && a.IS_DELETED == false).FirstOrDefault().COMPANY_ID;
+
+            if (DB.CompanyUsers.Any(a => a.COMPANY_ID == cmpId && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+        else if (User.IsInRole("COMP_USER"))
+        {
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+        else if (User.IsInRole("DEMO"))
+        {
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+    }
+    catch (Exception)
+    {
+
+    }
+    #endregion
+}
+
+@{
+    if (stat == null)
+    {
+        @Html.Partial("_ErrorPagePartial")
+    }
+    else
+    {
+        var stationCount = DB.Inverters.Where(x => x.STATION_ID == Model).Count();
+        var _stationDetail = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+        string css = "";
+
+        var company = (from u in DB.Stations
+                       where u.ID == Model
+                       select new
+                       {
+                           IsCentral = u.IS_CENTRAL_INV
+                       }).FirstOrDefault();
+
+        if (company.IsCentral == true)
+        {
+            css = "none";
+        }
+        else
+        {
+            css = "";
+        }
+
+        <div class="page-title">
+            <div class="title_left">
+                @if (User.IsInRole("DEMO"))
+                {
+                    <h3>@_stationDetail.DEMO_NAME</h3>
+                }
+                else
+                {
+                    <h3>@_stationDetail.NAME</h3>
+                }
+            </div>
+        </div>
+        @Html.Partial("MenuPartial")
+
+        <div class="clearfix"></div>
+        <div class="row">
+
+
+
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <h2>@Resources.Single_Inverter_Comparison</h2>
+
+                        <ul class="nav navbar-right panel_toolbox">
+                            <li>
+                                <h4 id="inverterNumber"></h4>
+                            </li>
+                            <li>
+                                <a href="/InverterPages/InvDetailReport?stationId=@Model"><input type="button" class="btn btn-success btn-sm" value="@Resources.Inverter_Detail_Report" /></a>
+                            </li>
+
+                            <li>
+                                <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                            </li>
+                            <li>
+                                <a class="close-link"><i class="fa fa-close"></i></a>
+                            </li>
+                        </ul>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                        <div id="echart_line" style="height:500px;"></div>
+                        <div class="well" style="overflow: auto">
+                            <div class="col-md-12">
+                                <div class="btn-group">
+                                    <input name="begin" id="single_cal4" class="form-control has-feedback-left" type="text" />
+                                </div>
+                                <div class="btn-group">
+                                    <select id="selectedTag" name="selectedTag" class="form-control"></select>
+                                </div>
+                                <div class="btn-group">
+                                    <input type="button" class="btn btn-info" id="btnList" value="@Resources.Show" />
+                                </div>
+                                <div class="btn-group">
+                                    <img id="LoadingImage" src="~/images/loader.gif" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+        <br />
+
+        <script src="~/js/bootstrap.min.js"></script>
+        <script src="~/Content/raphael.min.js"></script>
+        <script src="~/Content/morris.min.js"></script>
+        <script>
+
+            var theme = {
+
+                color: [
+                    '#00468a', '#62b5ff', '#bb0000', '#ffa700',
+                    '#9B59B6', '#280084', '#755326', '#4c3a26'
+                ],
+
+
+                title: {
+                    itemGap: 8,
+                    textStyle: {
+                        fontWeight: 'normal',
+                        color: '#408829'
+                    }
+                },
+
+                dataRange: {
+                    color: ['#1f610a', '#97b58d']
+                },
+
+                toolbox: {
+                    color: ['#408829', '#408829', '#408829', '#408829']
+                },
+
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    axisPointer: {
+                        type: 'line',
+                        lineStyle: {
+                            color: '#408829',
+                            type: 'dashed'
+                        },
+                        crossStyle: {
+                            color: '#408829'
+                        },
+                        shadowStyle: {
+                            color: 'rgba(200,200,200,0.3)'
+                        }
+                    }
+                },
+
+                dataZoom: {
+                    dataBackgroundColor: '#eee',
+                    fillerColor: 'rgba(64,136,41,0.2)',
+                    handleColor: '#408829'
+                },
+                grid: {
+                    borderWidth: 0
+                },
+
+                categoryAxis: {
+                    axisLine: {
+                        lineStyle: {
+                            color: '#408829'
+                        }
+                    },
+                    splitLine: {
+                        lineStyle: {
+                            color: ['#eee']
+                        }
+                    }
+                },
+
+                valueAxis: {
+                    axisLine: {
+                        lineStyle: {
+                            color: '#408829'
+                        }
+                    },
+                    splitArea: {
+                        show: true,
+                        areaStyle: {
+                            color: ['rgba(250,250,250,0.1)', 'rgba(200,200,200,0.1)']
+                        }
+                    },
+                    splitLine: {
+                        lineStyle: {
+                            color: ['#eee']
+                        }
+                    }
+                },
+                timeline: {
+                    lineStyle: {
+                        color: '#408829'
+                    },
+                    controlStyle: {
+                        normal: { color: '#408829' },
+                        emphasis: { color: '#408829' }
+                    }
+                },
+
+                textStyle: {
+                    fontFamily: 'Arial, Verdana, sans-serif'
+                }
+            };
+
+            function ConvertTicksToTime(vl) {
+                vl = vl.replace("Date", "");
+                vl = vl.replace("/", "");
+                vl = vl.replace("(", "");
+                vl = vl.replace(")", "");
+                vl = vl.replace("/", "").trim();
+
+                var vlDate = new Date(parseInt(vl));
+                return vlDate.toLocaleTimeString();
+            }
+            function DateFormat(vl) {
+                var value = new Date
+                    (
+                         parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+                    );
+                var dat = value.getDate() +
+               "/" +
+        (value.getMonth() + 1) +
+               "/" +
+        value.getFullYear();
+
+                var time = value.getHours() +
+               ":" +
+        value.getMinutes()
+                return time.toString();
+            }
+
+            function ConvertTicksToDate(vl) {
+                vl = vl.replace("Date", "");
+                vl = vl.replace("/", "");
+                vl = vl.replace("(", "");
+                vl = vl.replace(")", "");
+                vl = vl.replace("/", "").trim();
+
+                var vlDate = new Date(parseInt(vl));
+                return vlDate.toLocaleDateString();
+            }
+
+            $(document).ready(function () {
+                //Inverter Grafiği bas.
+                      $.ajax({
+                        url: "/InverterPages/GetInverterCount/",
+                        type: "POST",
+                        dataType: "json",
+                        contentType: "application/json; charset=utf-8",
+                        data: "{'stationId':'" + @Model + "'}",
+                        success: function (data) {
+                            $.each(data, function (i, item) {
+                                $('#selectedTag').append("<option selected value=" + item.ID + ">" + item.NAME + "</option>");
+                            });
+
+                            CallChartData();
+                        }
+                    });
+
+
+                $('#btnList').click(function () {
+                    CallChartData();
+                });
+                function CallChartData() {
+
+                    var beginDate = $('input[name="begin"]').val();
+
+                    if (!beginDate || beginDate.length == 0) {
+                        beginDate = new Date().toISOString();
+                    }
+                    var secTag = $('#selectedTag').val();
+                    if (!secTag) {
+                        return;
+                    }
+
+                        $("#LoadingImage").show();
+                        $.ajax({
+                            type: "Post",
+                            url: "/InverterPages/GetOnlyInv",
+                            dataType: "json",
+                            contentType: "application/json; charset=utf-8",
+                            data: "{'beginDate':'" + beginDate + "','stationId':'" + @Model + "','invId':'" + secTag+ "'}",
+                            success: function (data) {
+                                $("#LoadingImage").hide();
+                                var listDate = [];
+                                var listGuc_AC = [];
+                                var listGuc_DC = [];
+                                var listAkimAC = [];
+                                var listAkimDC = [];
+                                var listGerilimAC = [];
+                                var listGerilimDC = [];
+
+                                for (var i = 0; i < data.length; i++) {
+
+                                    listDate.push(DateFormat(data[i].Tarih));
+                                    listGuc_AC.push(roundNumber2(data[i].Guc_AC / 1000, 1));
+                                    listGuc_DC.push(roundNumber2(data[i].Guc_DC / 1000, 1));
+                                    listAkimAC.push(roundNumber2(data[i].Akim_AC, 1));
+                                    listAkimDC.push(roundNumber2(data[i].Akim_DC, 1));
+                                    listGerilimAC.push(roundNumber2(data[i].Gerilim_AC, 1));
+                                    listGerilimDC.push(roundNumber2(data[i].Gerilim_DC, 1));
+                                }
+
+                                $("#bakisTarih").html(ConvertTicksToDate(data[0].Tarih));
+
+                                var echartLine = echarts.init(document.getElementById('echart_line'), theme);
+
+                                echartLine.setOption({
+
+                                    tooltip: {
+                                        trigger: 'axis'
+
+                                    },
+                                    legend: {
+                                        selected: {
+                                            'AC Gerilim (V)': false,
+                                            'DC Gerilim (V)': false,
+                                            'AC Güç (kW)': false,
+                                            'DC Güç (kW)': false
+
+                                        },
+                                        x: 'center',
+                                        y: 'top',
+                                        data: ['AC Current (A)', 'DC Current (A)', 'AC Voltage (V)', 'DC Voltage (V)', 'AC Power (kW)', 'DC Power (kW)']
+                                    },
+                                    toolbox: {
+                                        show: true,
+                                        feature: {
+                                            mark: { show: false },
+                                            dataZoom: { show: false },
+                                            dataView: { show: false },
+                                            magicType: {
+                                                show: true,
+                                                title: {
+                                                    line: 'Line',
+                                                    bar: 'Bar',
+
+                                                    tiled: 'Tiled'
+                                                },
+                                                type: ['line', 'bar', 'stack', 'tiled']
+                                            },
+                                            restore: {
+                                                show: true,
+                                                title: "Restore"
+                                            },
+                                            saveAsImage: {
+                                                show: true,
+                                                title: "Save Image"
+                                            }
+                                        }
+                                    },
+                                    calculable: true,
+                                    dataZoom: [{
+                                        show: true,
+                                        realtime: true,
+                                        start: 0,
+                                        end: 100
+                                    },
+                                    {
+                                        type: 'inside',
+                                        realtime: true,
+                                        start: 0,
+                                        end: 100
+                                    }],
+
+                                    xAxis: [{
+                                        type: 'category',
+                                        boundaryGap: false,
+                                        data: listDate
+                                    }],
+                                    yAxis: [
+                                        {
+                                            type: 'value',
+                                            name: 'Current',
+                                            yAxisIndex: 2,
+                                            axisLabel: {
+                                                formatter: '{value} A'
+                                            }
+                                        },
+                                        {
+                                            type: 'value',
+                                            name: '                                   Power      Voltage',
+                                            axisLabel: {
+                                                formatter: '{value} kW'
+                                            }
+                                        },
+                                        {
+                                            type: 'value',
+                                            name: '',
+                                            axisLabel: {
+                                                formatter: '                  {value} V'
+                                            }
+                                        }
+
+                                    ],
+                                    series: [{
+                                        name: 'AC Voltage (V)',
+                                        type: 'line',
+                                        yAxisIndex: 2,
+                                        smooth: true,
+                                        itemStyle: {
+                                            normal: {
+
+                                            }
+                                        },
+                                        data: listGerilimAC
+                                    }, {
+                                        name: 'DC Voltage (V)',
+                                        type: 'line',
+                                        yAxisIndex: 2,
+                                        smooth: true,
+                                        itemStyle: {
+                                            normal: {
+
+                                            }
+                                        },
+                                        data: listGerilimDC
+                                    }
+                                        , {
+                                        name: 'AC Power (kW)',
+                                        type: 'line',
+                                        yAxisIndex: 1,
+                                        smooth: true,
+                                        itemStyle: {
+                                            normal: {
+
+                                            }
+                                        },
+                                        data: listGuc_AC
+                                    }, {
+                                        name: 'DC Power (kW)',
+                                        type: 'line',
+                                        yAxisIndex: 1,
+                                        smooth: true,
+                                        itemStyle: {
+                                            normal: {
+
+                                            }
+                                        },
+                                        data: listGuc_DC
+                                    }, {
+                                        name: 'AC Current (A)',
+                                        type: 'line',
+                                        yAxisIndex: 0,
+
+                                        smooth: false,
+                                        itemStyle: {
+                                            normal: {
+
+                                            }
+                                        },
+                                        data: listAkimAC
+                                    }
+                                        , {
+                                        name: 'DC Current (A)',
+                                        type: 'line',
+                                        yAxisIndex: 0,
+
+                                        smooth: false,
+                                        itemStyle: {
+                                            normal: {
+
+                                            }
+                                        },
+                                        data: listAkimDC
+                                    }
+                                    ]
+                                });
+                            }
+                        });
+
+
+                }
+                //Inverter Grafiği bit.
+
+                //Datetime bas.
+                $('#single_cal4').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+
+                $('#inpHour').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+
+                $('#inpAkim').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+
+                $('#inpHour').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+                //Datetime bit.
+
+            })
+
+        </script>
+        <script>
+            function roundNumber2(number, decimal_points) {
+                if (!decimal_points) return Math.round(number);
+                if (number == 0) {
+                    var decimals = "";
+                    for (var i = 0; i < decimal_points; i++) decimals += "0";
+                    return "0." + decimals;
+                }
+
+                var exponent = Math.pow(10, decimal_points);
+                var num = Math.round((number * exponent)).toString();
+                return num.slice(0, -1 * decimal_points) + "." + num.slice(-1 * decimal_points)
+            }
+        </script>
+
+
+    }
+}
+
+
+
+
+
+
+
+

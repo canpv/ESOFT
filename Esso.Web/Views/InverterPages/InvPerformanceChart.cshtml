@@ -1,0 +1,340 @@
+﻿@model int
+@using Esso.Data;
+@using Esso.Models;
+@using Microsoft.AspNet.Identity;
+@using language
+@{
+    ViewBag.Title = "InvPerformanceChart";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<style>
+    #myChart {
+        height: 750px;
+        width: 1000px;
+    }
+
+    div[id$="license"] {
+        display: none !important;
+    }
+
+    #myChart-license-text {
+        display: none !important;
+    }
+</style>
+
+
+@{
+    EssoEntities DB = new EssoEntities();
+
+    #region User yetkileri kontrol
+    TBL_STATION stat = new TBL_STATION();
+    stat = null;
+
+    var userId = User.Identity.GetUserId();
+
+    //User yetkileri kontrol ediliyor
+    try
+    {
+        if (User.IsInRole("M_ADMIN"))
+        {
+            stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+        }
+        else if (User.IsInRole("COMP_ADMIN"))
+        {
+            int cmpId = DB.Stations.Where(a => a.ID == Model && a.IS_DELETED == false).FirstOrDefault().COMPANY_ID;
+
+            if (DB.CompanyUsers.Any(a => a.COMPANY_ID == cmpId && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+        else if (User.IsInRole("COMP_USER"))
+        {
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+        else if (User.IsInRole("DEMO"))
+        {
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+    }
+    catch (Exception)
+    {
+
+    }
+    #endregion
+}
+
+@{
+    if (stat == null)
+    {
+        @Html.Partial("_ErrorPagePartial")
+    }
+    else
+    {
+        var stationCount = DB.Inverters.Where(x => x.STATION_ID == Model).Count();
+        var _stationDetail = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+        string css = "";
+
+        var company = (from u in DB.Stations
+                       where u.ID == Model
+                       select new
+                       {
+                           IsCentral = u.IS_CENTRAL_INV
+                       }).FirstOrDefault();
+
+        if (company.IsCentral == true)
+        {
+            css = "none";
+        }
+        else
+        {
+            css = "";
+        }
+
+        <div class="page-title">
+            <div class="title_left">
+                @if (User.IsInRole("DEMO"))
+                {
+                    <h3>@_stationDetail.DEMO_NAME</h3>
+                }
+                else
+                {
+                    <h3>@_stationDetail.NAME</h3>
+                }
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.Partial("MenuPartial")
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <h2>@Resources.Inverter_Performance_Chart</h2>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                        <div class="well" style="overflow: auto">
+                            <div class="col-md-6">
+                                <div class="btn-group">
+                                    <h4 id="bakisTarih1"></h4>
+                                </div>
+                                <div class="btn-group">
+                                    <input name="beginDaily" id="single_cal5" class="form-control has-feedback-left" type="text" />
+                                </div>
+                                <div class="btn-group">
+                                    <input type="button" class="btn btn-info" id="btnListDailyv1" value="@Resources.Show" />
+                                </div>
+                                <div class="btn-group">
+                                    <img id="LoadingImage4" src="~/images/loader.gif" />
+                                </div>
+                            </div>
+                        </div>
+                        <div id='myChart' style="width:100%;"></div>
+                        <div style="text-align: center;">
+                            <img src="~/Content/Images/heatmaplegend.png" />
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="~/js/bootstrap.min.js"></script>
+        <script src="~/Content/raphael.min.js"></script>
+        <script src="~/Content/morris.min.js"></script>
+        <script src="~/js/zingchart.min.js"></script>
+
+        <script>
+
+    $(document).ready(function () {
+        //Datetime bas.
+        $('#single_cal4').daterangepicker({
+            singleDatePicker: true, locale: {
+                format: 'DD/MM/YYYY'
+            },
+            singleClasses: "picker_4"
+        }, function (start, end, label) {
+            console.log(start.toISOString(), end.toISOString(), label);
+        });
+
+        $('#single_cal5').daterangepicker({
+            singleDatePicker: true, locale: {
+                format: 'DD/MM/YYYY'
+            },
+            singleClasses: "picker_4"
+        }, function (start, end, label) {
+            console.log(start.toISOString(), end.toISOString(), label);
+        });
+
+        $('#single_cal3').daterangepicker({
+            singleDatePicker: true, locale: {
+                format: 'DD/MM/YYYY'
+            },
+            singleClasses: "picker_4"
+        }, function (start, end, label) {
+            console.log(start.toISOString(), end.toISOString(), label);
+        });
+        //Datetime bit.
+    });
+
+        </script>
+        <script>
+  $(document).ready(function () {
+        $('#btnListDailyv1').click(function () {
+            GetHourProduction();
+        });
+
+        GetHourProduction();
+        function GetHourProduction() {
+
+            $("#LoadingImage4").show();
+            var selectDate = $('input[name="beginDaily"]').val();
+
+            if (!selectDate || selectDate.length == 0) {
+                selectDate = new Date().toISOString();
+            }
+            $.ajax({
+                url: "/InverterPages/HourlyColorReport/",
+                type: "POST",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                data: "{'slctDate':'" + selectDate + "','stationId':'" +@Model+ "'}",
+                    success: function (data) {
+                        $("#LoadingImage4").hide();
+                        var string = '';
+                        var listInv = ['Inverter-1', 'Inverter-2'];
+                        var myConfig = {
+                            "type": "heatmap",
+                            "plotarea": {
+                                "margin": 70
+                            },
+                            "title": {
+                                "text": "@Resources.Inverter_Performance_Chart",
+                                "font-color": "#024567"
+                            },
+                            "plot": {
+                                "tooltip": {
+                                    "text": "%y <br> %kl <br> %v kW/kWp",
+                                    "background-color": "white",
+                                    "alpha": 0.9,
+                                    "font-family": "Arial",
+                                    "font-color": "#006699",
+                                    "font-size": 13
+                                },
+                                "aspect": "none",
+                                "border": '1px solid #407692',
+
+                            "hover-state": {
+                                "background-color": "#006699"
+                            },
+                                "rules": [
+                                    {
+                                        "rule": "%v == 1",
+                                        "background-color": "#ffff00"
+                                    },
+                                    {
+                                        "rule": "%v == 0.9",
+                                        "background-color": "#f2fc2d"
+                                    },
+                                    {
+                                        "rule": "%v == 0.8",
+                                        "background-color": "#fce95d"
+                                    },
+                                    {
+                                        "rule": "%v == 0.7",
+                                        "background-color": "#fcd95d"
+                                    },
+                                    {
+                                        "rule": "%v == 0.6",
+                                        "background-color": "#fcbf5d"
+                                    },
+                                    {
+                                        "rule": "%v == 0.5",
+                                        "background-color": "#f4a14e"
+                                    },
+                                    {
+                                        "rule": "%v == 0.4",
+                                        "background-color": "#f4904e"
+                                    },
+                                    {
+                                        "rule": "%v == 0.3",
+                                        "background-color": "#f07548"
+                                    },
+                                    {
+                                        "rule": "%v == 0.2",
+                                        "background-color": "#f16148"
+                                    },
+                                    {
+                                        "rule": "%v == 0.1",
+                                        "background-color": "#f24848"
+                                    },
+                                    {
+                                        "rule": "%v == 0",
+                                        "background-color": "#ed0000"
+                                    }
+                                ]
+                            },
+                            "scale-x": {
+                                "values": data.Hours, "zooming": true,
+                                "line-color": "#000",
+
+                                "guide": {
+                                    "line-style": "solid",
+                                    "line-color": "#024567"
+                                },
+                                "tick": {
+                                    "visible": true
+                                },
+                                "item": {
+                                    "font-color": "#024567",
+                                    "font-size": 11
+                                }
+                            },
+                            "scale-y": {
+                                "labels": data.InverterList, "zooming": true,
+                                "line-color": "#024567",
+                                "guide": {
+                                    "line-style": "solid",
+                                    "line-color": "#000"
+                                },
+                                "tick": {
+                                    "visible": true
+                                },
+                                "item": {
+                                    "font-color": "#024567",
+                                    "font-size": 11
+                                }
+                            },
+                            "series": data.series
+                        };
+
+                        zingchart.render({
+                            id: 'myChart',
+                            data: myConfig,
+                            height: "100%",
+                            width: "100%"
+                        });
+
+
+                    }
+        });
+        }
+
+   });
+
+        </script>
+
+    }
+}
+
+
+
+

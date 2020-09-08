@@ -1,0 +1,519 @@
+﻿@using Esso.Model.Models
+@model Esso.Web.Models.ApplicationUser
+@using Esso.Data
+@using Microsoft.AspNet.Identity
+@using language
+@{
+    ViewBag.Title = "UserBasedInsertion";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var _DataSource = (List<Esso.Web.Models.ApplicationUser>)ViewBag.DataSource;
+}
+@{
+    //EssoEntities DB = new EssoEntities();
+    //var userId = User.Identity.GetUserId();
+    //Int16 _authority = DB.Database.SqlQuery<Int16>("select \"AspNetUsers\".\"USER_AUTHORITY\" from \"AspNetUsers\" where \"AspNetUsers\".\"Id\" = '" + userId + "'").FirstOrDefault();
+    bool isAuthority = false;
+
+    if (User.IsInRole("M_ADMIN") || User.IsInRole("COMP_ADMIN"))
+    {
+        isAuthority = true;
+    }
+    else
+    {
+        isAuthority = false;
+    }
+}
+@if (isAuthority == false)
+{
+    @Html.Partial("~/Views/Home/_ErrorPagePartial.cshtml")
+}
+else
+{
+    <input type="hidden" value="@Resources.Authorized" id="hdn_authorized" />
+    <input type="hidden" value="@Resources.Unauthorized" id="hdn_unauthorized" />
+    <input type="hidden" value="@Resources.Show" id="hdn_show" />
+    <input type="hidden" value="@Resources.Not_Show" id="hdn_notShow" />
+    <input type="hidden" value="@Resources.Send" id="hdn_send" />
+    <input type="hidden" value="@Resources.Not_Send" id="hdn_notSend" />
+
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <button class="btn btn-primary btn-flat" id="btnNew">@Resources.Add_New_User</button>
+            <div class="x_panel">
+                <div class="x_title">
+                    <h2>@Resources.Users</h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                        <li>
+                            <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                        </li>
+                        <li>
+                            <a class="close-link"><i class="fa fa-close"></i></a>
+                        </li>
+                    </ul>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <table id="tblUser" class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th style="display:none"></th>
+                                <th>@Resources.UserName</th>
+                                <th>@Resources.Email</th>
+                                <th>@Resources.Financial_Income</th>
+                                <th>@Resources.Send_Report</th>
+                                <th>@Resources.Send_Alert</th>
+                                <th class="process"></th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    <div style="text-align: center">
+                        <img id="loading" src="~/images/loaderSpinner.gif" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="modal fade" id="Mdl">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <h4 class="modal-title">@Resources.User_Identification</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="box-body">
+                            <div class="row">
+                                <input type="hidden" value="" id="hdnId" />
+                                <div class="col-md-9">
+                                    <input type="text" value="" id="txtUserName" placeholder="@Resources.UserName" class="form-control" />
+                                    <br />
+                                    <input type="text" value="" id="txtEmail" placeholder="@Resources.Email" class="form-control" />
+                                    <br />
+                                    <input type="text" value="" id="txtPassword" placeholder="@Resources.Password" class="form-control" />
+                                    <div class="form-group" id="divPassword">
+                                        <label>@Resources.Change_Password</label>
+                                        <input type="checkbox" id="checkPassword" name="checkPassword" value="">
+                                    </div>
+                                </div>
+                            </div>
+                            <br />
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>@Resources.Financial_Income</label>
+                                        <input type="checkbox" id="checkShowMoney" name="checkShowMoney" value="">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>@Resources.Send_Report </label>
+                                        <input type="checkbox" id="checkReport" name="checkReport" value="">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>@Resources.Send_Alert</label>
+                                        <input type="checkbox" id="checkAlarm" name="checkAlarm" value="">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">@Resources.Close</button>
+                        <button id="btnSave" type="button" class="btn btn-primary pull-left">@Resources.Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="MdlStation">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="box-body">
+                        <div class="row">
+                            @*<div class="form-group">
+                                    <div class="col-md-9">
+                                        <label>İstasyon</label>
+                                        <select class="select2_multiple form-control" multiple="multiple" style="width: 100%;" tabindex="-1" aria-hidden="true" id="cmbStation"></select>
+                                    </div>
+                                </div>*@
+                            <div class="form-group">
+                                <table id="tblStation" class="table table-striped table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>@Resources.Station</th>
+                                            <th>@Resources.Authority</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">@Resources.Close</button>
+                    <button type="button" class="btn btn-success" id="btnAta">@Resources.Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @section Scripts
+{
+
+        <script>
+            $(document).ready(function () {
+            UserList();
+            function UserList() {
+                $.ajax({
+                    url: '@Url.Action("GetUserList", "Account")',
+                    type: "post",
+                    cache: false,
+                    success: function (result) {
+                        $('#tblUser tbody').html('');
+                        $("#loading").hide();
+                        for (var i = 0; i < result.length; i++) {
+                            var _SHOW_MONEY = "";
+                            var _REPORT_SEND_MAIL = "";
+                            var _ALARM_SEND_MAIL = "";
+
+                            var _authorizedText = $('#hdn_show').val();
+                            var _unAuthorizedText = $('#hdn_notShow').val();
+                            var _sendText = $('#hdn_send').val();
+                            var _notSendText = $('#hdn_notSend').val();
+
+
+                            if (result[i].SHOW_MONEY == 1) {
+                                _SHOW_MONEY = '<span class="label label-success">' + _authorizedText + '</span>';
+                            }
+                            else {
+                                _SHOW_MONEY = '<span class="label label-danger">' + _unAuthorizedText+'</span>';
+                            }
+
+                            if (result[i].REPORT_SEND_MAIL == 1) {
+                                _REPORT_SEND_MAIL = '<span class="label label-success">' + _sendText+'</span>';
+                            }
+                            else {
+                                _REPORT_SEND_MAIL = '<span class="label label-danger">' + _notSendText+'</span>';
+                            }
+
+                            if (result[i].ALARM_SEND_MAIL == 1) {
+                                _ALARM_SEND_MAIL = '<span class="label label-success">' + _sendText + '</span>';
+                            }
+                            else {
+                                _ALARM_SEND_MAIL = '<span class="label label-danger">' + _notSendText + '</span>';
+                            }
+                            var _tr =
+                                '<tr>' +
+                                '    <td class="item dt-center" style="display:none">' +
+                                '        <label>' + result[i].Id + '</label>' +
+                                '        <input type="hidden" value="' + result[i].UserName + '" class="hdnUserName" />' +
+                                '        <input type="hidden" value="' + result[i].Email + '" class="hdnEmail" />' +
+                                '        <input type="hidden" value="' + result[i].SHOW_MONEY + '" class="hdnShowMoney" />' +
+                                '        <input type="hidden" value="' + result[i].REPORT_SEND_MAIL + '" class="hdnReport" />' +
+                                '        <input type="hidden" value="' + result[i].ALARM_SEND_MAIL + '" class="hdnAlarm" />' +
+                                '    </td>' +
+                                '    <td>' + result[i].UserName + '</td>' +
+                                '    <td>' + result[i].Email + '</td>' +
+                                '    <td>' + _SHOW_MONEY + '</td>' +
+                                '    <td>' + _REPORT_SEND_MAIL + '</td>' +
+                                '    <td>' + _ALARM_SEND_MAIL + '</td>' +
+                                '    <td class="dt-center">' +
+                                '        <button class="btn btn-success btn-xs btnEdit">' +
+                                '            <i class="fa fa-pencil"></i>' +
+                                '        </button>' +
+                                '        <button class="btn btn-primary btn-xs btnStationDetail">' +
+                                '            <i class="fa fa-list-ul"></i>' +
+                                '        </button>' +
+                                '    </td>' +
+                                '</tr>';
+
+                            $('#tblUser tbody').append(_tr);
+                        }
+                    }
+                });
+            }
+
+
+            $('#btnNew').click(function () {
+
+                var _Id = 0;
+                var _UserName = "";
+                var _Email = "";
+                var _checkPass = "";
+                var _Password = "";
+                $('#hdnId').val(_Id);
+                $('#txtUserName').val(_UserName);
+                $('#txtEmail').val(_Email);
+                $('#txtPassword').val(_Password);
+                $('#checkPassword').val(_checkPass);
+                document.getElementById("checkShowMoney").checked = false;
+                document.getElementById("checkReport").checked = false;
+                document.getElementById("checkAlarm").checked = false;
+                $('#txtPassword').show();
+                $('#divPassword').hide();
+                $('#Mdl').modal();
+            });
+
+            $('#btnSave').click(function () {
+            var _Id = $('#hdnId').val();
+                var _Name = $('#txtUserName').val();
+                var _Email = $('#txtEmail').val();
+                var _Password = $('#txtPassword').val();
+                var checkedShowMoney;
+                if (document.getElementById('checkShowMoney').checked) {
+                    checkedShowMoney = true;
+                } else {
+                    checkedShowMoney = false;
+                }
+                var checkedReport;
+                if (document.getElementById('checkReport').checked) {
+                    checkedReport = true;
+                } else {
+                    checkedReport = false;
+                }
+                var checkedAlarm;
+                if (document.getElementById('checkAlarm').checked) {
+                    checkedAlarm = true;
+                } else {
+                    checkedAlarm = false;
+                }
+                var _checkPassword;
+                if ($('#checkPassword').is(':checked')) {
+                    _checkPassword = true;
+                }
+                else {
+                    _checkPassword = false;
+                }
+            $.ajax({
+                url: '@Url.Action("SaveUser", "Account")',
+                data: {
+                    'Id': _Id,
+                    'Name': _Name,
+                    'Email': _Email,
+                    'ShowMoney': checkedShowMoney,
+                    'ReportSend': checkedReport,
+                    'AlarmSend': checkedAlarm,
+                    'CheckPassword':_checkPassword,
+                    'Password': _Password
+                },
+                type: "post",
+                cache: false,
+                success: function (result) {
+
+                    if (result.__ErrorMessage == "") {
+
+                        var _authorizedText = $('#hdn_show').val();
+                        var _unAuthorizedText = $('#hdn_notShow').val();
+                        var _sendText = $('#hdn_send').val();
+                        var _notSendText = $('#hdn_notSend').val();
+
+
+                        var _SHOW_MONEY = "";
+                        var _REPORT_SEND_MAIL = "";
+                        var _ALARM_SEND_MAIL = "";
+                        if (result.__user.SHOW_MONEY == 1) {
+                            _SHOW_MONEY = '<span class="label label-success">' + _authorizedText + '</span>';
+                        }
+                        else {
+                            _SHOW_MONEY = '<span class="label label-danger">' + _unAuthorizedText + '</span>';
+                        }
+
+                        if (result.__user.REPORT_SEND_MAIL == 1) {
+                            _REPORT_SEND_MAIL = '<span class="label label-success">' + _sendText + '</span>';
+                        }
+                        else {
+                            _REPORT_SEND_MAIL = '<span class="label label-danger">' + _notSendText + '</span>';
+                        }
+
+                        if (result.__user.ALARM_SEND_MAIL == 1) {
+                            _ALARM_SEND_MAIL = '<span class="label label-success">' + _sendText + '</span>';
+                        }
+                        else {
+                            _ALARM_SEND_MAIL = '<span class="label label-danger">' + _notSendText + '</span>';
+                        }
+                        $('#Mdl').modal('toggle');
+
+                        var _tds =
+                            '<td class="item dt-center" style="display:none">' +
+                            '        <label>' + result.__user.Id + '</label>' +
+                            '        <input type="hidden" value="' + result.__user.UserName + '" class="hdnUserName" />' +
+                            '        <input type="hidden" value="' + result.__user.Email + '" class="hdnEmail" />' +
+                            '        <input type="hidden" value="' + result.__user.SHOW_MONEY + '" class="hdnShowMoney" />' +
+                            '        <input type="hidden" value="' + result.__user.REPORT_SEND_MAIL + '" class="hdnReport" />' +
+                            '        <input type="hidden" value="' + result.__user.ALARM_SEND_MAIL + '" class="hdnAlarm" />' +
+                            '</td>' +
+                            '<td>' + result.__user.UserName + '</td>' +
+                            '<td>' + result.__user.Email + '</td>' +
+                            '<td>' + _SHOW_MONEY + '</td>' +
+                            '<td>' + _REPORT_SEND_MAIL + '</td>' +
+                            '<td>' + _ALARM_SEND_MAIL + '</td>' +
+                            '<td class="dt-center">' +
+                            '   <button class="btn btn-success btn-xs btnEdit">' +
+                            '       <i class="fa fa-pencil"></i>' +
+                            '   </button>' +
+                            '   <button class="btn btn-primary btn-xs btnStationDetail">' +
+                            '       <i class="fa fa-list-ul"></i>' +
+                            '   </button>' +
+                            '</td>';
+                        if (_Id == 0) {
+
+                            var _tr = '<tr>' + _tds + '</tr>';
+
+                            $('#tblUser tbody').append(_tr);
+                        }
+                        else {
+                            $('tr.Active').html(_tds);
+                        }
+                    }
+                    else {
+                        alert(result.__ErrorMessage);
+                    }
+                }
+            });
+        });
+
+            $('#checkPassword').on('change', function () {
+                if ($(this).is(':checked')) {
+                    $('#txtPassword').show();
+                }
+                else {
+                    $('#txtPassword').hide();
+                }
+            });
+
+            $(document).on('click', '.btnEdit', function (e) {
+                $('tr').removeClass('Active');
+
+                $(this).parent().parent().addClass('Active');
+                var _Id = $(this).parent().siblings('.item').find('label').html();
+                var _Name = $(this).parent().siblings('.item').find('.hdnUserName').val();
+                var _Email = $(this).parent().siblings('.item').find('.hdnEmail').val();
+                var _ShowMoney = $(this).parent().siblings('.item').find('.hdnShowMoney').val();
+                var _Report = $(this).parent().siblings('.item').find('.hdnReport').val();
+                var _Alarm = $(this).parent().siblings('.item').find('.hdnAlarm').val();
+
+                var _Password = $('#txtPassword').text();
+                $("#checkPassword").prop("checked", false);
+
+                $('#hdnId').val(_Id);
+                $('#txtUserName').val(_Name);
+                $('#txtEmail').val(_Email);
+                $('#txtPassword').hide();
+                $('#divPassword').show();
+                if (_ShowMoney == 1) {
+                    $("#checkShowMoney").prop("checked", true);
+                }
+                else {
+                    $("#checkShowMoney").prop("checked", false);
+                }
+
+                if (_Report == 1) {
+                    $("#checkReport").prop("checked", true);
+                }
+                else {
+                    $("#checkReport").prop("checked", false);
+                }
+
+                if (_Alarm == 1) {
+                    $("#checkAlarm").prop("checked", true);
+                }
+                else {
+                    $("#checkAlarm").prop("checked", false);
+                }
+
+                $('#Mdl').modal();
+            });
+
+            $(document).on('click', '.btnStationDetail', function (e) {
+                $('#MdlStation').modal();
+                $(this).parent().parent().addClass('Active');
+                var _Id = $(this).parent().siblings('.item').find('label').html();
+                StationList(_Id);
+            });
+
+            function StationList(id) {
+                $('tr').removeClass('Active');
+
+                $.ajax({
+                    url: '@Url.Action("GetUserStationList", "Account")',
+                    type: "post",
+                    data: {
+                        'stUserId': id
+                    },
+                    cache: false,
+                    success: function (result) {
+
+                        $('#tblStation').attr('name', id);
+                        $('#tblStation tbody').html('');
+                        for (var i = 0; i < result.length; i++) {
+                            var stationChecked="";
+                            if (result[i].isAuthorization == true) {
+                                stationChecked = "checked=checked";
+                            }
+                            else {
+                                stationChecked = "";
+                            }
+                            var _tr =
+                                '<tr>' +
+                                '    <td class="item dt-center" style="display:none">' +
+                                '        <label>' + result[i].stationId + '</label>' +
+                                '        <input type="hidden" value="' + result[i].stationName + '" class="hdnUserName" />' +
+                                '        <input type="hidden" value="' + result[i].isAuthorization + '" class="hdnEmail" />' +
+                                '    </td>' +
+                                '    <td>' + result[i].stationName + '</td>' +
+                                '    <td class="dt-center">' +
+                                '     <label><input name="checkStation" id="' + result[i].stationId + '" type = "checkbox" ' + stationChecked + ' ></label>'
+                                '    </td>' +
+                                '</tr>';
+
+                            $('#tblStation tbody').append(_tr);
+
+                        }
+                    }
+                });
+            }
+            $('#btnAta').click(function () {
+                var stationList = [];
+                var _checkList = $("input[name = 'checkStation']");
+                $.each(_checkList, function (i, item) {
+                    if (item.checked==true) {
+                        stationList.push(item.id);
+                    }
+                    });
+
+                var stationUserId = document.getElementById('tblStation').attributes.Name.nodeValue;
+                $.ajax({
+                        url: '@Url.Action("SaveStation", "Account")',
+                        type: "post",
+                        data: {
+                            'userId': stationUserId,
+                            'stListId': stationList
+                        },
+                        cache: false,
+                        success: function (result) {
+                        if (result.__ErrorMessage=="") {
+                            $('#MdlStation').modal('toggle');
+                        }
+                        else {
+                            alert(result.__ErrorMessage);
+                        }
+                        }
+                    });
+
+            });
+
+        });
+        </script>
+
+    }
+}

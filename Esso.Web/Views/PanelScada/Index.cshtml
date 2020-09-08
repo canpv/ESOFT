@@ -1,0 +1,827 @@
+﻿@model int
+@using Esso.ViewModels
+@using Esso.Data;
+@using Esso.Models;
+@using Microsoft.AspNet.Identity
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<style>
+    #resizable {
+        width: 850px;
+        height: 150px;
+        padding: 0.5em;
+    }
+
+        #resizable h3 {
+            text-align: center;
+            margin: 0;
+        }
+</style>
+<style>
+    #myChart {
+        height: 750px;
+        width: 1000px;
+    }
+
+    div[id$="license"] {
+        display: none !important;
+    }
+
+    #myChart-license-text {
+        display: none !important;
+    }
+
+    .highcharts-credits {
+        display: none !important;
+    }
+</style>
+<style>
+    .draggable {
+        /*width: 50px;
+        height: 32px;*/
+        width: 32px;
+        height: 20px;
+        padding: 5px;
+        float: left;
+        margin: 0 10px 10px 0;
+        font-size: .9em;
+        /*background-image: url(../../images/PanelScada/panel.png);*/
+        /*background-repeat: no-repeat;*/
+        background-size: 100px 65px;
+    }
+
+        .draggable > p {
+            color: white;
+        }
+
+    .ui-widget-header p, .ui-widget-content p {
+        margin: 0;
+    }
+
+    /*#snaptarget {
+        height: 600px;
+    }*/
+
+    li {
+        color: white;
+    }
+
+    #snaptarget {
+        /*background-color: lightblue;
+        width: 1600px;
+        height: 901px;
+        overflow-x: scroll;
+        overflow-y: scroll;*/
+        /*height: 100vh;
+        width: 100vh;
+        overflow-x: scroll;
+        overflow-y: scroll;*/
+        overflow: scroll;
+        /* or */
+        overflow-x: scroll;
+        overflow-y: scroll;
+    }
+</style>
+
+
+
+
+
+@{
+    EssoEntities DB = new EssoEntities();
+
+    #region User yetkileri kontrol
+    TBL_STATION stat = new TBL_STATION();
+    stat = null;
+
+    var userId = User.Identity.GetUserId();
+
+
+    int? money;
+    var user_money = DB.UserEntity.Where(x => x.USER_ID == userId).FirstOrDefault();
+
+    if (user_money != null)
+    {
+        money = DB.UserEntity.Where(x => x.USER_ID == userId).Select(x => new { x = x.SHOW_MONEY }).FirstOrDefault().x;
+    }
+    else
+    {
+        money = null;
+    }
+
+
+    //User yetkileri kontrol ediliyor
+    try
+    {
+
+        if (User.IsInRole("M_ADMIN"))
+        {
+            stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+        }
+        else if (User.IsInRole("COMP_ADMIN"))
+        {
+            int cmpId = DB.Stations.Where(a => a.ID == Model && a.IS_DELETED == false).FirstOrDefault().COMPANY_ID;
+
+            if (DB.CompanyUsers.Any(a => a.COMPANY_ID == cmpId && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+        else if (User.IsInRole("COMP_USER"))
+        {
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+        else if (User.IsInRole("DEMO"))
+        {
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+
+
+
+    }
+    catch (Exception)
+    {
+
+    }
+    #endregion
+
+}
+
+@{
+
+    if (stat == null)
+    {
+        @Html.Partial("_ErrorPagePartial")
+    }
+    else
+    {
+
+        <div class="row">
+
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel" style="background:#F7F7F7">
+
+                    <div class="x_content">
+
+                        <div class="col-md-12 col-sm-12 col-xs-12">
+                            <b>Show Name:</b> <input type="checkbox" id="NameCheck">
+                            <b>Show Value:</b> <input type="checkbox" checked id="ValueCheck">
+                            <div id="DraggableDiv"><b>Draggable:</b> <input type='checkbox' id='DraggableCheck'></div>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <tbody>
+                                        <tr>
+                                            <td id="sunriseDateDiv" width="10%" style="font-weight:bold"></td>
+                                            <td width="80%">
+                                                <div id="proggressTime"></div>
+                                            </td>
+                                            <td id="sunsetDateDiv" width="10%" style="font-weight:bold"></td>
+                                        </tr>
+
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="container" style="height: 200px; min-width: 100px; max-width: 800px; margin: 0 auto"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+
+}
+
+
+<div class="row">
+
+
+    <div class="col-md-12 col-sm-12 col-xs-12">
+        <div id="snaptarget" style="background-color:#e0e0e0;display:none">
+            @*background-image:url(../../images/PanelScada/soil.jpg)*@
+            <div class="ui-widget-header" style="background-color:#e0e0e0; width:1600px;height:901px">
+
+
+                @{
+                    var station = DB.Stations.Where(w => w.ID == Model).FirstOrDefault();
+
+                    var strTagNames = DB.stationString
+                            .Join(DB.Tags, r => r.STRING_ID, ro => ro.ID, (r, ro) => new { r, ro })
+                            .Where(x => x.r.STATION_ID == Model && x.r.IS_DELETED == false)
+                           .GroupBy(x => x.ro.NAME)
+                           .Select(g => new { DISPLAY_NAME = g.FirstOrDefault().r.DISPLAY_NAME, NAME = g.Key, ID = g.FirstOrDefault().ro.ID })
+                           .ToList();
+
+                    if (station.STATION_TYPE == 4)
+                    {
+                        foreach (var item in strTagNames)
+                        {
+                            var dragId = "draggable-" + item.ID;
+                            var strDiv = "strDiv" + item.ID;
+                            var strId = "strVal" + item.ID;
+                            var inv = item.NAME.Substring(0, 7).ToString();
+                            var popId = "popover" + item.ID;
+                            <div id="@dragId" class="draggable ui-widget-content @inv  allInv @strDiv">
+                                <a id="@popId" class="pop" data-toggle="@popId" title="@item.DISPLAY_NAME" data-trigger="hover" data-content="" style="color:white">
+                                    <p class="divName" style="display:none">@item.DISPLAY_NAME </p>
+                                    <p class="divValue" id="@strId" style="display:block"></p>
+                                </a>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        foreach (var item in strTagNames)
+                        {
+                            var dragId = "draggable-" + item.ID;
+                            var strDiv = "strDiv" + item.ID;
+                            var strId = "strVal" + item.ID;
+                            var inv = Convert.ToInt32(item.NAME.Split('_')[0].Replace("INV", "")).ToString();
+                            var popId = "popover" + item.ID;
+                            var _NAME = "";
+                            if (item.DISPLAY_NAME == null)
+                            {
+                                _NAME = item.NAME;
+                            }
+                            else
+                            {
+                                _NAME = item.DISPLAY_NAME;
+                            }
+                            <div id="@dragId" class="draggable ui-widget-content @inv allInv @strDiv">
+                                <a id="@popId" class="pop" data-toggle="@popId" title="@_NAME" data-trigger="hover" data-content="" style="color:white">
+                                    <p class="divName" style="display:none">@item.NAME </p>
+                                    <p class="divValue" id="@strId" style="display:block"></p>
+                                </a>
+                            </div>
+                        }
+                    }
+
+                }
+
+
+                <div id="draggable" class="draggable ui-widget-content" style="left: 1060px; top: 67px; display:none"></div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- jQuery -->
+
+<script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+<script src="~/Content/highcharts/heatmap/highcharts.js"></script>
+<script src="~/Content/highcharts/heatmap/heatmap.js"></script>
+<script src="~/Content/highcharts/heatmap/exporting.js"></script>
+
+
+<script type="text/javascript">
+    jQuery(document).ready(function () {
+
+        $(function () {
+
+            $("#resizable").resizable();
+
+        });
+
+        function DateFormat(vl) {
+            var result = "";
+            if (vl != null) {
+
+                var value = new Date(parseInt(vl.replace(/(^.*\()|([+-].*$)/g, '')));
+                var day;
+                var dayLength = value.getDate().toString().length;
+                if (dayLength == 1) {
+                    day = "0" + value.getDate();
+                }
+                else {
+                    day = value.getDate();
+                }
+                var month;
+                var monthLength = (value.getMonth() + 1).toString().length;
+                if (monthLength == 1) {
+                    month = "0" + (value.getMonth() + 1);
+                }
+                else {
+                    month = (value.getMonth() + 1);
+                }
+                var dat = day + "/" + month + "/" + value.getFullYear().toString().substring(2, 4);
+                var minute;
+                var minuteLength = value.getMinutes().toString().length;
+                if (minuteLength == 1) {
+                    minute = "0" + value.getMinutes();
+                }
+                else {
+                    minute = value.getMinutes();
+                }
+                var hour;
+                var hourLength = value.getHours().toString().length;
+                if (hourLength == 1) {
+                    hour = "0" + value.getHours()
+                }
+                else {
+                    hour = value.getHours()
+                }
+                var second;
+                var snUzunluk = value.getSeconds().toString().length;
+                if (snUzunluk == 1) {
+                    second = "0" + value.getSeconds()
+                }
+                else {
+                    second = value.getSeconds()
+                }
+
+                var time = hour + ":" + minute + ":" + second;
+                result = time.toString(); //dat.toString() + " " + time.toString();
+            }
+            else {
+                result = "-";
+            }
+            return result;
+        }
+
+        function GetSunsetAndSunrise() {
+
+            $.ajax({
+                url: '@Url.Action("Sunset_Sunrise", "PanelScada")',
+                data: { stationId: @Model },
+                type: "get",
+                cache: false,
+                success: function (result) {
+
+                    var percent = result.percent;
+                    $('#' + 'sunriseDateDiv').empty();
+                    $('#' + 'sunsetDateDiv').empty();
+                    $('#' + 'sunriseDateDiv').append(DateFormat(result.sunrise) + " <img src='/images/PanelScada/sun.png' />");
+                    $('#' + 'sunsetDateDiv').append(" <img src='/images/PanelScada/moon.png' />" + DateFormat(result.sunset));
+
+                    var progressBgColor = "";
+                    if (percent >= 100) {
+                        progressBgColor = "style='width:" + percent + "%;background-color:#000'";
+                    }
+                    else {
+                        progressBgColor = "style='width:" + percent + "%;background-color:#faa93f'";
+                    }
+                    $('#proggressTime').html("<div class='progress' style='background-color:#d42915'><div class='progress-bar progress-bar-striped' role='progressbar' aria-='' valuenow='70' aria-valuemin='0' aria-valuemax='100' " + progressBgColor + " >" + result.remainingTime + "</div></div>");
+                }
+            });
+        }
+
+        GetSunsetAndSunrise();
+
+        $('#NameCheck').click(function () {
+            var checkBox = document.getElementById("NameCheck");
+
+            if (checkBox.checked == true) {
+                $('.divName').css('display', 'block');
+            } else {
+                $('.divName').css('display', 'none');
+            }
+        });
+
+        $('#ValueCheck').click(function () {
+            var checkBox = document.getElementById("ValueCheck");
+            if (checkBox.checked == true) {
+                $('.divValue').css('display', 'block');
+            } else {
+                $('.divValue').css('display', 'none');
+            }
+        });
+
+
+       
+
+        $('#DraggableCheck').click(function () {
+           var checkBox = document.getElementById("DraggableCheck");
+                            
+            if (checkBox.checked == true) {
+                $('.draggable').draggable({disabled:false});
+            } else {
+                $('.draggable').draggable({disabled:true});
+
+              }
+        });
+
+        AuthorizeControl();
+
+        function AuthorizeControl() {
+
+            $.ajax({
+                url: '@Url.Action("AuthorizeControl", "PanelScada")',
+                type: "get",
+                cache: false,
+                success: function (result) {
+                    if (result==true) {
+                   
+                         $('.draggable').draggable({
+                                grid: [1, 1],
+                                containment: $('body'),
+                                //grid: [1, 1],
+                                cursor: "move",
+                                drag: function (e, ui) {
+
+                                },
+                                resize: function (e, ui) {
+
+                                    var _width = ui.size.width;
+                                    var _height = ui.size.height;
+
+                                },
+                                stop: function (e, ui) {
+                                    
+                                    var _panelId = e.target.id;
+                                    var panelId = _panelId.split("-")[1];
+
+                                    var pnlId = "#" + panelId;
+                                    var x = ui.position.left + "px";
+                                    var y = ui.position.top + "px";
+
+                                    SetLocation(x, y, panelId);
+
+                                }
+                         });
+
+                          $('.draggable').draggable({disabled:true});
+                    }
+                    else {
+                        $('.draggable').draggable({ disabled: true });
+                        $("#DraggableDiv").css("display", "none");
+                    }
+                }
+            });
+        }
+
+       
+
+        StringTagsFill();
+
+
+         function StringTagsFill() {
+
+            $.ajax({
+                url: '@Url.Action("GetStringTags", "PanelScada")',
+                data: { stationId: @Model },
+                type: "get",
+                cache: false,
+                success: function (result) {
+
+                    $('#snaptarget').css('display', 'block');
+                    $.each(result, function (i, item) {
+
+                        var dragIdH = "#draggable-" + item.ID;
+                        $(dragIdH).css('position', 'relative');
+                        $(dragIdH).css('left', item.LOCATIONSX);
+                        $(dragIdH).css('top', item.LOCATIONSY);
+
+                    });
+
+                   }
+               });
+        }
+
+        StringDataFill();
+
+          var timer, delay = 100000;
+        timer = setInterval(function () {
+              GetSunsetAndSunrise();
+                 StringDataFill();
+        }, delay);
+
+
+          function ColorScale(val) {
+
+            var color;
+
+
+            if (val<10 && val>=9.5) {
+                color = "#f7df9e";
+            }
+            else if (val<9.5 && val>=9) {
+                color = "#f7d579";
+            }
+            else if (val<9 && val>=8.5) {
+                color = "#f7d065";
+            }
+            else if (val<8.5 && val>=8) {
+                color = "#f8c94b";
+            }
+            else if (val<8 && val>=7.5) {
+                color = "#f8c43a";
+            }
+            else if (val<7.5 && val>=7) {
+                color = "#fac039";
+            }
+            else if (val<7 && val>=6.5) {
+                color = "#fbbe3c";
+            }
+            else if (val<6.5 && val>=6) {
+                color = "#fdbb41";"#fbbe3c";
+            }
+            else if (val<6 && val>=5.5) {
+                color = "#feb945";
+            }
+            else if (val<5.5 && val>=5) {
+                color = "#ffb549";
+            }
+            else if (val<5 && val>=4.5) {
+                color = "#f9a53c";
+            }
+            else if (val<4.5 && val>=4) {
+                color = "#f2932d";
+            }
+            else if (val<4 && val>=3.5) {
+                color = "#ec8522";
+            }
+            else if (val<3.5 && val>=3) {
+                color = "#e47112";
+            }
+            else if (val<3 && val>=2.5) {
+                color = "#dd5f03";
+            }
+            else if (val<2.5 && val>=2) {
+                color = "#d4540c";
+            }
+            else if (val<2 && val>=1.5) {
+                color = "#cc4a13";
+            }
+            else if (val<1.5 && val>=1) {
+                color = "#c23e1e";
+            }
+            else if (val<1 && val>=0.5) {
+                color = "#b93424";
+            }
+            else if (val<0.5 && val>0) {
+                color = "#c72b19";
+            }
+            else if (val==0) {
+                color = "#000000";
+            }
+
+            return color;
+        }
+
+
+         function StringDataFill() {
+
+            $.ajax({
+                url: '@Url.Action("GetStringData", "PanelScada")',
+                data: { stationId: @Model },
+                type: "get",
+                cache: false,
+                success: function (result) {
+
+                    var summaryList = [];
+                    var invList = [];
+
+                    $.each(result, function (i, item) {
+
+                        summaryList.push([i, 0, item.MAX_VALUE]);
+                        summaryList.push([i, 1, item.AVG_VALUE]);
+                        summaryList.push([i, 2, item.MIN_VALUE]);
+
+                        invList.push(item.INV_NO);
+
+                        $.each(item.listCell, function (j, item2) {
+                        var strid = "#strVal" + item2.ID;
+                        $(strid).html(item2.VALUE);
+
+                         var strdiv = ".strDiv" + item2.ID;
+                         var color = ColorScale(item2.VALUE);
+
+
+                        $(strdiv).css('background-color', color);
+
+                            var popId = "popover" + item2.ID;
+                            //$('[data-toggle="' + popId + '"]').popover({ html: true, content: item2.VALUE + " A" });
+                            var content = item2.VALUE + " A";
+                            $('[data-toggle="' + popId + '"]').attr("data-content",content);
+                            $('[data-toggle="' + popId + '"]').popover({ html: true });
+
+
+                            var popIdDiv = "#" + popId;
+                            $(popIdDiv).data
+
+                        });
+                    });
+
+
+
+                     Highcharts.chart('container', {
+
+                          chart: {
+                            type: 'heatmap',
+                            height:200,
+                            marginTop: 40,
+                            marginBottom: 80,
+                            plotBorderWidth: 1,
+                            backgroundColor: '#f7f7f7',
+                          },
+
+
+                          title: {
+                            text: ''
+                          },
+
+                          xAxis: {
+                              categories: invList,
+                                labels: {
+                                style: {
+                                    color: '#0062b4',
+                                    fontSize: '7pt',
+                                    fontWeight: 'bold'
+                                }
+                            }
+                          },
+
+                          yAxis: {
+                            categories: ['MAX', 'AVG', 'MIN'],
+                            title: null,
+                              reversed: true,
+                              labels: {
+                                style: {
+                                    color: '#0062b4',
+                                    fontSize: '7pt',
+                                    fontWeight: 'bold'
+                                }
+                            }
+                          },
+
+                          //colorAxis: {
+                          //  min: 0,
+                          //  minColor: '#FFFFFF',
+                          //  maxColor: Highcharts.getOptions().colors[0]
+                          //},
+                           colorAxis: {
+                            //                        stops: [
+                            //                            [0, '#f5e1a4'],
+                            //                            [0.25, '#f9c335'],
+                            //                            [0.5, '#ffb549'],
+                            //                            [0.75, '#dd5f03'],
+                            //                            [1, '#af272f']
+                            //                        ],
+                            //    stops: [
+                            //    [0, '#af272f'],
+                            //    [0.25, '#dd5f03'],
+                            //    [0.5, '#ffb549'],
+                            //    [0.75, '#f9c335'],
+                            //    [1, '#f5e1a4']
+                            //],
+                                stops: [
+                                [0, '#ec240d'],
+                                [0.05, '#c72b19'],
+                                [0.1, '#b93424'],
+                                [0.15, '#c23e1e'],
+                                [0.2, '#cc4a13'],
+                                [0.25, '#d4540c'],
+                                [0.3, '#dd5f03'],
+                                [0.35, '#e47112'],
+                                [0.4, '#ec8522'],
+                                [0.45, '#f2932d'],
+                                [0.5, '#f9a53c'],
+                                [0.55, '#ffb549'],
+                                [0.6, '#feb945'],
+                                [0.65, '#fdbb41'],
+                                [0.7, '#fbbe3c'],
+                                [0.75, '#fac039'],
+                                [0.8, '#f8c43a'],
+                                [0.85, '#f8c94b'],
+                                [0.9, '#f7d065'],
+                                [0.95, '#f7d579'],
+                                [1, '#f7df9e']
+                            ],
+
+                               min: 0,
+                               max:10,
+                               minColor: '#FFFFFF',
+                               startOnTick: false,
+                               endOnTick: false,
+                               labels: {
+                                   format: '{value} A'
+                               }
+                           },
+
+                          //legend: {
+                          //  align: 'right',
+                          //  layout: 'vertical',
+                          //  margin: 0,
+                          //  verticalAlign: 'top',
+                          //  y: 25,
+                          //  symbolHeight: 280
+                          //},
+                             legend: {
+                                                    align: 'center',
+                                                    verticalAlign: 'bottom',
+                                                    layout: 'horizontal',
+                                                    x: 100,
+                                                    y: 10,
+                                                    symbolWidth: 600
+                                                },
+
+                          tooltip: {
+                              formatter: function () {
+
+                                  //$('.allInv').css('background-color', 'black');
+                                  $('.draggable').css('background-image', 'none');
+                                  $('.allInv').css('border', 'none');
+
+                                  var invX = this.series.xAxis.categories[this.point.x];
+                                  var invId = "." + invX;
+                                  //$(invId).css('background-color', 'red');
+                                  $(invId).css('border', '3px solid #264bff');
+
+
+                                  //alert(this.series.xAxis.categories[this.point.x]);
+                              return '<b>' + this.series.xAxis.categories[this.point.x] + '</b><br><b>' +
+                                this.series.yAxis.categories[this.point.y] + ': </b> '+this.point.value+' A <br>';
+                            }
+                          },
+
+                          series: [{
+                            name: 'Sales per employee',
+                            borderWidth: 1,
+                            data: summaryList,
+                              dataLabels: {
+                                enabled: true,
+                                style: {
+                                    fontSize: '10px',
+                                    fontWeight: 'none',
+                                    textOutline:'none'
+                                },
+                                color: '#fff'
+                            }
+                          }],
+
+                          responsive: {
+                            rules: [{
+                              condition: {
+                                maxWidth: 500
+                              },
+                              chartOptions: {
+                                yAxis: {
+                                  labels: {
+                                    formatter: function () {
+                                      return this.value.charAt(0);
+                                    }
+                                  }
+                                }
+                              }
+                            }]
+                          }
+
+                        });
+
+
+
+
+
+
+
+
+
+
+                   }
+               });
+        }
+
+        function SetLocation(x,y,stringId) {
+
+            $.ajax({
+                url: '@Url.Action("SavePanelLocation", "PanelScada")',
+                data: { stationId: @Model, stringId: stringId, locX: x, locY: y },
+                type: "get",
+                cache: false,
+                success: function (result) {
+
+
+
+                   }
+               });
+        }
+
+         function SetResize(h,w) {
+
+            $.ajax({
+                url: '@Url.Action("SavePanelResize", "PanelScada")',
+                data: { stationId: @Model, stringId: 5, height: h, width: w },
+                type: "get",
+                cache: false,
+                success: function (result) {
+
+
+                   }
+               });
+        }
+
+    });
+</script>
+
+

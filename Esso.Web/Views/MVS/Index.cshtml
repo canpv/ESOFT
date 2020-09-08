@@ -1,0 +1,741 @@
+﻿@model int
+@using Esso.Data;
+@using Esso.Models;
+@using Microsoft.AspNet.Identity;
+@using language
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{
+    EssoEntities DB = new EssoEntities();
+
+    #region User yetkileri kontrol
+    TBL_STATION stat = new TBL_STATION();
+    stat = null;
+
+    var userId = User.Identity.GetUserId();
+
+    //User yetkileri kontrol ediliyor
+    try
+    {
+        if (User.IsInRole("M_ADMIN"))
+        {
+            stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+        }
+        else if (User.IsInRole("COMP_ADMIN"))
+        {
+            int cmpId = DB.Stations.Where(a => a.ID == Model && a.IS_DELETED == false).FirstOrDefault().COMPANY_ID;
+
+            if (DB.CompanyUsers.Any(a => a.COMPANY_ID == cmpId && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+        else if (User.IsInRole("COMP_USER"))
+        {
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+        else if (User.IsInRole("DEMO"))
+        {
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+    }
+    catch (Exception)
+    {
+
+    }
+    #endregion
+}
+
+@{
+    if (stat == null)
+    {
+        @Html.Partial("_ErrorPagePartial")
+    }
+    else
+    {
+        var stationCount = DB.Inverters.Where(x => x.STATION_ID == Model).Count();
+        var stationName = DB.Stations.Where(a => a.ID == Model).FirstOrDefault().NAME;
+        var stationName2 = DB.Stations.Where(a => a.ID == Model).FirstOrDefault().DEMO_NAME;
+
+        <div class="">
+            <div class="page-title">
+                <div class="title_left">
+                    @if (User.IsInRole("DEMO"))
+                    {
+                        <h3>@stationName2</h3>
+                    }
+                    else
+                    {
+                        <h3>@stationName</h3>
+                    }
+                </div>
+            </div>
+            @Html.Partial("MenuPartial")
+            <div class="clearfix"></div>
+            <input type="hidden" value="@Resources.OFF" id="hdn_OFF" />
+            <input type="hidden" value="@Resources.ON" id="hdn_ON" />
+            <div class="row top_tiles">
+                <div class="animated flipInY col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                    <div class="tile-stats">
+                        <div class="icon"><i class="fa fa-level-up"></i></div>
+                        <div class="count" style="color:#249624" id="EkkProducedEnergy">-</div>
+                        <h3 style="color:#3f5367">@Resources.Produced_Energy</h3>
+                    </div>
+                </div>
+                <div class="animated flipInY col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                    <div class="tile-stats">
+                        <div class="icon"><i class="fa fa-level-down"></i></div>
+                        <div class="count" id="EkkConsumedEnergy" style="color:#249624">-</div>
+                        <h3 style="color:#3f5367">@Resources.Consumed_Energy</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 col-sm-12 col-xs-12">
+                    <div class="x_panel">
+                        <div class="x_title">
+                            <h2>@Resources.Energy_Quality_Recorder</h2>
+                            <ul class="nav navbar-right panel_toolbox">
+                                <li>
+                                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                                </li>
+                                <li>
+                                    <a class="close-link"><i class="fa fa-close"></i></a>
+                                </li>
+                            </ul>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="x_content">
+
+                            <table id="datatable" class="table table-striped jambo_table bulk_action">
+                                <thead>
+                                    <tr>
+                                        <th width="155">@Resources.Address</th>
+                                        <th>@Resources.Value</th>
+                                        <th>@Resources.Date</th>
+                                    </tr>
+                                </thead>
+                                <tr>
+                                    <td id="f_address"></td>
+                                    <td id="f_value"></td>
+                                    <td id="f_date"></td>
+                                </tr>
+                                <tr>
+                                    <td id="Ia_address"></td>
+                                    <td id="Ia_value"></td>
+                                    <td id="Ia_date"></td>
+                                </tr>
+                                <tr>
+                                    <td id="Ib_address"></td>
+                                    <td id="Ib_value"></td>
+                                    <td id="Ib_date"></td>
+                                </tr>
+                                <tr>
+                                    <td id="Ic_address"></td>
+                                    <td id="Ic_value"></td>
+                                    <td id="Ic_date"></td>
+                                </tr>
+                                <tr>
+                                    <td id="p_address"></td>
+                                    <td id="p_value"></td>
+                                    <td id="p_date"></td>
+                                </tr>
+                                <tr>
+                                    <td id="pf_address"></td>
+                                    <td id="pf_value"></td>
+                                    <td id="pf_date"></td>
+                                </tr>
+                                <tr>
+                                    <td id="q_address"></td>
+                                    <td id="q_value"></td>
+                                    <td id="q_date"></td>
+                                </tr>
+                                <tr>
+                                    <td id="s_address"></td>
+                                    <td id="s_value"></td>
+                                    <td id="s_date"></td>
+                                </tr>
+                                <tr>
+                                    <td id="vab_address"></td>
+                                    <td id="vab_value"></td>
+                                    <td id="vab_date"></td>
+                                </tr>
+                                <tr>
+                                    <td id="vac_address"></td>
+                                    <td id="vac_value"></td>
+                                    <td id="vac_date"></td>
+                                </tr>
+                                <tr>
+                                    <td id="vbc_address"></td>
+                                    <td id="vbc_value"></td>
+                                    <td id="vbc_date"></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-sm-12 col-xs-12">
+                    <div class="x_panel">
+                        <div class="x_title">
+                            <h2>@Resources.Medium_Voltage_Switchgear</h2>
+                            <ul class="nav navbar-right panel_toolbox">
+                                <li>
+                                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                                </li>
+                                <li>
+                                    <a class="close-link"><i class="fa fa-close"></i></a>
+                                </li>
+                            </ul>
+                            <div class="clearfix"></div>
+                        </div>
+
+                        <div id="devreResim" class="x_content">
+                            <img src="" class="x_content5 LoadingImage" id="hucreResim" width="100%" height="487" />
+                        </div>
+
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 col-sm-12 col-xs-12">
+                        <div class="x_panel">
+                            <div class="x_title">
+                                <h2>@Resources.Protection_Relay</h2>
+                                <ul class="nav navbar-right panel_toolbox">
+                                    <li>
+                                        <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                                    </li>
+                                    <li>
+                                        <a class="close-link"><i class="fa fa-close"></i></a>
+                                    </li>
+                                </ul>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="x_content">
+
+                                <table id="datatable" class="table table-striped jambo_table bulk_action">
+                                    <thead>
+                                        <tr>
+                                            <th width="155">@Resources.Address</th>
+                                            <th>@Resources.Value</th>
+                                            <th>@Resources.Date</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tr>
+                                        <td id="I1_address"></td>
+                                        <td id="I1_value"></td>
+                                        <td id="I1_date"></td>
+                                    </tr>
+                                    <tr>
+                                        <td id="I2_address"></td>
+                                        <td id="I2_value"></td>
+                                        <td id="I2_date"></td>
+                                    </tr>
+                                    <tr>
+                                        <td id="I3_address"></td>
+                                        <td id="I3_value"></td>
+                                        <td id="I3_date"></td>
+                                    </tr>
+                                    <tr>
+                                        <td id="In_address"></td>
+                                        <td id="In_value"></td>
+                                        <td id="In_date"></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="x_panel">
+                            <div class="x_title">
+                                <h2>Dijital Data</h2>
+                                <ul class="nav navbar-right panel_toolbox">
+                                    <li>
+                                        <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                                    </li>
+                                    <li>
+                                        <a class="close-link"><i class="fa fa-close"></i></a>
+                                    </li>
+                                </ul>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="x_content">
+
+                                <table id="datatable" class="table table-striped jambo_table bulk_action">
+                                    <thead>
+                                        <tr>
+                                            <th width="155">@Resources.Address</th>
+                                            <th>@Resources.Value</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+
+                                    <tr>
+                                        <td id="duman_dedektoru_address">@Resources.smoke_sensor : </td>
+                                        <td id="duman_dedektoru_value"></td>
+                                        <td id="duman_dedektoru_img"><img src="/images/DigitalDataImages/duman_dedektoru.png" style="width:30px;height:30px;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td id="kapi_switch_address">@Resources.door_switch : </td>
+                                        <td id="kapi_switch_value"></td>
+                                        <td id="kapi_switch_img"><img src="/images/DigitalDataImages/kapi_switch.png" style="width:24px;height:30px;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td id="redresor_ac_ariza_address">@Resources.redresor_ac_fault : </td>
+                                        <td id="redresor_ac_ariza_value"></td>
+                                        <td id="redresor_ac_ariza_img"><img src="/images/DigitalDataImages/redresor_ac_ariza.png" style="width:30px;height:30px;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td id="redresor_dc_dusuk_address">@Resources.redresor_dc_low : </td>
+                                        <td id="redresor_dc_dusuk_value"></td>
+                                        <td id="redresor_dc_dusuk_img"><img src="/images/DigitalDataImages/low.png" style="width:30px;height:30px;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td id="redresor_dc_kacak_address">@Resources.redresor_dc_leak : </td>
+                                        <td id="redresor_dc_kacak_value"></td>
+                                        <td id="redresor_dc_kacak_img"><img src="/images/DigitalDataImages/redresor_dc.png" style="width:30px;height:30px;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td id="redresor_dc_yuksek_address">@Resources.redresor_dc_high : </td>
+                                        <td id="redresor_dc_yuksek_value"></td>
+                                        <td id="redresor_dc_yuksek_img"><img src="/images/DigitalDataImages/height.png" style="width:30px;height:30px;"></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-sm-12 col-xs-12">
+                        <div class="x_panel">
+                            <div class="x_title">
+                                <h2>@Resources.Medium_Voltage_Switchgear</h2>
+                                <ul class="nav navbar-right panel_toolbox">
+                                    <li>
+                                        <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                                    </li>
+
+                                    <li>
+                                        <a class="close-link"><i class="fa fa-close"></i></a>
+                                    </li>
+                                </ul>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="x_content">
+
+                                <table id="datatable" class="table table-striped jambo_table bulk_action">
+                                    <thead>
+                                        <tr>
+                                            <th width="155">@Resources.Address</th>
+                                            <th>@Resources.Value</th>
+                                            <th>@Resources.Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tr>
+                                        <td>@Resources.Incomming_MV_Cubicle_Earth_Switch_Position : </td>
+                                        <td id="hucre1">-</td>
+                                        <td id="hucreTarih1">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>@Resources.Incomming_MV_Cubicle_Load_Switch_Position : </td>
+                                        <td id="hucre2">-</td>
+                                        <td id="hucreTarih2">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>@Resources.Measuring_MV_Cubicle_Earth_Switch_Position : </td>
+                                        <td id="hucre3">-</td>
+                                        <td id="hucreTarih3">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>@Resources.Measuring_MV_Cubicle_Load_Switch_Position : </td>
+                                        <td id="hucre4">-</td>
+                                        <td id="hucreTarih4">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>@Resources.MV_Transformer_Cubicle_Earth_Switch_Position : </td>
+                                        <td id="hucre5">-</td>
+                                        <td id="hucreTarih5">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>@Resources.MV_Transformer_Cubicle_Load_Switch_Position : </td>
+                                        <td id="hucre6">-</td>
+                                        <td id="hucreTarih6">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>@Resources.Transformer_Cell_Cutter_Position : </td>
+                                        <td id="hucre7">-</td>
+                                        <td id="hucreTarih7">-</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <script>
+
+            function ConvertTicksToTime(vl) {
+                vl = vl.replace("Date", "");
+                vl = vl.replace("/", "");
+                vl = vl.replace("(", "");
+                vl = vl.replace(")", "");
+                vl = vl.replace("/", "").trim();
+
+                var vlDate = new Date(parseInt(vl));
+                //return vlDate.getHours() + ":" + vlDate.getMinutes() + ":" + vlDate.getSeconds()+":"+vlDate.getMilliseconds();
+                return vlDate.toLocaleTimeString() + ":" + vlDate.getMilliseconds();
+            }
+            function ConvertTicksToDate(vl) {
+                vl = vl.replace("Date", "");
+                vl = vl.replace("/", "");
+                vl = vl.replace("(", "");
+                vl = vl.replace(")", "");
+                vl = vl.replace("/", "").trim();
+
+                var vlDate = new Date(parseInt(vl));
+                return vlDate.toLocaleDateString();
+            }
+
+            $(document).ready(function () {
+                //EKK Bas.
+                function GetEKK() {
+                    $.ajax({
+                        url: "/MVS/GetEkk?stationId=@Model",
+                type: "POST",
+                dataType: "json",
+                        success: function (data) {
+                    $("#EkkProducedEnergy").html(data.H2_WP_minus.toFixed(2) == null ? 0 : data.H2_WP_minus.toFixed(2).replace(".",",") +" MWh");
+                    $("#EkkConsumedEnergy").html(data.H2_WP_plus.toFixed(2) == null ? 0 : data.H2_WP_plus.toFixed(2).replace(".", ",") + " MWh");
+
+                    $("#f_address").html("@Resources.Frequency : ");
+                    $("#f_value").html(data.H2_F == null ? null : data.H2_F.toFixed(2) +" Hz");
+                    $("#f_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+                    $("#Ia_address").html("@Resources.Current L1 : ");
+                    $("#Ia_value").html(data.H2_Ia == null ? null : data.H2_Ia.toFixed(2)+" A");
+                    $("#Ia_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+                    $("#Ib_address").html("@Resources.Current L2 : ");
+                    $("#Ib_value").html(data.H2_Ib == null ? null : data.H2_Ib.toFixed(2) + " A");
+                    $("#Ib_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+                    $("#Ic_address").html("@Resources.Current L3 : ");
+                    $("#Ic_value").html(data.H2_Ic == null ? null : data.H2_Ic.toFixed(2) + " A");
+                    $("#Ic_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+                    $("#p_address").html("@Resources.Active_Power_Sum : ");
+                    $("#p_value").html(data.H2_P == null ? null : data.H2_P.toFixed(2) +" kW");
+                    $("#p_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+                    $("#pf_address").html("@Resources.Power_Factor : ");
+                    $("#pf_value").html(data.H2_PF == null ? null : data.H2_PF.toFixed(2));
+                    $("#pf_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+                    $("#q_address").html("@Resources.Reactive_Power_Sum : ");
+                    $("#q_value").html(data.H2_Q == null ? null : data.H2_Q.toFixed(2) +" kVAr");
+                    $("#q_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+                    $("#s_address").html("@Resources.Visible_Power_Sum: ");
+                    $("#s_value").html(data.H2_S == null ? null : data.H2_S.toFixed(2)+" kVA");
+                    $("#s_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+                    $("#vab_address").html("@Resources.Voltage L1-L2 : ");
+                    $("#vab_value").html(data.H2_Vab == null ? null : data.H2_Vab.toFixed(2) + " kV");
+                    $("#vab_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+                    $("#vac_address").html("@Resources.Voltage L1-L3 : ");
+                    $("#vac_value").html(data.H2_Vac == null ? null : data.H2_Vac.toFixed(2) + " kV");
+                    $("#vac_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+                    $("#vbc_address").html("@Resources.Voltage L2-L3 : ");
+                    $("#vbc_value").html(data.H2_Vbc == null ? null : data.H2_Vbc.toFixed(2) + " kV");
+                    $("#vbc_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+
+                    $("#I1_address").html("@Resources.Current L1 : ");
+                    $("#I1_value").html(data.H3_Ia == null ? null : data.H3_Ia.toFixed(2) + " A");
+                    $("#I1_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+                    $("#I2_address").html("@Resources.Current L2 : ");
+                    $("#I2_value").html(data.H3_Ib == null ? null : data.H3_Ib.toFixed(2) + " A");
+                    $("#I2_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+                    $("#I3_address").html("@Resources.Current L3 : ");
+                    $("#I3_value").html(data.H3_Ic == null ? null : data.H3_Ic.toFixed(2) + " A");
+                    $("#I3_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+                    $("#In_address").html("@Resources.Neutral_Current : ");
+                    $("#In_value").html(data.H3_Ie == null ? null : data.H3_Ie.toFixed(2) + " A");
+                    $("#In_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+                }
+            });
+        }
+        GetEKK();
+        var timer, delay = 300000;
+        timer = setInterval(function () {
+            GetEKK();
+        }, delay)
+        //EKK Bit.
+
+         //digital data
+         function GetDigitalData() {
+            $("#LoadingImage").show();
+            $.ajax({
+                url: "/MVS/GetDigitalData?stationId=@Model",
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+                    var off = $('#hdn_OFF').val();
+                    var on = $('#hdn_ON').val();
+                    if (data.length > 0) {                    
+                        $.each(data, function (i, item) {
+                            var val;
+                            switch (item.hucre.tagName) {
+                                case "duman_dedektoru":
+                                    if (item.hucre.value == "0") {
+                                        val = off;
+                                    }
+                                    else if (item.hucre.value == "1") {
+                                        val = on;
+                                    }
+                                    else {
+                                        val = "-";
+                                    }
+                                    $("#duman_dedektoru_value").html(val);
+                                    break;
+                                case "kapi_switch":
+                                    if (item.hucre.value == "0") {
+                                        val = off;
+                                    }
+                                    else if (item.hucre.value == "1") {
+                                        val = on;
+                                    }
+                                    else {
+                                        val = "-";
+                                    }
+                                    $("#kapi_switch_value").html(val);
+                                    break;
+                                case "redresor_ac_ariza":
+                                    if (item.hucre.value == "0") {
+                                        val = off;
+                                    }
+                                    else if (item.hucre.value == "1") {
+                                        val = on;
+                                    }
+                                    else {
+                                        val = "-";
+                                    }
+                                    $("#redresor_ac_ariza_value").html(val);
+                                    break;
+                                case "redresor_dc_dusuk":
+                                    if (item.hucre.value == "0") {
+                                        val = off;
+                                    }
+                                    else if (item.hucre.value == "1") {
+                                        val = on;
+                                    }
+                                    else {
+                                        val = "-";
+                                    }
+                                    $("#redresor_dc_dusuk_value").html(val);
+                                    break;
+                                case "redresor_dc_kacak":
+                                    if (item.hucre.value == "0") {
+                                        val = off;
+                                    }
+                                    else if (item.hucre.value == "1") {
+                                        val = on;
+                                    }
+                                    else {
+                                        val = "-";
+                                    }
+                                    $("#redresor_dc_kacak_value").html(val);
+                                    break;
+                                case "redresor_dc_yuksek":
+                                    if (item.hucre.value == "0") {
+                                        val = off;
+                                    }
+                                    else if (item.hucre.value == "1") {
+                                        val = on;
+                                    }
+                                    else {
+                                        val = "-";
+                                    }
+                                    $("#redresor_dc_yuksek_value").html(val);
+                                    break;
+                                default:
+                            }
+                        });
+                    }
+                    else {
+                        val = "-";
+                        $("#duman_dedektoru_value").html(val);
+                        $("#kapi_switch_value").html(val);
+                        $("#redresor_ac_ariza_value").html(val);
+                        $("#redresor_dc_dusuk_value").html(val);
+                        $("#redresor_dc_kacak_value").html(val);
+                        $("#redresor_dc_yuksek_value").html(val);
+                    }
+                }
+            });
+          }
+
+        GetDigitalData();
+        var timer, delay = 600000;
+        timer = setInterval(function () {
+            GetDigitalData();
+        }, delay)
+
+
+        //Cell Information Bas.
+        function GetCell() {
+            $("#LoadingImage").show();
+            $.ajax({
+                url: "/MVS/GetHucre?stationId=@Model",
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+                    var _off = $('#hdn_OFF').val();
+                    var _on = $('#hdn_ON').val();
+                    var trafoImg = [];
+                    $.each(data, function (i, item) {
+                        var val;
+                        if (item.hucre._tagName == "h01_toprak_ayirici") {
+                            if (item.hucre._value=="1") {
+                                val = _off;
+                            }
+                            else if (item.hucre._value=="0") {
+                                val = _on;
+                            }
+                            else {
+                                val = "-";
+                            }
+                            $("#hucre1").html(val);
+                            $("#hucreTarih1").html((ConvertTicksToTime(item.hucre._date) + " / " + ConvertTicksToDate(item.hucre._date)));
+                            trafoImg[0] = item.hucre._value;
+
+                        }
+                        else if (item.hucre._tagName == "h01_ayirici") {
+                            if (item.hucre._value == "1") {
+                                val = _off;
+                            }
+                            else if (item.hucre._value == "0") {
+                                val = _on;
+                            }
+                            else {
+                                val = "-";
+                            }
+                            $("#hucre2").html(val);
+                            $("#hucreTarih2").html((ConvertTicksToTime(item.hucre._date) + " / " + ConvertTicksToDate(item.hucre._date)));
+                            trafoImg[1] = item.hucre._value;
+                        }
+                        else if (item.hucre._tagName == "h02_toprak_ayirici") {
+                            if (item.hucre._value == "1") {
+                                val = _off;
+                            }
+                            else if (item.hucre._value == "0") {
+                                val = _on;
+                            }
+                            else {
+                                val = "-";
+                            }
+                            $("#hucre3").html(val);
+                            $("#hucreTarih3").html((ConvertTicksToTime(item.hucre._date) + " / " + ConvertTicksToDate(item.hucre._date)));
+                            trafoImg[2] = item.hucre._value;
+                        }
+                        else if (item.hucre._tagName == "h02_ayirici") {
+                            if (item.hucre._value == "1") {
+                                val = _off;
+                            }
+                            else if (item.hucre._value == "0") {
+                                val = _on;
+                            }
+                            else {
+                                val = "-";
+                            }
+                            $("#hucre4").html(val);
+                            $("#hucreTarih4").html((ConvertTicksToTime(item.hucre._date) + " / " + ConvertTicksToDate(item.hucre._date)));
+                            trafoImg[3] = item.hucre._value;
+                        }
+                        else if (item.hucre._tagName == "h03_toprak_ayirici") {
+                            if (item.hucre._value == "1") {
+                                val = _off;
+                            }
+                            else if (item.hucre._value == "0") {
+                                val = _on;
+                            }
+                            else {
+                                val = "-";
+                            }
+                            $("#hucre5").html(val);
+                            $("#hucreTarih5").html((ConvertTicksToTime(item.hucre._date) + " / " + ConvertTicksToDate(item.hucre._date)));
+                            trafoImg[4] = item.hucre._value;
+                        }
+                        else if (item.hucre._tagName == "h03_ayirici") {
+                            if (item.hucre._value == "1") {
+                                val = _off;
+                            }
+                            else if (item.hucre._value == "0") {
+                                val = _on;
+                            }
+                            else {
+                                val = "-";
+                            }
+                            $("#hucre6").html(val);
+                            $("#hucreTarih6").html((ConvertTicksToTime(item.hucre._date) + " / " + ConvertTicksToDate(item.hucre._date)));
+                            trafoImg[5] = item.hucre._value;
+                        }
+                        else if (item.hucre._tagName == "h3_52cb") {
+                            if (item.hucre._value == "1") {
+                                val = _off;
+                            }
+                            else if (item.hucre._value == "0") {
+                                val =_on;
+                            }
+                            else {
+                                val = "-";
+                            }
+                            $("#hucre7").html(val);
+                            $("#hucreTarih7").html((ConvertTicksToTime(item.hucre._date) + " / " + ConvertTicksToDate(item.hucre._date)));
+                            trafoImg[6] = item.hucre._value;
+                        }
+                    });
+                    var trafoImages = "";
+                    for (var i = 0; i < trafoImg.length; i++) {
+                        trafoImages = trafoImages.concat(trafoImg[i]);
+                    }
+
+                    if (data.length>6) {
+                        $("#hucreResim").attr("src", "/images/trafoImages/" + trafoImages + ".png");
+                    }
+                    else {
+                        $("#hucreResim").attr("src", "/images/trafoImages/noCommunication.png");
+                    }
+
+                }
+
+            });
+        }
+        GetCell();
+        var timer, delay = 600000;
+        timer = setInterval(function () {
+            GetCell();
+        }, delay)
+        //Cell Information Bit.
+
+    });
+        </script>
+
+
+    }
+}
+

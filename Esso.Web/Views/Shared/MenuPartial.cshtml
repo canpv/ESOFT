@@ -1,0 +1,36 @@
+﻿@using Esso.Data;
+@using language
+
+<style>
+    .btn.btn-app {
+        height: 65px;
+        width: 100px;
+        position: relative;
+        padding: 15px 5px;
+        margin: 0 0 0px 0px;
+        min-width: 60px;
+        box-shadow: none;
+        border-radius: 0;
+        text-align: center;
+        color: #0062b4;
+        border: 1px solid #fff;
+        background-color: #a3b6c540;
+        font-size: 11px;
+        border-radius: 10px;
+    }
+</style>
+
+    <div class="col-md-12 col-sm-12 col-xs-12">
+        <div class="x_content">
+
+            <a href="/" class="btn btn-app">
+                <i class="fa fa-home"></i> Home
+            </a>
+
+            <a href="/Dashboard/Router?stationId=@Model" class="btn btn-app">
+                <i class="fa fa-area-chart"></i> @Resources.Production <br /> @Resources.Detail
+            </a>
+
+
+        </div>
+    </div>

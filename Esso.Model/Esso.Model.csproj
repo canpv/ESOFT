@@ -1,0 +1,129 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{9388DC18-B02E-4CE2-8211-A958B7DD2DF2}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Esso.Model</RootNamespace>
+    <AssemblyName>Esso.Model</AssemblyName>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Autofac, Version=4.1.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.4.1.0\lib\net45\Autofac.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.0.0\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.0.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="Oracle.ManagedDataAccess, Version=4.122.19.1, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=MSIL">
+      <HintPath>..\packages\Oracle.ManagedDataAccess.19.7.0\lib\net40\Oracle.ManagedDataAccess.dll</HintPath>
+    </Reference>
+    <Reference Include="Oracle.ManagedDataAccess.EntityFramework, Version=6.122.19.1, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=MSIL">
+      <HintPath>..\packages\Oracle.ManagedDataAccess.EntityFramework.19.7.0\lib\net45\Oracle.ManagedDataAccess.EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Models\AspNetUsers.cs" />
+    <Compile Include="Models\InverterModel.cs" />
+    <Compile Include="Models\StringModel.cs" />
+    <Compile Include="Models\TBL_DISTRIBUTION_DATA.cs" />
+    <Compile Include="Models\TBL_ALARM_STATUS.cs" />
+    <Compile Include="Models\TBL_DIGITAL_LOG_LIVE.cs" />
+    <Compile Include="Models\TBL_EXCHANGE.cs" />
+    <Compile Include="Models\TBL_FTP.cs" />
+    <Compile Include="Models\TBL_MODBUS_CMD_LOG.cs" />
+    <Compile Include="Models\TBL_MODBUS_TAG.cs" />
+    <Compile Include="Models\TBL_MODBUS_DATA.cs" />
+    <Compile Include="Models\TBL_MODBUS_DATA_LIVE.cs" />
+    <Compile Include="Models\TBL_OZET_LIVE.cs" />
+    <Compile Include="Models\TBL_PANEL_LOCATIONS.cs" />
+    <Compile Include="Models\TBL_STATION_SUMMARY.cs" />
+    <Compile Include="Models\TBL_STR_OZET.cs" />
+    <Compile Include="Models\TBL_STATION_STRING.cs" />
+    <Compile Include="Models\TBL_PUSH_NTF.cs" />
+    <Compile Include="Models\TBL_DIGITAL_LOG.cs" />
+    <Compile Include="Models\TBL_STATUS_LOG.cs" />
+    <Compile Include="Models\TBL_ALARM_TEMP_DET.cs" />
+    <Compile Include="Models\TBL_ALARM_TEMP.cs" />
+    <Compile Include="Models\TBL_ALARM_DESC.cs" />
+    <Compile Include="Models\TBL_ALARM_LOG.cs" />
+    <Compile Include="Models\TBL_ALARM_DEF.cs" />
+    <Compile Include="Models\TBL_DATA_MAIN.cs" />
+    <Compile Include="Models\TBL_INVERTER.cs" />
+    <Compile Include="Models\TBL_MONTHLY_TARGET.cs" />
+    <Compile Include="Models\TBL_STR_OZET_AVG.cs" />
+    <Compile Include="Models\TBL_STR_OZET_DAILY.cs" />
+    <Compile Include="Models\TBL_STR_OZET_LIVE.cs" />
+    <Compile Include="Models\TBL_STR_OZET_QUARTERHOUR_AVG.cs" />
+    <Compile Include="Models\TBL_TARGET.cs" />
+    <Compile Include="Models\TBL_TOWN.cs" />
+    <Compile Include="Models\TBL_STATION_USER.cs" />
+    <Compile Include="Models\TBL_COMPANY_USER.cs" />
+    <Compile Include="Models\TBL_STATION_GROUP.cs" />
+    <Compile Include="Models\TBL_STATION.cs" />
+    <Compile Include="Models\TBL_COMPANY.cs" />
+    <Compile Include="Models\TBL_PROVIENCE.cs" />
+    <Compile Include="Models\TBL_TAG_TEMP_DET.cs" />
+    <Compile Include="Models\TBL_INV_ADDRESS.cs" />
+    <Compile Include="Models\TBL_TAG_TEMP.cs" />
+    <Compile Include="Models\TBL_TAG.cs" />
+    <Compile Include="Models\TBL_INV_OZET.cs" />
+    <Compile Include="Models\TBL_OZET.cs" />
+    <Compile Include="Models\TBL_PR_OZET.cs" />
+    <Compile Include="Models\TBL_UNIT_OZET.cs" />
+    <Compile Include="Models\TBL_USER_ENTITY.cs" />
+    <Compile Include="Models\TBL_USER_CHART.cs" />
+    <Compile Include="Models\TBL_USER_CHART_DETAIL.cs" />
+    <Compile Include="Models\TBL_USER_LOCATION.cs" />
+    <Compile Include="Models\VW_STR_OZET_DAILY.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

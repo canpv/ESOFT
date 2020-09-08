@@ -1,0 +1,1203 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Active_Alerts" xml:space="preserve">
+    <value>Active Alerts</value>
+  </data>
+  <data name="Active_Inverters" xml:space="preserve">
+    <value>Active Inverters</value>
+  </data>
+  <data name="Active_Power_Sum" xml:space="preserve">
+    <value>Active Power Sum</value>
+  </data>
+  <data name="Actual_Value" xml:space="preserve">
+    <value>Actual Value</value>
+  </data>
+  <data name="Address" xml:space="preserve">
+    <value>Address</value>
+  </data>
+  <data name="Alarm_Settings" xml:space="preserve">
+    <value>Alarm Settings</value>
+  </data>
+  <data name="Alarm_State" xml:space="preserve">
+    <value>Alarm State</value>
+  </data>
+  <data name="Alerts" xml:space="preserve">
+    <value>Alerts</value>
+  </data>
+  <data name="All_Rights_Reserved" xml:space="preserve">
+    <value>All Rights Reserved</value>
+  </data>
+  <data name="All_Stations_Map" xml:space="preserve">
+    <value>All Stations Map</value>
+  </data>
+  <data name="Annual" xml:space="preserve">
+    <value>Annual</value>
+  </data>
+  <data name="Annual_Financial_Income" xml:space="preserve">
+    <value>Annual Financial Income</value>
+  </data>
+  <data name="Annual_Production" xml:space="preserve">
+    <value>Annual Production</value>
+  </data>
+  <data name="Annual_Tax" xml:space="preserve">
+    <value>Annual Tax</value>
+  </data>
+  <data name="April" xml:space="preserve">
+    <value>April</value>
+  </data>
+  <data name="August" xml:space="preserve">
+    <value>August</value>
+  </data>
+  <data name="Average" xml:space="preserve">
+    <value>Average</value>
+  </data>
+  <data name="Cell_Temp" xml:space="preserve">
+    <value>Cell Temp.</value>
+  </data>
+  <data name="Chart" xml:space="preserve">
+    <value>Chart</value>
+  </data>
+  <data name="Chart_List" xml:space="preserve">
+    <value>Chart List</value>
+  </data>
+  <data name="Chart_Name" xml:space="preserve">
+    <value>Chart Name</value>
+  </data>
+  <data name="ChooseYourLanguage" xml:space="preserve">
+    <value>ChooseYourLanguage</value>
+  </data>
+  <data name="City" xml:space="preserve">
+    <value>City</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Coal" xml:space="preserve">
+    <value>Coal</value>
+  </data>
+  <data name="Companies" xml:space="preserve">
+    <value>Companies</value>
+  </data>
+  <data name="Connected" xml:space="preserve">
+    <value>Connected</value>
+  </data>
+  <data name="Connection_Fail" xml:space="preserve">
+    <value>Connection Fail</value>
+  </data>
+  <data name="Consumed_Energy" xml:space="preserve">
+    <value>Consumed Energy</value>
+  </data>
+  <data name="Contact" xml:space="preserve">
+    <value>Contact</value>
+  </data>
+  <data name="Converter_State" xml:space="preserve">
+    <value>ConverterState</value>
+  </data>
+  <data name="Coordinate" xml:space="preserve">
+    <value>Coordinate</value>
+  </data>
+  <data name="Count" xml:space="preserve">
+    <value>Count</value>
+  </data>
+  <data name="Country" xml:space="preserve">
+    <value>Country</value>
+  </data>
+  <data name="Create_Your_Chart" xml:space="preserve">
+    <value>Create Your Chart</value>
+  </data>
+  <data name="Current" xml:space="preserve">
+    <value>Current</value>
+  </data>
+  <data name="Daily" xml:space="preserve">
+    <value>Daily</value>
+  </data>
+  <data name="Daily_Financial_Income" xml:space="preserve">
+    <value>Daily Financial Income</value>
+  </data>
+  <data name="Daily_Meteorology_Chart" xml:space="preserve">
+    <value>Daily Meteorology Chart</value>
+  </data>
+  <data name="Daily_Production" xml:space="preserve">
+    <value>Daily Production</value>
+  </data>
+  <data name="Daily_Tax" xml:space="preserve">
+    <value>Daily Tax</value>
+  </data>
+  <data name="Daily_Yield" xml:space="preserve">
+    <value>Daily Yield</value>
+  </data>
+  <data name="Data_Table" xml:space="preserve">
+    <value>Data Table</value>
+  </data>
+  <data name="Date" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="Day" xml:space="preserve">
+    <value>Day</value>
+  </data>
+  <data name="December" xml:space="preserve">
+    <value>December</value>
+  </data>
+  <data name="Definitions" xml:space="preserve">
+    <value>Definitions</value>
+  </data>
+  <data name="Derating_State" xml:space="preserve">
+    <value>Derating State</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="Download_As_Excel" xml:space="preserve">
+    <value>Download As Excel</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="emissions_avoided_in_total" xml:space="preserve">
+    <value>emissions avoided in total</value>
+  </data>
+  <data name="Energy_Produced" xml:space="preserve">
+    <value>Energy Produced</value>
+  </data>
+  <data name="Energy_Quality_Recorder" xml:space="preserve">
+    <value>Energy Quality Recorder</value>
+  </data>
+  <data name="English" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="External_Temp" xml:space="preserve">
+    <value>External Temp.</value>
+  </data>
+  <data name="February" xml:space="preserve">
+    <value>February</value>
+  </data>
+  <data name="Feed_in_Power" xml:space="preserve">
+    <value>Feed-in Power</value>
+  </data>
+  <data name="Financial_Income" xml:space="preserve">
+    <value>Financial Income</value>
+  </data>
+  <data name="French" xml:space="preserve">
+    <value>French</value>
+  </data>
+  <data name="Frequency" xml:space="preserve">
+    <value>Frequency</value>
+  </data>
+  <data name="Full_Screen" xml:space="preserve">
+    <value>Full Screen</value>
+  </data>
+  <data name="Generator_Power" xml:space="preserve">
+    <value>Generator Power</value>
+  </data>
+  <data name="German" xml:space="preserve">
+    <value>German</value>
+  </data>
+  <data name="Get_Chart" xml:space="preserve">
+    <value>Get Chart</value>
+  </data>
+  <data name="Get_Charts_Reports" xml:space="preserve">
+    <value>Get Charts Reports</value>
+  </data>
+  <data name="Get_Table_Report" xml:space="preserve">
+    <value>Get Table Report</value>
+  </data>
+  <data name="Global_State" xml:space="preserve">
+    <value>Global State</value>
+  </data>
+  <data name="Graphic" xml:space="preserve">
+    <value>Graphic</value>
+  </data>
+  <data name="Groups" xml:space="preserve">
+    <value>Groups</value>
+  </data>
+  <data name="Help" xml:space="preserve">
+    <value>Help</value>
+  </data>
+  <data name="Hour" xml:space="preserve">
+    <value>Hour</value>
+  </data>
+  <data name="Hourly_Production" xml:space="preserve">
+    <value>Hourly Production</value>
+  </data>
+  <data name="Hourly_Production_Average" xml:space="preserve">
+    <value>Hourly Production Average</value>
+  </data>
+  <data name="Incomming_MV_Cubicle_Earth_Switch_Position" xml:space="preserve">
+    <value>Incomming MV Cubicle Earth Switch Position</value>
+  </data>
+  <data name="Incomming_MV_Cubicle_Load_Switch_Position" xml:space="preserve">
+    <value>Incomming MV Cubicle Load Switch Position</value>
+  </data>
+  <data name="Installed_Power" xml:space="preserve">
+    <value>Installed Power</value>
+  </data>
+  <data name="Instant" xml:space="preserve">
+    <value>Instant</value>
+  </data>
+  <data name="Inverter_Detail" xml:space="preserve">
+    <value>Inverter Detail</value>
+  </data>
+  <data name="Inverter_Detail_Report" xml:space="preserve">
+    <value>Inverter Detail Report</value>
+  </data>
+  <data name="Inverter_Efficiency" xml:space="preserve">
+    <value>Inverter Efficiency</value>
+  </data>
+  <data name="Inverter_Performance_Chart" xml:space="preserve">
+    <value>Inverter Performance Chart</value>
+  </data>
+  <data name="Inverter_States" xml:space="preserve">
+    <value>Inverter States</value>
+  </data>
+  <data name="Inverter_Values_Comparison" xml:space="preserve">
+    <value>Inverter Values Comparison</value>
+  </data>
+  <data name="Irradiation" xml:space="preserve">
+    <value>Irradiation</value>
+  </data>
+  <data name="January" xml:space="preserve">
+    <value>January</value>
+  </data>
+  <data name="July" xml:space="preserve">
+    <value>July</value>
+  </data>
+  <data name="June" xml:space="preserve">
+    <value>June</value>
+  </data>
+  <data name="Latitude" xml:space="preserve">
+    <value>Latitude</value>
+  </data>
+  <data name="lignite" xml:space="preserve">
+    <value>lignite</value>
+  </data>
+  <data name="List" xml:space="preserve">
+    <value>List</value>
+  </data>
+  <data name="Location" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="Lock" xml:space="preserve">
+    <value>Lock</value>
+  </data>
+  <data name="Login" xml:space="preserve">
+    <value>Login</value>
+  </data>
+  <data name="Log_out" xml:space="preserve">
+    <value>Logout</value>
+  </data>
+  <data name="Longitude" xml:space="preserve">
+    <value>Longitude</value>
+  </data>
+  <data name="Manufacturer" xml:space="preserve">
+    <value>Manufacturer</value>
+  </data>
+  <data name="Maps" xml:space="preserve">
+    <value>Maps</value>
+  </data>
+  <data name="March" xml:space="preserve">
+    <value>March</value>
+  </data>
+  <data name="May" xml:space="preserve">
+    <value>May</value>
+  </data>
+  <data name="Measuring_MV_Cubicle_Earth_Switch_Position" xml:space="preserve">
+    <value>Measuring MV Cubicle Earth Switch Position</value>
+  </data>
+  <data name="Measuring_MV_Cubicle_Load_Switch_Position" xml:space="preserve">
+    <value>Measuring MV Cubicle Load Switch Position</value>
+  </data>
+  <data name="Medium_Voltage_Switchgear" xml:space="preserve">
+    <value>Medium Voltage Switchgear</value>
+  </data>
+  <data name="Meteorology" xml:space="preserve">
+    <value>Meteorology</value>
+  </data>
+  <data name="Meteorology_Detail" xml:space="preserve">
+    <value>Meteorology Detail</value>
+  </data>
+  <data name="Module_Manufacturer" xml:space="preserve">
+    <value>Module Manufacturer</value>
+  </data>
+  <data name="Module_Type" xml:space="preserve">
+    <value>Module Type</value>
+  </data>
+  <data name="Monday" xml:space="preserve">
+    <value>Monday</value>
+  </data>
+  <data name="Month" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="Monthly" xml:space="preserve">
+    <value>Monthly</value>
+  </data>
+  <data name="Monthly_Financial_Income" xml:space="preserve">
+    <value>Monthly Financial Income</value>
+  </data>
+  <data name="Monthly_Production" xml:space="preserve">
+    <value>Monthly Production</value>
+  </data>
+  <data name="Monthly_Tax" xml:space="preserve">
+    <value>Monthly Tax</value>
+  </data>
+  <data name="MV_Transformer_Cubicle_Earth_Switch_Position" xml:space="preserve">
+    <value>MV Transformer Cubicle Earth Switch Position</value>
+  </data>
+  <data name="MV_Transformer_Cubicle_Load_Switch_Position" xml:space="preserve">
+    <value>MV Transformer Cubicle Load Switch Position</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Natural_Gas" xml:space="preserve">
+    <value>Natural Gas</value>
+  </data>
+  <data name="Neutral_Current" xml:space="preserve">
+    <value>Neutral Current</value>
+  </data>
+  <data name="November" xml:space="preserve">
+    <value>November</value>
+  </data>
+  <data name="October" xml:space="preserve">
+    <value>October</value>
+  </data>
+  <data name="Orientation" xml:space="preserve">
+    <value>Orientation</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="Performance_Ratio" xml:space="preserve">
+    <value>Performance_Ratio</value>
+  </data>
+  <data name="Pitch_Detail" xml:space="preserve">
+    <value>Pitch / Detail</value>
+  </data>
+  <data name="Power" xml:space="preserve">
+    <value>Power</value>
+  </data>
+  <data name="Power_Factor" xml:space="preserve">
+    <value>Power Factor</value>
+  </data>
+  <data name="Produced_Energy" xml:space="preserve">
+    <value>Produced Energy</value>
+  </data>
+  <data name="Production" xml:space="preserve">
+    <value>Production</value>
+  </data>
+  <data name="Production_Detail" xml:space="preserve">
+    <value>Production Detail</value>
+  </data>
+  <data name="Protection_Relay" xml:space="preserve">
+    <value>Protection Relay</value>
+  </data>
+  <data name="Pyranometer" xml:space="preserve">
+    <value>Pyranometer</value>
+  </data>
+  <data name="Reactive_Power_Sum" xml:space="preserve">
+    <value>Reactive Power Sum</value>
+  </data>
+  <data name="Registers" xml:space="preserve">
+    <value>Registers</value>
+  </data>
+  <data name="Remember_me" xml:space="preserve">
+    <value>Remember me</value>
+  </data>
+  <data name="Reports" xml:space="preserve">
+    <value>Reports</value>
+  </data>
+  <data name="Resim_Kaydet" xml:space="preserve">
+    <value>Resim Kaydet</value>
+  </data>
+  <data name="Save_Chart" xml:space="preserve">
+    <value>Save Chart</value>
+  </data>
+  <data name="Search_Station" xml:space="preserve">
+    <value>Search Station</value>
+  </data>
+  <data name="Send" xml:space="preserve">
+    <value>Send</value>
+  </data>
+  <data name="September" xml:space="preserve">
+    <value>September</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Show" xml:space="preserve">
+    <value>Show</value>
+  </data>
+  <data name="Single_Inverter_Comparison" xml:space="preserve">
+    <value>Single Inverter Comparison</value>
+  </data>
+  <data name="Spanish" xml:space="preserve">
+    <value>Spanish</value>
+  </data>
+  <data name="Specific_Yield" xml:space="preserve">
+    <value>Specific Yield</value>
+  </data>
+  <data name="Start_Date" xml:space="preserve">
+    <value>Start Date</value>
+  </data>
+  <data name="State" xml:space="preserve">
+    <value>State</value>
+  </data>
+  <data name="Station" xml:space="preserve">
+    <value>Station</value>
+  </data>
+  <data name="Station_Detail" xml:space="preserve">
+    <value>Station Detail</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="String_DC_Monitoring" xml:space="preserve">
+    <value>String DC Monitoring</value>
+  </data>
+  <data name="String_Monitoring" xml:space="preserve">
+    <value>String Monitoring</value>
+  </data>
+  <data name="Support" xml:space="preserve">
+    <value>Support</value>
+  </data>
+  <data name="Switchgear" xml:space="preserve">
+    <value>Switchgear</value>
+  </data>
+  <data name="Table_Report_List" xml:space="preserve">
+    <value>Table Report List</value>
+  </data>
+  <data name="Tags" xml:space="preserve">
+    <value>Tags</value>
+  </data>
+  <data name="Tag_Templates" xml:space="preserve">
+    <value>Tag Templates</value>
+  </data>
+  <data name="Target" xml:space="preserve">
+    <value>Target</value>
+  </data>
+  <data name="Telephone" xml:space="preserve">
+    <value>Telephone</value>
+  </data>
+  <data name="Total" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="Total_Financial_Income" xml:space="preserve">
+    <value>Total Financial Income</value>
+  </data>
+  <data name="total_Panel_Power" xml:space="preserve">
+    <value>total Panel Power</value>
+  </data>
+  <data name="Total_Production" xml:space="preserve">
+    <value>Total Production</value>
+  </data>
+  <data name="Total_Tax" xml:space="preserve">
+    <value>Total Tax</value>
+  </data>
+  <data name="Transformer" xml:space="preserve">
+    <value>Transformer</value>
+  </data>
+  <data name="Transformer_Cell_Cutter_Position" xml:space="preserve">
+    <value>Transformer Cell Cutter Position</value>
+  </data>
+  <data name="Tuesday" xml:space="preserve">
+    <value>Tuesday</value>
+  </data>
+  <data name="Turkish" xml:space="preserve">
+    <value>Turkish</value>
+  </data>
+  <data name="Users" xml:space="preserve">
+    <value>Users</value>
+  </data>
+  <data name="User_Roles" xml:space="preserve">
+    <value>User Roles</value>
+  </data>
+  <data name="Value" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="Visible_Power_Sum" xml:space="preserve">
+    <value>Visible Power Sum</value>
+  </data>
+  <data name="Voltage" xml:space="preserve">
+    <value>Voltage</value>
+  </data>
+  <data name="Warnings" xml:space="preserve">
+    <value>Warnings</value>
+  </data>
+  <data name="Weather" xml:space="preserve">
+    <value>Weather</value>
+  </data>
+  <data name="Weekly" xml:space="preserve">
+    <value>Weekly</value>
+  </data>
+  <data name="Weekly_Production" xml:space="preserve">
+    <value>Weekly Production</value>
+  </data>
+  <data name="Welcome" xml:space="preserve">
+    <value>Welcome</value>
+  </data>
+  <data name="Wind_Speed" xml:space="preserve">
+    <value>Wind Speed</value>
+  </data>
+  <data name="Yearly_Target_Production" xml:space="preserve">
+    <value>Yearly Target Production</value>
+  </data>
+  <data name="Yield" xml:space="preserve">
+    <value>Yield</value>
+  </data>
+  <data name="Yield_Data_Table" xml:space="preserve">
+    <value>Yield Data / Table</value>
+  </data>
+  <data name="Detail" xml:space="preserve">
+    <value>Detail</value>
+  </data>
+  <data name="Energy" xml:space="preserve">
+    <value>Energy</value>
+  </data>
+  <data name="Get_Report" xml:space="preserve">
+    <value>Get Report</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Loading</value>
+  </data>
+  <data name="Maximum" xml:space="preserve">
+    <value>Maximum</value>
+  </data>
+  <data name="Monitoring" xml:space="preserve">
+    <value>Monitoring</value>
+  </data>
+  <data name="New_Chart" xml:space="preserve">
+    <value>New Chart</value>
+  </data>
+  <data name="New_Report" xml:space="preserve">
+    <value>New Report</value>
+  </data>
+  <data name="Please_select_chart_name_in_list" xml:space="preserve">
+    <value>Please select chart name in list</value>
+  </data>
+  <data name="Please_select_report_name_in_list" xml:space="preserve">
+    <value>Please select report name in list</value>
+  </data>
+  <data name="Report_List" xml:space="preserve">
+    <value>Report List</value>
+  </data>
+  <data name="Report_Name" xml:space="preserve">
+    <value>Report_Name</value>
+  </data>
+  <data name="Select" xml:space="preserve">
+    <value>Select</value>
+  </data>
+  <data name="Warning" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="Friday" xml:space="preserve">
+    <value>Friday</value>
+  </data>
+  <data name="Saturday" xml:space="preserve">
+    <value>Saturday</value>
+  </data>
+  <data name="Sunday" xml:space="preserve">
+    <value>Sunday</value>
+  </data>
+  <data name="Thursday" xml:space="preserve">
+    <value>Thursday</value>
+  </data>
+  <data name="Wednesday" xml:space="preserve">
+    <value>Wednesday</value>
+  </data>
+  <data name="Apply" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="OFF" xml:space="preserve">
+    <value>OFF</value>
+  </data>
+  <data name="ON" xml:space="preserve">
+    <value>ON</value>
+  </data>
+  <data name="Temperature" xml:space="preserve">
+    <value>Temperature</value>
+  </data>
+  <data name="From" xml:space="preserve">
+    <value>From</value>
+  </data>
+  <data name="To" xml:space="preserve">
+    <value>To</value>
+  </data>
+  <data name="Company_Alerts" xml:space="preserve">
+    <value>Company Alerts</value>
+  </data>
+  <data name="Create_Your_Report" xml:space="preserve">
+    <value>Create Your Report</value>
+  </data>
+  <data name="Enter" xml:space="preserve">
+    <value>Enter</value>
+  </data>
+  <data name="Please_enter_chart_name" xml:space="preserve">
+    <value>Please enter chart name</value>
+  </data>
+  <data name="Please_select_item" xml:space="preserve">
+    <value>Please select item</value>
+  </data>
+  <data name="Please_select_item_and_enter_chart_name" xml:space="preserve">
+    <value>Please select item and enter chart name</value>
+  </data>
+  <data name="Save_Report" xml:space="preserve">
+    <value>Save Report</value>
+  </data>
+  <data name="You_can_choose_items_from_same_station" xml:space="preserve">
+    <value>You can choose items from same station</value>
+  </data>
+  <data name="You_can_choose_up_to_3" xml:space="preserve">
+    <value>You can choose up to 3</value>
+  </data>
+  <data name="Single_Line_Diagram" xml:space="preserve">
+    <value>Single Line Diagram</value>
+  </data>
+  <data name="Active" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="Communication" xml:space="preserve">
+    <value>Communication</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="No_records_to_display" xml:space="preserve">
+    <value>No records to display</value>
+  </data>
+  <data name="Pasive" xml:space="preserve">
+    <value>Pasive</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Previous</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="Today" xml:space="preserve">
+    <value>Today</value>
+  </data>
+  <data name="Yesterday" xml:space="preserve">
+    <value>Yesterday</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="Image" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="Forex_Buying" xml:space="preserve">
+    <value>Forex_Buying</value>
+  </data>
+  <data name="Last_7_days" xml:space="preserve">
+    <value>Last 7 days</value>
+  </data>
+  <data name="or" xml:space="preserve">
+    <value>or</value>
+  </data>
+  <data name="UserName" xml:space="preserve">
+    <value>User Name</value>
+  </data>
+  <data name="LICENSED" xml:space="preserve">
+    <value>LICENSED</value>
+  </data>
+  <data name="Performance_Chart" xml:space="preserve">
+    <value>Performance Chart</value>
+  </data>
+  <data name="No_Data" xml:space="preserve">
+    <value>No Data</value>
+  </data>
+  <data name="Add_New_User" xml:space="preserve">
+    <value>Add New User</value>
+  </data>
+  <data name="Authority" xml:space="preserve">
+    <value>Authority</value>
+  </data>
+  <data name="Authorized" xml:space="preserve">
+    <value>Authorized</value>
+  </data>
+  <data name="Change_Password" xml:space="preserve">
+    <value>Change Password</value>
+  </data>
+  <data name="Not_Send" xml:space="preserve">
+    <value>Not Send</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Send_Alert" xml:space="preserve">
+    <value>Send Alert</value>
+  </data>
+  <data name="Send_Report" xml:space="preserve">
+    <value>Send Report</value>
+  </data>
+  <data name="Unauthorized" xml:space="preserve">
+    <value>Unauthorized</value>
+  </data>
+  <data name="User_Identification" xml:space="preserve">
+    <value>User Identification</value>
+  </data>
+  <data name="Not_Show" xml:space="preserve">
+    <value>Not Show</value>
+  </data>
+  <data name="Account" xml:space="preserve">
+    <value>Account</value>
+  </data>
+  <data name="Inverter_Values" xml:space="preserve">
+    <value>Inverter Values</value>
+  </data>
+  <data name="Absolute_Air_Pressure" xml:space="preserve">
+    <value>Absolute Air Pressure</value>
+  </data>
+  <data name="Absolute_Humidity" xml:space="preserve">
+    <value>Absolute Humidity</value>
+  </data>
+  <data name="Air_Temperature" xml:space="preserve">
+    <value>Air Temperature</value>
+  </data>
+  <data name="Current_Instant" xml:space="preserve">
+    <value>Current</value>
+  </data>
+  <data name="Enter_Report_Name" xml:space="preserve">
+    <value>Enter Report Name</value>
+  </data>
+  <data name="Relative_Humidity" xml:space="preserve">
+    <value>Relative humidity</value>
+  </data>
+  <data name="Single_Line_Event_Recording" xml:space="preserve">
+    <value>Single Line Event Recording</value>
+  </data>
+  <data name="Wind_direction" xml:space="preserve">
+    <value>Wind direction</value>
+  </data>
+  <data name="Alarm_State_List" xml:space="preserve">
+    <value>Alarm State List</value>
+  </data>
+  <data name="emptyTable" xml:space="preserve">
+    <value>No data available in table</value>
+  </data>
+  <data name="Seen" xml:space="preserve">
+    <value>Seen</value>
+  </data>
+  <data name="First" xml:space="preserve">
+    <value>First</value>
+  </data>
+  <data name="Showing_START_to_END_of_TOTAL_entries" xml:space="preserve">
+    <value>Showing _START_ to _END_ of _TOTAL_ entries</value>
+  </data>
+  <data name="Showing_0_to_0_of_0_entries" xml:space="preserve">
+    <value>Showing 0 to 0 of 0 entries</value>
+  </data>
+  <data name="filtered_from_MAX_total_entries" xml:space="preserve">
+    <value>(filtered from _MAX_ total entries)</value>
+  </data>
+  <data name="Last" xml:space="preserve">
+    <value>Last</value>
+  </data>
+  <data name="Show_MENU_entries" xml:space="preserve">
+    <value>Show _MENU_ entries</value>
+  </data>
+  <data name="loadingRecords" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+  <data name="processing" xml:space="preserve">
+    <value>Processing...</value>
+  </data>
+  <data name="Select_records_" xml:space="preserve">
+    <value>%d select record</value>
+  </data>
+  <data name="Select_records_0" xml:space="preserve">
+    <value>0 select record</value>
+  </data>
+  <data name="Select_records_1" xml:space="preserve">
+    <value>1 select record</value>
+  </data>
+  <data name="activate_to_sort_column_ascending" xml:space="preserve">
+    <value>: activate to sort column ascending</value>
+  </data>
+  <data name="activate_to_sort_column_descending" xml:space="preserve">
+    <value>: activate to sort column descending</value>
+  </data>
+  <data name="No_matching_records_found" xml:space="preserve">
+    <value>No matching records found</value>
+  </data>
+  <data name="Error_Name" xml:space="preserve">
+    <value>Error Name</value>
+  </data>
+  <data name="Inverter_Name" xml:space="preserve">
+    <value>INVERTER NAME</value>
+  </data>
+  <data name="New_Alarm" xml:space="preserve">
+    <value>New Alarm</value>
+  </data>
+  <data name="Seen_Alarm" xml:space="preserve">
+    <value>Seen Alarm</value>
+  </data>
+  <data name="Osos_Recording" xml:space="preserve">
+    <value>Osos Recording</value>
+  </data>
+  <data name="Cumulative" xml:space="preserve">
+    <value>Cumulative</value>
+  </data>
+  <data name="Azimuth" xml:space="preserve">
+    <value>Azimuth</value>
+  </data>
+  <data name="Tilt" xml:space="preserve">
+    <value>Tilt</value>
+  </data>
+  <data name="Diagram" xml:space="preserve">
+    <value>Diagram</value>
+  </data>
+  <data name="Event_Recording" xml:space="preserve">
+    <value>Event Recording</value>
+  </data>
+  <data name="Single_Line" xml:space="preserve">
+    <value>Single Line</value>
+  </data>
+  <data name="Flow" xml:space="preserve">
+    <value>Flow</value>
+  </data>
+  <data name="Instant_AC_Power" xml:space="preserve">
+    <value>Instant AC Power</value>
+  </data>
+  <data name="Unit" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="Cloudiness" xml:space="preserve">
+    <value>Cloudiness</value>
+  </data>
+  <data name="Humidity" xml:space="preserve">
+    <value>Humidity</value>
+  </data>
+  <data name="Pressure" xml:space="preserve">
+    <value>Pressure</value>
+  </data>
+  <data name="door_switch" xml:space="preserve">
+    <value>Door Switch</value>
+  </data>
+  <data name="redresor_ac_fault" xml:space="preserve">
+    <value>Ac Redresor Fault</value>
+  </data>
+  <data name="redresor_dc_high" xml:space="preserve">
+    <value>Dc Redresor High</value>
+  </data>
+  <data name="redresor_dc_leak" xml:space="preserve">
+    <value>Dc Redresor Leak</value>
+  </data>
+  <data name="redresor_dc_low" xml:space="preserve">
+    <value>Dc Redresor Low</value>
+  </data>
+  <data name="smoke_sensor" xml:space="preserve">
+    <value>Smoke Sensor</value>
+  </data>
+  <data name="Download" xml:space="preserve">
+    <value>Download</value>
+  </data>
+  <data name="CF" xml:space="preserve">
+    <value>CF</value>
+  </data>
+  <data name="End_Date" xml:space="preserve">
+    <value>End Date</value>
+  </data>
+  <data name="Location_Grouping" xml:space="preserve">
+    <value>Location Grouping</value>
+  </data>
+  <data name="Capacitive_Reactive_Rate" xml:space="preserve">
+    <value>Capacitive Reactive Rate</value>
+  </data>
+  <data name="Climate_Chart" xml:space="preserve">
+    <value>Climate  Chart</value>
+  </data>
+  <data name="Inductive_Reactive_Rate" xml:space="preserve">
+    <value>Inductive Reactive Rate</value>
+  </data>
+  <data name="Instant_Values" xml:space="preserve">
+    <value>Instant Values</value>
+  </data>
+  <data name="Meteorology_Chart" xml:space="preserve">
+    <value>Meteorology Chart</value>
+  </data>
+  <data name="Monthly_Capacitive_Reactive_Rate" xml:space="preserve">
+    <value>Monthly Capacitive Reactive Rate</value>
+  </data>
+  <data name="Monthly_Inductive_Reactive_Rate" xml:space="preserve">
+    <value>Monthly Inductive Reactive Rate</value>
+  </data>
+  <data name="Osos_Recording_List" xml:space="preserve">
+    <value>Osos Recording List</value>
+  </data>
+  <data name="Values" xml:space="preserve">
+    <value>Values</value>
+  </data>
+  <data name="Ekk_Energy_Index_Values" xml:space="preserve">
+    <value>Ekk Energy Index_Values</value>
+  </data>
+  <data name="Montly_Fence_Company_Compare" xml:space="preserve">
+    <value>Montly Fence Company Compare</value>
+  </data>
+  <data name="Rain_Graph" xml:space="preserve">
+    <value>Rain Graph</value>
+  </data>
+  <data name="System_room_info" xml:space="preserve">
+    <value>System Room Info</value>
+  </data>
+  <data name="Error_Type" xml:space="preserve">
+    <value>Error Type</value>
+  </data>
+  <data name="Alarms" xml:space="preserve">
+    <value>Alarms</value>
+  </data>
+  <data name="Inverter_State" xml:space="preserve">
+    <value>Inverter State</value>
+  </data>
+  <data name="Black" xml:space="preserve">
+    <value>Black</value>
+  </data>
+  <data name="Blue" xml:space="preserve">
+    <value>Blue</value>
+  </data>
+  <data name="Cable" xml:space="preserve">
+    <value>Cable</value>
+  </data>
+  <data name="Cable_Remove_Date" xml:space="preserve">
+    <value>Cable Remove Date</value>
+  </data>
+  <data name="Card" xml:space="preserve">
+    <value>Card</value>
+  </data>
+  <data name="Charge_Data" xml:space="preserve">
+    <value>Charge Date</value>
+  </data>
+  <data name="Charge_Records" xml:space="preserve">
+    <value>Charge Records</value>
+  </data>
+  <data name="Charging_Timeline" xml:space="preserve">
+    <value>Charging Timeline</value>
+  </data>
+  <data name="Connect" xml:space="preserve">
+    <value>Connect</value>
+  </data>
+  <data name="Dashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Device" xml:space="preserve">
+    <value>Device</value>
+  </data>
+  <data name="Disconnect" xml:space="preserve">
+    <value>Disconnect</value>
+  </data>
+  <data name="End_User" xml:space="preserve">
+    <value>End_User</value>
+  </data>
+  <data name="Fault" xml:space="preserve">
+    <value>Fault</value>
+  </data>
+  <data name="Green" xml:space="preserve">
+    <value>Green</value>
+  </data>
+  <data name="Grey" xml:space="preserve">
+    <value>Grey</value>
+  </data>
+  <data name="Information" xml:space="preserve">
+    <value>Information</value>
+  </data>
+  <data name="Large_Icon" xml:space="preserve">
+    <value>Large Icon</value>
+  </data>
+  <data name="Late_Time" xml:space="preserve">
+    <value>Late Time</value>
+  </data>
+  <data name="Light" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="Menu" xml:space="preserve">
+    <value>Menu</value>
+  </data>
+  <data name="Purple" xml:space="preserve">
+    <value>Purple</value>
+  </data>
+  <data name="Red" xml:space="preserve">
+    <value>Red</value>
+  </data>
+  <data name="Side" xml:space="preserve">
+    <value>Side</value>
+  </data>
+  <data name="Tag" xml:space="preserve">
+    <value>Tag</value>
+  </data>
+  <data name="Time" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name="Top" xml:space="preserve">
+    <value>Top</value>
+  </data>
+  <data name="Values_Of_Devices" xml:space="preserve">
+    <value>Values of Devices</value>
+  </data>
+  <data name="Yellow" xml:space="preserve">
+    <value>Yellow</value>
+  </data>
+  <data name="Add" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="Charge" xml:space="preserve">
+    <value>Charge</value>
+  </data>
+  <data name="Charging" xml:space="preserve">
+    <value>Charging</value>
+  </data>
+  <data name="Language" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="Languages" xml:space="preserve">
+    <value>Languages</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="Not_Charging" xml:space="preserve">
+    <value>Not Charging</value>
+  </data>
+  <data name="Operations" xml:space="preserve">
+    <value>Operations</value>
+  </data>
+  <data name="Percentage_Of_Charge" xml:space="preserve">
+    <value>Percentage Of Charge</value>
+  </data>
+  <data name="Remove_The_Plug" xml:space="preserve">
+    <value>Remove the plug</value>
+  </data>
+  <data name="Theme" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="View" xml:space="preserve">
+    <value>View</value>
+  </data>
+  <data name="White" xml:space="preserve">
+    <value>White</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="Turn_Back" xml:space="preserve">
+    <value>Turn Back</value>
+  </data>
+  <data name="Heatmap" xml:space="preserve">
+    <value>Heatmap</value>
+  </data>
+</root>

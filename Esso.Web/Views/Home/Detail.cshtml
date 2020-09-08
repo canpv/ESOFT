@@ -1,0 +1,2833 @@
+﻿@using System.Web.UI.WebControls;
+@model int
+@using Esso.ViewModels
+@using Esso.Data;
+@using Esso.Models;
+@using Microsoft.AspNet.Identity
+@using language
+
+@{
+    ViewBag.Title = "ESOFT";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<style>
+
+    .progress-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: #000;
+        margin: 0 0 10px;
+    }
+
+    .progress-outer {
+        /*background: #fff;*/
+        padding: 5px 60px 5px 5px;
+        border: 0px solid #bebfbf;
+        border-radius: 45px;
+        margin-bottom: 0px;
+        position: relative;
+        width: 160px;
+        /*float:left;*/
+    }
+
+    .progress {
+        background: #d0d0d0;
+        border-radius: 20px;
+        margin: 0;
+        height: 13px;
+    }
+
+        .progress .progress-bar {
+            border-radius: 20px;
+            box-shadow: none;
+            animation: animate-positive 2s;
+        }
+
+        .progress .progress-value {
+            font-size: 12px;
+            font-weight: 700;
+            color: #00629e;
+            position: absolute;
+            top: 6px;
+            right: 12px;
+        }
+    /*#SummaryDiv {
+        margin-right: 150px;
+        margin-left: -22px;
+    }*/
+    #SummaryTable img {
+        width: 30px;
+        height: 30px;
+    }
+
+    #SummaryTable td {
+        font-size: 12px;
+        font-weight: bold;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    #SummaryTable a {
+        font-size: 16px;
+        color: #399428;
+    }
+
+    #DivMeteorology img {
+        width: 28px;
+        height: 28px;
+    }
+
+    .table {
+        margin-bottom: 0px;
+    }
+
+    .gauge-value {
+        font-size: 10px;
+    }
+
+    #gaugeTitle {
+        font-size: 10px;
+        margin: 0 5px -13px;
+    }
+    /*#DivMeteorology {
+        margin-left: 50px;
+    }*/
+</style>
+@{
+    EssoEntities DB = new EssoEntities();
+
+    #region User yetkileri kontrol
+    TBL_STATION stat = new TBL_STATION();
+    stat = null;
+
+    var userId = User.Identity.GetUserId();
+
+    int? money;
+    var user_money = DB.UserEntity.Where(x => x.USER_ID == userId).FirstOrDefault();
+
+    if (user_money != null)
+    {
+        money = DB.UserEntity.Where(x => x.USER_ID == userId).Select(x => new { x = x.SHOW_MONEY }).FirstOrDefault().x;
+    }
+    else
+    {
+        money = null;
+    }
+
+
+    //User yetkileri kontrol ediliyor
+    try
+    {
+
+        if (User.IsInRole("M_ADMIN"))
+        {
+            stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+        }
+        else if (User.IsInRole("COMP_ADMIN"))
+        {
+            int cmpId = DB.Stations.Where(a => a.ID == Model && a.IS_DELETED == false).FirstOrDefault().COMPANY_ID;
+
+            if (DB.CompanyUsers.Any(a => a.COMPANY_ID == cmpId && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+        else if (User.IsInRole("COMP_USER"))
+        {
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+        else if (User.IsInRole("DEMO"))
+        {
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+
+    }
+    catch (Exception)
+    {
+
+    }
+    #endregion
+
+}
+
+@{
+    if (stat == null)
+    {
+        @Html.Partial("_ErrorPagePartial")
+    }
+    else
+    {
+        var _stationDetail = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+        <style>
+            tfoot {
+                background: #8db8e2;
+            }
+        </style>
+
+        <div class="page-title">
+            <div class="title_left">
+                @if (User.IsInRole("DEMO"))
+                {
+                    <h5><strong>@_stationDetail.DEMO_NAME</strong></h5>
+                }
+                else
+                {
+                    <h5><strong>@_stationDetail.NAME</strong></h5>
+                }
+            </div>
+        </div>
+
+        if (userId == "09d0d130-22aa-4074-9645-1d28978298c1" || userId =="d718f977-db37-449c-9885-0e9c9ea74499" || userId == "9391ae3d-72aa-4d37-aa0b-d7ccb89db072" || userId == "9acf1393-a895-437f-bd61-e046664211be" || userId == "50a76f25-4e79-4953-8a5f-57c0b165cb0e")
+        {
+            @Html.Partial("MenuPartial2")
+        }
+        else
+        {
+            @Html.Partial("MenuPartial")
+        }
+
+
+        <input type="hidden" value="@Resources.Daily_Production" id="hdn_daily_production" />
+        <input type="hidden" value="@Resources.Irradiation" id="hdn_irradiation" />
+        <input type="hidden" value="@Resources.Energy" id="hdn_energy" />
+        <input type="hidden" value="@Resources.Maximum" id="hdn_maximum" />
+        <input type="hidden" value="@Resources.Production" id="hdn_production" />
+        <input type="hidden" value="@Resources.Produced_Energy" id="hdn_production_energy" />
+        <input type="hidden" value="@Resources.Target" id="hdn_target" />
+        <input type="hidden" value="@Resources.Total" id="hdn_total" />
+        <input type="hidden" value="@Resources.January" id="hdn_january" />
+        <input type="hidden" value="@Resources.February" id="hdn_february" />
+        <input type="hidden" value="@Resources.March" id="hdn_march" />
+        <input type="hidden" value="@Resources.April" id="hdn_april" />
+        <input type="hidden" value="@Resources.May" id="hdn_may" />
+        <input type="hidden" value="@Resources.June" id="hdn_june" />
+        <input type="hidden" value="@Resources.July" id="hdn_july" />
+        <input type="hidden" value="@Resources.August" id="hdn_august" />
+        <input type="hidden" value="@Resources.September" id="hdn_september" />
+        <input type="hidden" value="@Resources.October" id="hdn_october" />
+        <input type="hidden" value="@Resources.November" id="hdn_november" />
+        <input type="hidden" value="@Resources.December" id="hdn_december" />
+        <input type="hidden" value="@Resources.Monday" id="hdn_monday" />
+        <input type="hidden" value="@Resources.Tuesday" id="hdn_tuesday" />
+        <input type="hidden" value="@Resources.Wednesday" id="hdn_wednesday" />
+        <input type="hidden" value="@Resources.Thursday" id="hdn_thursday" />
+        <input type="hidden" value="@Resources.Friday" id="hdn_friday" />
+        <input type="hidden" value="@Resources.Saturday" id="hdn_saturday" />
+        <input type="hidden" value="@Resources.Sunday" id="hdn_sunday" />
+        <input type="hidden" value="@Resources.Humidity" id="hdn_humidity" />
+        <input type="hidden" value="@Resources.Pressure" id="hdn_pressure" />
+        <input type="hidden" value="@Resources.Cloudiness" id="hdn_cloudiness" />
+
+        <div class="clearfix"></div>
+        <div class="row" id="SummaryDiv">
+            <div id="DivMeteorology">
+                <div class="col-md-6 col-sm-6 col-xs-12">
+                    <table class="table" id="SummaryTable">
+                        <tr>
+                            <td><img src="~/images/solarpanel.png" />@Resources.Irradiation: <br /><p><strong id="irradiation">-  W/m²</strong></p></td>
+                            <td><img src="~/images/wind.png" />@Resources.Wind_Speed: <br /><p><strong id="wind">-  m/s</strong></p></td>
+                            <td><img src="~/images/temp.png" />@Resources.Cell_Temp: <br /><p><strong id="cell">-  °C</strong></p></td>
+                            <td><img src="~/images/outTemp.png" />@Resources.External_Temp: <br /><p><strong id="external">-  °C</strong></p></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="col-md-2 col-sm-6 col-xs-12">
+                <div class="sidebar-widget" id="EkkDiv">
+                    <p id="gaugeTitle">
+                        @Resources.Current_Instant Inverter AC @Resources.Power
+                    </p>
+                    <canvas width="100" height="60" id="foo" class=""></canvas>
+                    <div class="goal-wrapper">
+                        <span id="gauge-text" class="gauge-value pull-left">0</span>
+                        <span class="gauge-value pull-left"> kW</span>
+                        <span id="goal-text" class="gauge-value center" style="margin-left: 45px;">Max:1000 kW</span>
+                    </div>
+                </div>
+            </div>
+            @if (_stationDetail.IS_EKK == true)
+            {
+                <div class="col-md-2 col-sm-6 col-xs-12">
+                    <div class="sidebar-widget" id="EkkDiv2">
+                        <p id="gaugeTitle">
+                            @Resources.Current_Instant EA AC @Resources.Power
+                        </p>
+                        <canvas width="100" height="60" id="foo2" class=""></canvas>
+                        <div class="goal-wrapper">
+                            <span id="gauge-text2" class="gauge-value pull-left">0</span>
+                            <span class="gauge-value pull-left"> kW</span>
+                            <span id="goal-text2" class="gauge-value center" style="margin-left: 45px;">Max:1000 kW</span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="row">
+            <div class="col-md-8 col-sm-8 col-xs-12">
+                <table class="table" id="SummaryTable">
+
+                    <tr>
+                        <td><img src="~/images/solarpanel.png" />@Resources.Daily_Production: <br /> <a id="gunlukEnerji"></a></td>
+
+                        @if (money == null)
+                        {
+                            <td><img src="~/images/money.png" />@Resources.Daily_Financial_Income: <br /> <a id="gunlukGelir"></a> </td>
+                        }
+
+                        @if (_stationDetail.IS_METEOROLOGY == true)
+                        {
+                            <td>@Resources.Daily PR: </td>
+                            <td>
+                                <div class="progress-outer">
+                                    <div class="progress">
+                                        <div id="barDailyPR" class="progress-bar progress-bar-striped progress-bar-info" style="width:0%;"></div>
+                                        <div class="progress-value" id="spanDailyPR"></div>
+                                    </div>
+                                </div>
+                            </td>
+                        }
+                        <td>@Resources.Daily @Resources.CF</td>
+                        <td>
+
+                            <div class="progress-outer">
+                                <div class="progress">
+                                    <div id="barDailyKPF" class="progress-bar progress-bar-striped progress-bar-info" style="width:0%;"></div>
+                                    <div class="progress-value" id="spanDailyKPF"></div>
+                                </div>
+                            </div>
+
+                        </td>
+
+                    </tr>
+                    <tr>
+                        <td><img src="~/images/solarpanel.png" />@Resources.Monthly_Production: <br /><a id="aylikEnerji"></a></td>
+                        @if (money == null)
+                        {
+                            <td><img src="~/images/money.png" />@Resources.Monthly_Financial_Income: <br /><a id="aylikGelir"></a></td>
+                        }
+                        @if (_stationDetail.IS_METEOROLOGY == true)
+                        {
+                            <td>@Resources.Monthly PR: </td>
+                            <td>
+                                <div class="progress-outer">
+                                    <div class="progress">
+                                        <div id="barMonthlyPR" class="progress-bar progress-bar-striped progress-bar-info" style="width:0%;"></div>
+                                        <div class="progress-value" id="spanMonthlyPR"></div>
+                                    </div>
+                                </div>
+                            </td>
+                        }
+                        <td>@Resources.Monthly @Resources.CF</td>
+                        <td>
+
+                            <div class="progress-outer">
+                                <div class="progress">
+                                    <div id="barMonthlyKPF" class="progress-bar progress-bar-striped progress-bar-info" style="width:0%;"></div>
+                                    <div class="progress-value" id="spanMonthlyKPF"></div>
+                                </div>
+                            </div>
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><img src="~/images/solarpanel.png" />@Resources.Annual_Production: <br /><a id="yillikEnerji"></a></td>
+
+                        @if (money == null)
+                        {
+                            <td><img src="~/images/money.png" />@Resources.Annual_Financial_Income: <br /><a id="yillikGelir"></a></td>
+                        }
+                        @if (_stationDetail.IS_METEOROLOGY == true)
+                        {
+                            <td>@Resources.Annual PR: </td>
+                            <td>
+                                <div class="progress-outer">
+                                    <div class="progress">
+                                        <div id="barAnnualPR" class="progress-bar progress-bar-striped progress-bar-info" style="width:0%;"></div>
+                                        <div class="progress-value" id="spanAnnualPR"></div>
+                                    </div>
+                                </div>
+                            </td>
+                        }
+                        <td>@Resources.Annual @Resources.CF</td>
+                        <td>
+                            <div class="progress-outer">
+                                <div class="progress">
+                                    <div id="barAnnualKPF" class="progress-bar progress-bar-striped progress-bar-info" style="width:0%;"></div>
+                                    <div class="progress-value" id="spanAnnualKPF"></div>
+                                </div>
+                            </div>
+                        </td>
+
+
+                    </tr>
+                    <tr>
+                        <td><img src="~/images/solarpanel.png" />@Resources.Total_Production: <br /><a id="toplamEnerji"></a></td>
+                        @if (money == null)
+                        {
+                            <td><img src="~/images/money.png" />@Resources.Total_Financial_Income: <br /><a id="toplamGelir"></a></td>
+                        }
+                        @if (_stationDetail.IS_METEOROLOGY == true)
+                        {
+                            <td>@Resources.Total PR: </td>
+                            <td>
+                                <div class="progress-outer">
+                                    <div class="progress">
+                                        <div id="barTotalPR" class="progress-bar progress-bar-striped progress-bar-info" style="width:0%;"></div>
+                                        <div class="progress-value" id="spanTotalPR"></div>
+                                    </div>
+                                </div>
+                            </td>
+                        }
+                    </tr>
+
+                </table>
+            </div>
+            <div class="col-md-4 col-sm-4 col-xs-12">
+                <div class="x_panel" style="background:#F7F7F7">
+                    <div class="x_content">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="temperature" id="weatherDate0" data-toggle='tooltip' data-placement='top' title="">
+                                    <b>@Resources.Today</b>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 col-sm-4 col-xs-4">
+                                <div class="weather-icon" id="tooltipWeatherState0" data-toggle='tooltip' data-placement='top' title="">
+                                    <img class="hava0" width="60%" />
+                                </div>
+                                <div class="weather-text" id="tooltip0" data-toggle='tooltip' data-placement='top' title="">
+                                    <div class="weather-text pull-right">
+                                        <h4 style="font-weight:bold;" id="temp0"></h4>
+                                    </div>
+                                    <h4 style="font-weight:bold;" id="City"></h4>
+                                    <h5><i id="weatherState0">@Resources.Weather</i></h5>
+                                    <h6 id="wind0"></h6>
+                                </div>
+                            </div>
+                            <div class="col-md-8 col-sm-8 col-xs-8">
+                                <table class="table table-responsive">
+                                    <tbody>
+                                        <tr>
+                                            <td id="tooltip1" data-toggle='tooltip' data-placement='top' title=""><h6 class="day" id="weatherDate1"></h6></td>
+                                            <td id="tooltipWeatherState1" data-toggle='tooltip' data-placement='top' title=""><img class="hava1" height="25" width="25" /></td>
+                                            <td><h6 id="temp1" data-placement='top' title="@Resources.Temperature"></h6></td>
+                                            <td><h6 id="wind1" data-placement='top' title="@Resources.Wind_Speed"></h6></td>
+                                        </tr>
+                                        <tr>
+                                            <td id="tooltip2" data-toggle='tooltip' data-placement='top' title=""><h6 class="day" id="weatherDate2"></h6></td>
+                                            <td id="tooltipWeatherState2" data-toggle='tooltip' data-placement='top' title=""><img class="hava2" height="25" width="25" /></td>
+                                            <td><h6 id="temp2" data-placement='top' title="@Resources.Temperature"></h6></td>
+                                            <td><h6 id="wind2" data-placement='top' title="@Resources.Wind_Speed"></h6></td>
+                                        </tr>
+                                        <tr>
+                                            <td id="tooltip3" data-toggle='tooltip' data-placement='top' title=""><h6 class="day" id="weatherDate3"></h6></td>
+                                            <td id="tooltipWeatherState3" data-toggle='tooltip' data-placement='top' title=""><img class="hava3" height="25" width="25" /></td>
+                                            <td><h6 id="temp3" data-placement='top' title="@Resources.Temperature"></h6></td>
+                                            <td><h6 id="wind3" data-placement='top' title="@Resources.Wind_Speed"></h6></td>
+                                        </tr>
+                                        <tr>
+                                            <td id="tooltip4" data-toggle='tooltip' data-placement='top' title=""><h6 class="day" id="weatherDate4"></h6></td>
+                                            <td id="tooltipWeatherState4" data-toggle='tooltip' data-placement='top' title=""><img class="hava4" height="25" width="25" /></td>
+                                            <td><h6 id="temp4" data-placement='top' title="@Resources.Temperature"></h6></td>
+                                            <td><h6 id="wind4" data-placement='top' title="@Resources.Wind_Speed"></h6></td>
+                                        </tr>
+                                        <tr>
+                                            <td id="tooltip5" data-toggle='tooltip' data-placement='top' title=""><h6 class="day" id="weatherDate5"></h6></td>
+                                            <td id="tooltipWeatherState5" data-toggle='tooltip' data-placement='top' title=""><img class="hava5" height="25" width="25" /></td>
+                                            <td><h6 id="temp5" data-placement='top' title="@Resources.Temperature"></h6></td>
+                                            <td><h6 id="wind5" data-placement='top' title="@Resources.Wind_Speed"></h6></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- top tiles -->
+
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <h2>@Resources.Production</h2>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                        <div class="x_panel">
+                            <div class="x_content">
+                                <div class="table-responsive">
+                                    <table class="table table-striped" style=" background-color: rgba(111, 126, 141, 0.05);">
+                                        <thead>
+                                            <tr>
+                                                <th colspan="2">@Resources.Current_Instant</th>
+                                                <th colspan="2"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>@Resources.Generator_Power Pdc:</td>
+                                                <td id="Pdc"></td>
+                                                <td>Inverter @Resources.Status :</td>
+                                                <td id="invState"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>@Resources.Inverter_Efficiency η:</td>
+                                                <td id="Efficiency"></td>
+                                                <td>@Resources.Specific_Yield :</td>
+                                                <td id="specificYield"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>@Resources.Actual_Value:</td>
+                                                <td id="ActualValue"></td>
+                                                <td>
+                                                    CO₂ @Resources.emissions_avoided_in_total :
+                                                    <select id="selectedCo2" name="selectedTag" class="btn btn-dark btn-xs">
+                                                        <option value="0">@Resources.lignite</option>
+                                                        <option value="1">@Resources.Coal</option>
+                                                        <option value="2">@Resources.Natural_Gas</option>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <b id="Co2"></b>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="echart_line" style="height:500px;"></div>
+                        <div class="well" style="overflow: auto">
+                            <div class="col-md-6">
+                                <div class="btn-group">
+                                    <h4 id="bakisTarih"></h4>
+                                </div>
+                                <div class="btn-group">
+                                    <input name="beginDaily" id="single_cal4" class="form-control has-feedback-left input-sm" type="text" />
+                                </div>
+                                <div class="btn-group">
+                                    <input type="button" class="btn btn-info btn-sm" id="btnListDaily" value="@Resources.Show" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="btn-group">
+                                    <button id="btnHourlyAVG" type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#HourlyAVGModal">@Resources.Hourly_Production_Average</button>
+                                </div>
+                                <div class="btn-group">
+                                    <button id="btnSaatlikDetay" type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#HourlyModal">@Resources.Hourly_Production</button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br />
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_content">
+                        <div class="" role="tabpanel" data-example-id="togglable-tabs">
+                            <ul id="myTab1" class="nav nav-tabs bar_tabs" role="tablist">
+                                <li role="presentation" class="active">
+                                    <a href="#tab_content11" id="home-tabb" role="tab" data-toggle="tab" aria-controls="home" aria-expanded="true">@Resources.Daily</a>
+                                </li>
+                                <li role="presentation" id="profile-tab24" class="">
+                                    <a href="#tab_content55" role="tab" id="profile-tab3" data-toggle="tab" aria-expanded="false">@Resources.Weekly</a>
+                                </li>
+                                <li role="presentation" id="profile-tab21" class="">
+                                    <a href="#tab_content22" role="tab" id="profile-tabb" data-toggle="tab" aria-controls="profile" aria-expanded="false">@Resources.Monthly</a>
+                                </li>
+                                <li role="presentation" id="profile-tab22" class="">
+                                    <a href="#tab_content33" role="tab" id="profile-tab2" data-toggle="tab" aria-expanded="false">@Resources.Annual</a>
+                                </li>
+                                <li role="presentation" id="profile-tab23" class="">
+                                    <a href="#tab_content44" role="tab" id="profile-tab3" data-toggle="tab" aria-expanded="false">@Resources.Total</a>
+                                </li>
+                            </ul>
+                            <div id="myTabContent2" class="tab-content">
+                                <div role="tabpanel" class="tab-pane fade active in" id="tab_content11" aria-labelledby="home-tab">
+                                    <div class="x_panel">
+                                        <div class="x_title">
+                                            <h2>@Resources.Daily_Production</h2>
+                                            <div class="clearfix"></div>
+                                        </div>
+                                        <div class="x_content">
+                                            <div id="mainb" style="height:350px;"></div>
+                                            <div class="well" style="overflow: auto">
+                                                <div class="col-md-12">
+                                                    <div class="btn-group">
+                                                        <select id="selectedMonth" name="selectedMonth" class="form-control input-sm">
+                                                            <option value="">-</option>
+                                                            <option value="1">@Resources.January</option>
+                                                            <option value="2">@Resources.February</option>
+                                                            <option value="3">@Resources.March</option>
+                                                            <option value="4">@Resources.April</option>
+                                                            <option value="5">@Resources.May</option>
+                                                            <option value="6">@Resources.June</option>
+                                                            <option value="7">@Resources.July</option>
+                                                            <option value="8">@Resources.August</option>
+                                                            <option value="9">@Resources.September</option>
+                                                            <option value="10">@Resources.October</option>
+                                                            <option value="11">@Resources.November</option>
+                                                            <option value="12">@Resources.December</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="btn-group">
+                                                        <select id="selectedYear" name="selectedYear" class="form-control input-sm">
+                                                            <option value="2020">2020</option>
+                                                            <option value="2019">2019</option>
+                                                            <option value="2018">2018</option>
+                                                            <option value="2017">2017</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="btn-group">
+                                                        <input type="button" class="btn btn-info btn-sm" id="btnList2" value="@Resources.Show" />
+                                                    </div>
+                                                    <div class="btn-group">
+                                                        <button id="btnAylikDetay" type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#AylikModal">@Resources.List</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                                <div role="tabpanel" class="tab-pane fade" id="tab_content55" aria-labelledby="profile-tab">
+                                    <div class="x_panel">
+                                        <div class="x_title">
+                                            <h2>@Resources.Weekly_Production</h2>
+                                            <div class="clearfix"></div>
+
+                                        </div>
+                                        <div class="x_content">
+                                            <div id="mainb5" style="height:350px;"></div>
+                                            <div class="well" style="overflow: auto">
+                                                <img id="LoadingImage3" src="~/images/loader.gif" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div role="tabpanel" class="tab-pane fade" id="tab_content22" aria-labelledby="profile-tab">
+                                    <div class="x_panel">
+                                        <div class="x_title">
+                                            <h2>@Resources.Monthly_Production</h2>
+                                            <div class="clearfix"></div>
+                                        </div>
+                                        <div class="x_content">
+                                            <div id="mainb2" style="height:350px;"></div>
+                                            <div class="well" style="overflow: auto">
+                                                <div class="col-md-12">
+                                                    <div class="btn-group">
+                                                        <select id="selected2Year" name="selected2Year" class="form-control input-sm">
+                                                            <option value="2020">2020</option>
+                                                            <option value="2019">2019</option>
+                                                            <option value="2018">2018</option>
+                                                            <option value="2017">2017</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="btn-group">
+                                                        <input type="button" class="btn btn-info btn-sm" id="btnList3" value="@Resources.Show" />
+                                                    </div>
+                                                    <div class="btn-group">
+                                                        <button id="btnYillikDetay" type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#YillikModal">@Resources.List</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div role="tabpanel" class="tab-pane fade" id="tab_content33" aria-labelledby="profile-tab">
+                                    <div class="x_panel">
+                                        <div class="x_title">
+                                            <h2>@Resources.Annual_Production</h2>
+                                            <div class="clearfix"></div>
+                                        </div>
+                                        <div class="x_content">
+                                            <div id="mainb3" style="height:350px;"></div>
+                                            <div class="well" style="overflow: auto"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div role="tabpanel" class="tab-pane fade" id="tab_content44" aria-labelledby="profile-tab">
+                                    <div class="x_panel">
+                                        <div class="x_title">
+                                            <h2>@Resources.Total_Production</h2>
+                                            <div class="clearfix"></div>
+                                        </div>
+                                        <div class="x_content">
+                                            <div id="mainb4" style="height:350px;"></div>
+                                            <div class="well" style="overflow: auto"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div id="HourlyModal" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-body">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">×</span>
+                                </button>
+                                <h4 class="modal-title" id="myModalLabel2">@Resources.Hourly_Production</h4>
+                            </div>
+                            <div class="btn-group">
+                                @Resources.Start_Date
+                            </div>
+                            <div class="btn-group">
+                                <input name="inpHour" id="inpHour" class="form-control has-feedback-left input-sm" type="text" />
+                            </div>
+                            <div class="btn-group">
+                                @Resources.End_Date
+                            </div>
+                            <div class="btn-group">
+                                <input name="inpHour2" id="inpHour2" class="form-control has-feedback-left input-sm" type="text" />
+                            </div>
+                            <div class="btn-group">
+                                <input type="button" class="btn btn-info btn-sm" id="btnHourList" value="@Resources.Show" />
+                            </div>
+                            <div class="btn-group">
+                                <a id="exportHourlyEnergyData" class="btn btn-primary btn-sm">@Resources.Download_As_Excel</a>
+                            </div>
+                            <table id="datatable" class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>@Resources.Hour</th>
+                                        <th>Inverter @Resources.Energy_Produced @Resources.Cumulative</th>
+                                        <th>Inverter @Resources.Energy_Produced</th>
+                                        <th>EKK @Resources.Energy_Produced</th>
+                                        <th>@Resources.Irradiation Enerjisi</th>
+                                        <th>@Resources.Cell_Temp</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="saatlikDetay"></tbody>
+                            </table>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">@Resources.Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="HourlyAVGModal" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-body">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">×</span>
+                                </button>
+                                <h4 class="modal-title" id="myModalLabel2">@Resources.Hourly_Production_Average</h4>
+                            </div>
+                            <div id="mainb6" style="height:350px;"></div>
+                            <div class="well" style="overflow: auto">
+                                <div class="col-md-12">
+                                    <div class="btn-group">
+                                        <input name="HourlyAvgDate" id="single_cal5" class="form-control has-feedback-left" type="text" />
+                                    </div>
+                                    <div class="btn-group">
+                                        <input name="HourlyAvgDate2" id="single_cal6" class="form-control has-feedback-left" type="text" />
+                                    </div>
+                                    <div class="btn-group">
+                                        <input type="button" class="btn btn-info" id="btnListHourly" value="@Resources.Show" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">@Resources.Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="AylikModal" role="dialog">
+                <div class="modal-dialog modal-lg">
+                    <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-body">
+                            <div class="x_title">
+                                <h2>@Resources.Daily_Production</h2>
+                                <a id="exportDailyProduction" class="btn btn-primary btn-sm pull-right">@Resources.Download_As_Excel</a>
+                                <div class="clearfix"></div>
+                            </div>
+                            <table id="datatable" class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>@Resources.Date</th>
+                                        <th>@Resources.Energy_Produced</th>
+                                        <th>@Resources.Irradiation</th>
+                                        <th>@Resources.Performance_Ratio</th>
+                                        <th>@Resources.Financial_Income $</th>
+                                        <th>@Resources.Financial_Income ₺</th>
+                                        <th>TCMB USD @Resources.Forex_Buying</th>
+                                    </tr>
+                                </thead>
+                                <tfoot id="aylikFooter"></tfoot>
+                                <tbody id="aylikDetay"></tbody>
+                            </table>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">@Resources.Close</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="modal fade" id="YillikModal" role="dialog">
+                <div class="modal-dialog">
+                    <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-body">
+                            <div class="x_title">
+                                <h2>@Resources.Monthly_Production</h2>
+                                <button onclick="location.href = '@Url.Action("AnnualyExcelAsDownload", "Home")'" class="btn btn-primary pull-right" style="margin-right: 5px;"><i class="fa fa-download"></i> @Resources.Download_As_Excel</button>
+                                <div class="clearfix"></div>
+                            </div>
+                            <table id="datatable" class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>@Resources.Month</th>
+                                        <th>@Resources.Energy_Produced</th>
+                                        <th>@Resources.Irradiation</th>
+                                        <th>PR</th>
+                                        <th>@Resources.Target</th>
+                                    </tr>
+                                </thead>
+                                <tfoot id="yillikFooter"></tfoot>
+                                <tbody id="yillikDetay"></tbody>
+                            </table>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">@Resources.Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="~/js/gauge.min.js"></script>
+        <script src="~/Content/raphael.min.js"></script>
+        <script src="~/Content/morris.min.js"></script>
+
+        <script>
+
+                 $(document).ready(function () {
+                     $("#exportHourlyEnergyData").click(function () {
+
+                         ExportToExcelHourlyProduction();
+                     });
+
+                     $("#exportDailyProduction").click(function () {
+                         ExportToExcelDailyProduction();
+                     });
+                 });
+
+                function ExportToExcelHourlyProduction()
+                 {
+                     var selectDate = $('input[name="inpHour"]').val();
+                     var endDate = $('input[name="inpHour2"]').val();
+
+                     if (!selectDate || selectDate.length == 0) {
+                         selectDate = new Date().toISOString();
+                     }
+                     if (!endDate || endDate.length == 0) {
+                         endDate = new Date().toISOString();
+                     }
+
+                     var url = "@Url.Action("ExportToExcelHourly", "Home")";
+
+                     var urlLink = url + "?stationId=" + @Model + "&&slctDate=" + selectDate + "&&slctDate2=" + endDate;
+                     window.open(urlLink);
+
+                }
+
+                  function ExportToExcelDailyProduction()
+                 {
+                      var month = $('#selectedMonth').val();
+                      if (!month || month.length == 0) {
+                          var dt = new Date($.now());
+                          month = dt.getMonth() + 1;
+                          $('[name=selectedMonth]').val(month);
+                      }
+                      var year = $('#selectedYear').val();
+
+                     var url = "@Url.Action("ExportToExcelDaily", "Home")";
+
+                      var urlLink = url + "?stationId=" + @Model + "&&beginMonth=" + month + "&&beginYear=" + year;
+                     window.open(urlLink);
+
+                }
+
+
+                function formatDate(vl) {
+                    var value = new Date
+                        (
+                        parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+                        );
+                    var dat = value.getDate() +
+                        "/" +
+                        (value.getMonth() + 1) +
+                        "/" +
+                        value.getFullYear();
+
+                    var time = value.getDate().toString();
+                    return dat.toString();
+                }
+                function DateFormat2(vl) {
+                    var value = new Date
+                        (
+                        parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+                        );
+                    var dat = value.getDate() +
+                        "/" +
+                        (value.getMonth() + 1) +
+                        "/" +
+                        value.getFullYear();
+
+                    var time = value.getHours() +
+                        ":" +
+                        value.getMinutes() + "0"
+                    return time.toString();
+                }
+                function DateFormat3(vl) {
+
+
+                    var value = new Date
+                        (
+                        parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+                        );
+                    var dat = value.getDate() +
+                        "/" +
+                        (value.getMonth() + 1) +
+                        "/" +
+                        value.getFullYear();
+
+                    var time = (value.getHours() + 1)
+                    ":" +
+                        value.getMinutes() + "0";
+                    var time2 = time + ":" + value.getMinutes() + "0";
+
+                    return time2.toString();
+                }
+                function NumberConvert(nStr) {
+                    if (nStr != null) {
+                        nStr = nStr.toFixed(2);
+                        nStr += '';
+                        x = nStr.split('.');
+                        x1 = x[0];
+                        x2 = x.length > 1 ? ',' + x[1] : '';
+                        var rgx = /(\d+)(\d{3})/;
+                        while (rgx.test(x1)) {
+                            x1 = x1.replace(rgx, '$1' + '.' + '$2');
+                        }
+                        return x1 + x2;
+                    }
+                    else {
+                        return "-";
+                    }
+                }
+                function NumberConvert2(nStr) {
+                    if (nStr != null) {
+                        nStr += '';
+                        x = nStr.split('.');
+                        x1 = x[0];
+                        x2 = x.length > 1 ? ',' + x[1] : '';
+                        var rgx = /(\d+)(\d{3})/;
+                        while (rgx.test(x1)) {
+                            x1 = x1.replace(rgx, '$1' + '.' + '$2');
+                        }
+                        return x1 + x2;
+                    }
+                    else {
+                        return "-";
+                    }
+                }
+                function ConvertDay(vl) {
+                    var value = new Date
+                        (
+                        parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+                        );
+                    return value.getDate()
+                }
+
+                function ConvertDateMonth(vl) {
+                    var value = new Date
+                        (
+                        parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+                        );
+                    var ay = (value.getMonth() + 1);
+                    if (ay == 1) { sonuc = 31; }
+                    else if (ay == 2) { sonuc = 28; }
+                    else if (ay == 3) { sonuc = 31; }
+                    else if (ay == 4) { sonuc = 30; }
+                    else if (ay == 5) { sonuc = 31; }
+                    else if (ay == 6) { sonuc = 30; }
+                    else if (ay == 7) { sonuc = 31; }
+                    else if (ay == 8) { sonuc = 31; }
+                    else if (ay == 9) { sonuc = 30; }
+                    else if (ay == 10) { sonuc = 31; }
+                    else if (ay == 11) { sonuc = 30; }
+                    else if (ay == 12) { sonuc = 31; }
+                    return sonuc;
+                }
+                function ConvertNumberMonth(vln) {
+
+                    if (vln == 1) { sonuc2 = 31; }
+                    else if (vln == 2) { sonuc2 = 28; }
+                    else if (vln == 3) { sonuc2 = 31; }
+                    else if (vln == 4) { sonuc2 = 30; }
+                    else if (vln == 5) { sonuc2 = 31; }
+                    else if (vln == 6) { sonuc2 = 30; }
+                    else if (vln == 7) { sonuc2 = 31; }
+                    else if (vln == 8) { sonuc2 = 31; }
+                    else if (vln == 9) { sonuc2 = 30; }
+                    else if (vln == 10) { sonuc2 = 31; }
+                    else if (vln == 11) { sonuc2 = 30; }
+                    else if (vln == 12) { sonuc2 = 31; }
+                    return sonuc2;
+                }
+
+
+                function ConvertTicksToTime(vl) {
+                    vl = vl.replace("Date", "");
+                    vl = vl.replace("/", "");
+                    vl = vl.replace("(", "");
+                    vl = vl.replace(")", "");
+                    vl = vl.replace("/", "").trim();
+
+                    var vlDate = new Date(parseInt(vl));
+                    return vlDate.toLocaleTimeString();
+                }
+                function DateFormat2(vl) {
+                    var value = new Date
+                        (
+                        parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+                        );
+                    var dat = value.getDate() +
+                        "/" +
+                        (value.getMonth() + 1) +
+                        "/" +
+                        value.getFullYear();
+
+                    var time = value.getHours() +
+                        ":" +
+                        value.getMinutes() + "0"
+                    return time.toString();
+                }
+                function ConvertTicksToDate(vl) {
+                    vl = vl.replace("Date", "");
+                    vl = vl.replace("/", "");
+                    vl = vl.replace("(", "");
+                    vl = vl.replace(")", "");
+                    vl = vl.replace("/", "").trim();
+
+                    var vlDate = new Date(parseInt(vl));
+                    return vlDate.toLocaleDateString();
+                }
+                //DailyChartData();
+        </script>
+        <script>
+
+                var theme = {
+                     //renkler
+                    color: [
+                        '#23e600', '#052ec7', '#fea80c', '#d400a5',
+                        '#9B59B6', '#8abb6f', '#759c6a', '#bfd3b7'
+                    ],
+
+
+                    title: {
+                        itemGap: 8,
+                        textStyle: {
+                            fontWeight: 'normal',
+                            color: '#408829'
+                        }
+                    },
+
+                    dataRange: {
+                        color: ['#1f610a', '#97b58d']
+                    },
+
+                    toolbox: {
+                        color: ['#408829', '#408829', '#408829', '#408829']
+                    },
+
+                    tooltip: {
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        axisPointer: {
+                            type: 'line',
+                            lineStyle: {
+                                color: '#408829',
+                                type: 'dashed'
+                            },
+                            crossStyle: {
+                                color: '#408829'
+                            },
+                            shadowStyle: {
+                                color: 'rgba(200,200,200,0.3)'
+                            }
+                        }
+                    },
+
+                    dataZoom: {
+                        dataBackgroundColor: '#eee',
+                        fillerColor: 'rgba(64,136,41,0.2)',
+                        handleColor: '#408829'
+                    },
+                    grid: {
+                        borderWidth: 0
+                    },
+
+                    categoryAxis: {
+                        axisLine: {
+                            lineStyle: {
+                                color: '#408829'
+                            }
+                        },
+                        splitLine: {
+                            lineStyle: {
+                                color: ['#eee']
+                            }
+                        }
+                    },
+
+                    valueAxis: {
+                        axisLine: {
+                            lineStyle: {
+                                color: '#408829'
+                            }
+                        },
+                        splitArea: {
+                            show: true,
+                            areaStyle: {
+                                color: ['rgba(250,250,250,0.1)', 'rgba(200,200,200,0.1)']
+                            }
+                        },
+                        splitLine: {
+                            lineStyle: {
+                                color: ['#eee']
+                            }
+                        }
+                    },
+                    timeline: {
+                        lineStyle: {
+                            color: '#408829'
+                        },
+                        controlStyle: {
+                            normal: { color: '#408829' },
+                            emphasis: { color: '#408829' }
+                        }
+                    },
+
+
+                    textStyle: {
+                        fontFamily: 'Arial, Verdana, sans-serif'
+                    }
+            };
+
+                $(document).ready(function () {
+                      //Saatlik Üretim bas.
+                $('#btnSaatlikDetay').click(function () {
+
+
+
+                    $('#inpHour').daterangepicker({
+                        singleDatePicker: true,
+                        showDropdowns: true,
+                        startDate: moment().add(0, 'day'),
+                        //minDate: moment(),
+                        locale: {
+                            format: 'DD/MM/YYYY'
+                        }
+                    });
+
+                    $('#inpHour2').daterangepicker({
+                        singleDatePicker: true,
+                        showDropdowns: true,
+                        startDate: moment().add(0, 'day'),
+                        //minDate: moment(),
+                        locale: {
+                            format: 'DD/MM/YYYY'
+                        }
+                    });
+
+
+
+                    GetHourProduction();
+                });
+                $('#btnHourList').click(function () {
+                    GetHourProduction();
+                });
+
+                function GetHourProduction() {
+                    $("#saatlikDetay").empty();
+                    var selectDate = $('input[name="inpHour"]').val();
+                    var endDate = $('input[name="inpHour2"]').val();
+
+
+                    //$(endDate).datepicker('setDate', null);
+                    if (!selectDate || selectDate.length == 0) {
+                        selectDate = new Date().toISOString();
+                    }
+                    if (!endDate || endDate.length == 0) {
+                        endDate = new Date().toISOString();
+                    }
+
+                    $.ajax({
+                        url: "/Home/HourlyReport/",
+                        type: "POST",
+                        dataType: "json",
+                        contentType: "application/json; charset=utf-8",
+                        data: "{'slctDate':'" + selectDate + "','endDate':'" + endDate + "','stationId':'" +@Model+ "'}",
+                        success: function (data) {
+                            var gecici = 0;
+                            var gecici2 = 0;
+                            $.each(data, function (i, item) {
+                                $("#saatlikDetay").append("<tr><td>" + formatDate(item._tarih) + "--" + DateFormat2(item._tarih) + " - " + DateFormat3(item._tarih) + "</td><td>" + item._enerjiArtan + " MWh" + "</td><td>" + item._enerji + " MWh" + "</td><td>" + item._uretilen_enerji + " MWh" + "</td><td>" + item._isinimToplam + " Wh/m²" + "</td><td>" + item._hucre_sicakligi + "°C" + "</td></tr>");
+
+                                gecici = item._enerji;
+                                gecici2 = item._enerji;
+                            })
+                        }
+                    });
+                }
+            @*//Saatlik Üretim bas.
+                    $('#btnSaatlikDetay').click(function () {
+                        GetHourProduction();
+                    });
+                    $('#btnHourList').click(function () {
+                        GetHourProduction();
+                    });
+
+                    function GetHourProduction() {
+                        $("#saatlikDetay").empty();
+                        var selectDate = $('input[name="inpHour"]').val();
+
+                        if (!selectDate || selectDate.length == 0) {
+                            selectDate = new Date().toISOString();
+                        }
+                        $.ajax({
+                            url: "/Home/HourlyReport/",
+                            type: "POST",
+                            dataType: "json",
+                            contentType: "application/json; charset=utf-8",
+                            data: "{'slctDate':'" + selectDate +"','stationId':'"+@Model+ "'}",
+                            success: function (data) {
+
+                               // var isinimToplam = 0;
+                                $.each(data, function (i, item) {
+                                    //isinimToplam = +item._isinimToplam;
+                                    $("#saatlikDetay").append("<tr><td>" + DateFormat2(item._tarih) + "</td><td>" + item._enerji + " MWh" + "</td><td>" + item._isinimToplam + " Wh/m²" + "</td></tr>")
+                                })
+                            }
+                        });
+                    }*@
+            //Saatlik Üretim bit.
+
+                    function EndData() {
+                        debugger;
+                    $('#EkkDiv').hide();
+                    $('#EkkDiv2').hide();
+                    $('#DivMeteorology').hide();
+                    $.ajax({
+                        url: "/Home/ProductionInf?stationId=@Model",
+                        type: "GET",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function (data) {
+                            debugger;
+                            if (data.isMeteorology) {
+                                $('#DivMeteorology').show();
+                            }
+                            $('#EkkDiv').show();
+                            if (data.isEKK) {
+                                $('#EkkDiv2').show();
+                                //Gauge2 Chart bas.
+                                if (data.H2_P<=0) {
+                                    var opts2 = {
+                                        lines: 12,
+                                        angle: 0,
+                                        lineWidth: 0.4,
+                                        pointer: {
+                                            length: 0.75,
+                                            strokeWidth: 0.042,
+                                            color: '#ff0000'
+                                        },
+                                        limitMax: 'true',
+                                        colorStart: '#1abb9c',
+                                        colorStop: '#1abb9c',
+                                        strokeColor: '#F0F3F3',
+                                        generateGradient: true
+                                    };
+                                }
+                                else {
+                                    var opts2 = {
+                                        lines: 12,
+                                        angle: 0,
+                                        lineWidth: 0.4,
+                                        pointer: {
+                                            length: 0.75,
+                                            strokeWidth: 0.042,
+                                            color: '#1D212A'
+                                        },
+                                        limitMax: 'true',
+                                        colorStart: '#e74c3c',
+                                        colorStop: '#e74c3c',
+                                        strokeColor: '#F0F3F3',
+                                        generateGradient: true
+                                    };
+                                }
+                                debugger;
+                                var target2 = document.getElementById('foo2'),
+                                    gauge2 = new Gauge(target2).setOptions(opts2);
+
+                                gauge2.maxValue = data.insAC * 1.20;
+                                gauge2.animationSpeed = 32;
+                                if (data.H2_P==0) {
+                                    gauge2.set(Math.abs(1));
+                                    gauge2.setTextField(0);
+                                }
+                                else {
+                                    gauge2.set(Math.abs(data.H2_P));
+                                    gauge2.setTextField(document.getElementById("gauge-text2"));
+                                }
+                                $('#goal-text2').text(data.insAC * 1.20+" kW");
+                            //Gauge2 Chart bit.
+                            }
+                        //Gauge1 Chart bas.
+                            var opts = {
+                                lines: 12,
+                                angle: 0,
+                                lineWidth: 0.4,
+                                pointer: {
+                                    length: 0.75,
+                                    strokeWidth: 0.042,
+                                    color: '#1D212A'
+                                },
+                                limitMax: 'true',
+                                colorStart: '#1abb9c',
+                                colorStop: '#1abb9c',
+                                strokeColor: '#F0F3F3',
+                                generateGradient: true
+                            };
+                            debugger;
+                            var target = document.getElementById('foo'),
+                                gauge = new Gauge(target).setOptions(opts);
+
+                            gauge.maxValue = data.insAC*1.20;
+                            gauge.animationSpeed = 50;
+                            if (data._pac==0) {
+                                gauge.set(1);
+                                gauge.setTextField(0);
+                            }
+                            else {
+                                gauge.set(data._pac);
+                                gauge.setTextField(document.getElementById("gauge-text"));
+                            }
+
+                            $('#goal-text').text(data.insAC*1.20 + " kW");
+                            //Gauge1 Chart bit.
+
+
+                            //Progresbar PR
+                            $("#barDailyPR").css("width", data._dailyPr + "%");
+                            $("#spanDailyPR").text(NumberConvert(data._dailyPr) + "%");
+                            $("#barMonthlyPR").css("width", data._monthlyPr + "%");
+                            $("#spanMonthlyPR").text(NumberConvert(data._monthlyPr) + "%");
+                            $("#barAnnualPR").css("width", data._annualPr + "%");
+                            $("#spanAnnualPR").text(NumberConvert(data._annualPr) + "%");
+                            $("#barTotalPR").css("width", data._totalPr + "%");
+                            $("#spanTotalPR").text(NumberConvert(data._totalPr) + "%");
+                            //Progresbar KPF
+                            $("#barDailyKPF").css("width", data._dailyKF + "%");
+                            $("#spanDailyKPF").text(NumberConvert(data._dailyKF) + "%");
+                            $("#barMonthlyKPF").css("width", data._monthlyKF + "%");
+                            $("#spanMonthlyKPF").text(NumberConvert(data._monthlyKF) + "%");
+                            $("#barAnnualKPF").css("width", data._annualKF + "%");
+                            $("#spanAnnualKPF").text(NumberConvert(data._annualKF) + "%");
+
+
+                            //gunluk
+                            $("#gunlukEnerji").html(NumberConvert(data._dailyProduction) + " MWh");
+                            $("#gunlukGelir").html(NumberConvert(data._dailyIncome) + " $");
+                            //
+                            $("#specificYield").html(NumberConvert(data._specificYield)+ ' kWh/kWp');
+                            $("#ActualValue").html(NumberConvert(data._actualValue) + ' %');
+                            //aylik
+                            $("#aylikEnerji").html(NumberConvert(data._monthlyProduction) + " MWh");
+                            $("#aylikGelir").html(NumberConvert(data._monthlyIncome) + " $");
+
+                            //yıllık
+                            $("#yillikEnerji").html(NumberConvert(data._annualProduction) + " MWh");
+                            $("#yillikGelir").html(NumberConvert(data._annualIncome) + " $");
+                            //toplam
+                            $("#toplamEnerji").html(NumberConvert(data._totalProduction)+ " MWh");
+                            $("#toplamGelir").html(NumberConvert(data._totalIncome) + " $");
+
+
+                            $("#Co2").html(NumberConvert(data._totalProduction / 1000 * 1054) + ' t');
+                            $('#selectedCo2').on('change', function () {
+
+                                var ss = $('#selectedCo2').val();
+
+                                if (ss == 0) {
+                                    $("#Co2").html(NumberConvert(data._totalProduction / 1000 * 1054) + ' t');
+                                }
+                                else if (ss == 1) {
+                                    $("#Co2").html(NumberConvert(data._totalProduction / 1000 * 888) + ' t');
+                                }
+                                else if (ss == 2) {
+                                    $("#Co2").html(NumberConvert(data._totalProduction / 1000 * 499) + ' t');
+                                }
+
+                            });
+
+                            //Meteoroloji
+
+                            $("#irradiation").html(NumberConvert(data._isinim) + " W/m²");
+                            $("#wind").html(NumberConvert(data._ruzgar) + " m/s");
+                            $("#cell").html(NumberConvert(data._hucreSicakligi) + " °C");
+                            $("#external").html(NumberConvert(data._ortamSicakligi) + " °C");
+
+                            //Güç
+                            //$("#Pac").html(NumberConvert(data._pac) + " kW");
+
+                            $("#Pdc").html(NumberConvert(data._pdc) + " kW");
+                            var efficiency = data._pac / data._pdc;
+                            $("#Efficiency").html(NumberConvert(efficiency * 100) + " %");
+
+                            $("#invState").html(data.INV_SUM_ACTIVE_COUNT);
+
+                            ////TAX
+                            //$("#dailyTax").html(NumberConvert(data._dailyTax)+" ₺");
+                            //$("#monthlyTax").html(NumberConvert(data._monthlTax)+" ₺");
+                            //$("#annualTax").html(NumberConvert(data._annualTax)+" ₺");
+                            //$("#totalTax").html(NumberConvert(data._totalTax)+" ₺");
+                            debugger;
+                            DailyChartData();
+
+                        }
+                    });
+                    }
+
+                EndData();
+
+                var timer, delay = 300000;
+                timer = setInterval(function () {
+                    EndData();
+                }, delay);
+
+               //Üretim Grafik bas
+
+                function DateFormat(vl) {
+
+                    var value = new Date
+                        (
+                        parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+                        );
+                    var dat = value.getDate() +
+                        "/" +
+                        (value.getMonth() + 1) +
+                        "/" +
+                        value.getFullYear();
+
+                    var dk;
+                    var dkUzunluk = value.getMinutes().toString().length;
+                    if (dkUzunluk == 1) {
+                        dk = "0" + value.getMinutes();
+                    }
+                    else {
+                        dk = value.getMinutes();
+                    }
+                    var saat;
+                    var dkUzunluk = value.getHours().toString().length;
+                    if (dkUzunluk == 1) {
+                        saat = "0" + value.getHours()
+                    }
+                    else {
+                        saat = value.getHours()
+                    }
+
+                    var time = saat + ":" + dk
+                    return time.toString();
+                }
+
+                $('#btnListDaily').click(function () {
+                    $(this).button('loading');
+                    DailyChartData();
+                });
+
+                function DailyChartData() {
+
+                    var beginDate = $('input[name="beginDaily"]').val();
+
+
+                    if (!beginDate || beginDate.length == 0) {
+                        beginDate = new Date().toISOString();
+                    }
+
+                    $.ajax({
+                        type: "get",
+                        url: "/Home/GetLineChart",
+                        dataType: "json",
+                        contentType: "application/json; charset=utf-8",
+                        data: { beginDate: beginDate, stationId: @Model },
+                        success: function (data) {
+
+                            var skala1;
+                            if (data._acInstalledPower == null) {
+                                skala1 = 1700;
+                            }
+                            else {
+                                skala1 = data._acInstalledPower * 1.45;
+                            }
+
+                            var skala2;
+                            if (data._irradiationScale == null) {
+                                skala2 = 1400;
+                            }
+                            else {
+                                skala2 = data._irradiationScale * 1.3;
+                            }
+
+                            $('#btnListDaily').button('reset');
+                            var echartLine = echarts.init(document.getElementById('echart_line'), theme);
+                            var _dailyProductionText = $('#hdn_daily_production').val();
+                            var _irradiation = $('#hdn_irradiation').val();
+                            var _energy = $('#hdn_energy').val();
+                            var _maxsimum = $('#hdn_maximum').val();
+
+                            echartLine.setOption({
+                                tooltip: {
+                                    trigger: 'axis',
+                                    axisPointer: {
+                                        animation: true
+                                    },
+                                    formatter: function (params) {
+                                        let ItemsArray = ['kW', 'W/m²', 'MWh', 'kW'];
+                                        var tooltipText = "";
+                                        var _unit;
+                                        tooltipText += params[0].name;
+                                        for (var i = 0; i < params.length; i++) {
+
+                                            _unit = ItemsArray[params[i].seriesIndex];
+                                            if (params[i].value == 0) {
+                                                tooltipText += "<br/>" + '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background-color:' + params[i].color + '"></span>' + params[i].seriesName + " : " + "-" + " " + _unit;
+                                            }
+                                            else {
+                                                tooltipText += "<br/>" + '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background-color:' + params[i].color + '"></span>' + params[i].seriesName + " : " + NumberConvert(params[i].value) + " " + _unit;
+                                            }
+                                        }
+                                        return tooltipText;
+                                    }
+                                },
+                                lineStyle: {
+                                    normal: {
+                                        type: 'solid'
+                                    }
+                                },
+                                legend: {
+                                    x: 350,
+                                    y: 20,
+                                    data: [_dailyProductionText, _irradiation, _energy]
+                                },
+                                toolbox: {
+                                    show: true,
+                                    feature: {
+                                        mark: { show: false },
+                                        dataZoom: { show: false },
+                                        dataView: { show: false },
+                                        magicType: {
+                                            show: true,
+                                            title: {
+                                                line: 'Line',
+                                                bar: 'Bar',
+                                                stack: 'Stack',
+                                                tiled: 'Tiled'
+                                            },
+                                            type: ['line', 'bar', 'stack', 'tiled']
+                                        },
+                                        restore: {
+                                            show: true,
+                                            title: "Restore"
+                                        },
+                                        saveAsImage: {
+                                            show: true,
+                                            title: "Save Image"
+                                        }
+                                    }
+                                },
+                                calculable: true,
+                                dataZoom: [
+                                    {
+                                        show: true,
+                                        realtime: true,
+                                        start: 0,
+                                        end: 100
+                                    },
+                                    {
+                                        type: 'inside',
+                                        realtime: true,
+                                        start: 0,
+                                        end: 100
+                                    }
+                                ],
+                                xAxis: [{
+                                    type: 'category',
+                                    boundaryGap: false,
+                                    scale: true,
+                                    axisLabel: {
+                                        formatter: function (value, index) {
+                                            var date = new Date(value);
+                                            var time = value.split(':');
+                                            return time[0].toString()+':00             ';
+                                        }
+                                    },
+                                    data: data._ozet.map(function (a) { return DateFormat(a._tarih); })
+                                }],
+                                yAxis: [
+                                    {
+                                        type: 'value',
+                                        name: _dailyProductionText,
+                                        axisLabel: {
+                                            formatter: '{value} kW',
+                                            textStyle: {
+                                                color: '#399428',
+                                                fontStyle: 'bold'
+                                            }
+                                        },
+                                        nameTextStyle: {
+                                        color: '#399428',
+                                        fontStyle: 'bold'
+                                        },
+                                        beginAtZero: true,
+                                        steps: 100,
+                                        stepValue: 100,
+                                        max: skala1
+                                    },
+                                    {
+                                        type: 'value',
+                                        name: _energy,
+                                        axisLabel: {
+                                            formatter: '{value} MWh',
+                                            textStyle: {
+                                                color: '#d49b33',
+                                                fontStyle: 'bold'
+                                            }
+                                        },
+                                        nameTextStyle: {
+                                            color: '#d49b33',
+                                            fontStyle: 'bold'
+                                        },
+                                    },
+                                    {
+                                        type: 'value',
+                                        name: '                                   ' + _irradiation +'',
+                                        axisLabel: {
+                                            formatter: '             {value} W/m²',
+                                                 textStyle: {
+                                                     color: '#4661c3',
+                                                     fontStyle: 'bold'
+                                            }
+                                        },
+                                        nameTextStyle: {
+                                            color: '#4661c3',
+                                            fontStyle: 'bold'
+                                        },
+                                        beginAtZero: true,
+                                        steps: 100,
+                                        stepValue: 100,
+                                        max: skala2
+                                    }
+                                ],
+                                series: [{
+                                    name: _dailyProductionText,
+                                    type: 'line',
+                                    smooth: true,
+                                    itemStyle: {
+                                        normal: {
+                                            areaStyle: {
+                                                type: 'default'
+                                            }
+                                        }
+                                    },
+                                    data: data._ozet.map(function (a) { return a._gunlukUretim; }),
+
+                                    markPoint: {
+                                        symbol: 'pin',
+                                        //symbolSize:80,
+                                        label: {
+                                            normal: {
+                                                textStyle: {
+                                                    color: '#000',
+                                                    fontWeight: 'bold',
+                                                    fontSize: 10
+                                                }
+                                            }
+                                        },
+                                        data: [{
+                                            type: 'max',
+                                            name: 'Maximum Production (kW)'
+                                        }]
+                                    }
+                                }, {
+                                    name: _irradiation,
+                                    type: 'line',
+                                    smooth: true,
+                                    yAxisIndex: 2,
+                                    itemStyle: {
+                                        normal: {
+                                        }
+                                    },
+                                        data: data._ozet.map(function (a) { return a._isinim; })
+                                }, {
+                                    name: _energy,
+                                    type: 'line',
+                                    yAxisIndex: 1,
+                                    smooth: false,
+                                    itemStyle: {
+                                        normal: {
+                                        }
+                                    },
+                                        data: data._ozet.map(function (a) { return a._enerji; })
+                                }, {
+                                    name: _maxsimum,
+                                    type: 'line',
+                                        data: data._ozet.map(function (a) { return a._max; })
+                                }]
+
+                            });
+                        }
+                    });
+                }
+               //Üretim Grafik bit.
+
+                    //Günlük Grafik bas.
+
+                $('#btnList2').button('loading');
+                CallDailyChartData();
+                $('#btnList2').click(function () {
+                    $(this).button('loading');
+                    $("#aylikDetay").empty();
+                    $("#aylikFooter").empty();
+                    CallDailyChartData();
+                });
+
+                function CallDailyChartData() {
+                    var beginDate2 = $('#selectedMonth').val();
+                    if (!beginDate2 || beginDate2.length == 0) {
+                        var dt = new Date($.now());
+                        beginDate2 = dt.getMonth() + 1;
+                        $('[name=selectedMonth]').val(beginDate2);
+                    }
+                    var beginDate3 = $('#selectedYear').val();
+                    $.ajax({
+                        type: "Post",
+                        url: "/Home/GetDailyProduction",
+                        dataType: "json",
+                        contentType: "application/json; charset=utf-8",
+                        data: "{'beginMonth':'" + beginDate2 + "','beginYear':'" + beginDate3 + "','stationId':'" + @Model + "'}",
+                        success: function (data) {
+                            var _target = $('#hdn_target').val();
+                            var _production = $('#hdn_production').val();
+                            $('#btnList2').button('reset');
+                            if (data.length != 0) {
+                                var next_days = 0;
+                                var listAylikToplam = [];
+                                var listAyDate = [];
+                                var listTarget = [];
+                                var listPR = [];
+
+                                $.each(data.listPR, function (i, item) {
+                                    $("#aylikDetay").append("<tr><td>" + ConvertTicksToDate(item._tarih) + "</td><td>" + NumberConvert(item._enerji) + " MWh" + "</td><td>" + NumberConvert(item._IrradiationSum) + " Wh/m²" + "</td><td>" + "% " + (item._pr).toFixed(1).replace('.', ',') + "</td><td>" + NumberConvert(item._incomeUS) + " $</td><td>" + NumberConvert(item._incomeTL) + " ₺</td><td>" + item._exchangeTL.toFixed(4).replace('.', ',') + " ₺</td></tr>");
+                                });
+                                $("#aylikFooter").append("<tr><td><b>@Resources.Total :</b></td><td><b>" + NumberConvert(data.toplamEnerji) + " MWh" + "</b></td><td><b>" + NumberConvert(data.toplamIsinim) + " Wh/m² " + "</b></td><td><b>" + "% " + data.ortalamaPR.toFixed(1).replace('.', ',') + "</b></td><td><b>" + NumberConvert(data.toplamKazancUS) + " $</b></td><td><b>" + NumberConvert(data.toplamKazancTL) + " ₺</b></td><td></td></tr>");
+
+                                for (var i = 0; i < data.listPR.length; i++) {
+                                    listAylikToplam.push((data.listPR[i]._enerji).toFixed(2));
+                                    listAyDate.push(ConvertDay(data.listPR[i]._tarih));
+                                    listTarget.push(data._target);
+                                    listPR.push(data.listPR[i]._pr.toFixed(1));
+                                    next_days++;
+                                }
+                            }
+
+                            var echartBar = echarts.init(document.getElementById('mainb'), theme);
+
+                            echartBar.setOption({
+                                title: {
+
+                                },
+                                tooltip: {
+                                    trigger: 'axis',
+                                    axisPointer: {
+                                        animation: true
+                                    },
+                                    formatter: function (params) {
+                                        let ItemsArray = ['MWh', '%', 'MWh'];
+                                        var tooltipText = "";
+                                        var _unit;
+                                        tooltipText += params[0].name;
+                                        for (var i = 0; i < params.length; i++) {
+                                            _unit = ItemsArray[params[i].seriesIndex];
+                                            tooltipText += "<br/>" + '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background-color:' + params[i].color + '"></span>' + params[i].seriesName + " : " + NumberConvert2(params[i].value) + " " + _unit;
+                                        }
+                                        return tooltipText;
+                                    }
+                                },
+                                legend: {
+                                    data: [_production, 'PR', _target]
+                                },
+                                toolbox: {
+                                    show: true,
+                                    feature: {
+                                        mark: { show: false },
+                                        dataZoom: { show: false },
+                                        dataView: { show: false },
+                                        magicType: {
+                                            show: true,
+                                            title: {
+                                                line: 'Line',
+                                                bar: 'Bar'
+                                            },
+                                            type: ['line', 'bar']
+                                        },
+                                        restore: {
+                                            show: true,
+                                            title: "Restore"
+                                        },
+                                        saveAsImage: {
+                                            show: true,
+                                            title: "Save Image"
+                                        }
+                                    }
+                                },
+                                calculable: false,
+                                xAxis: [{
+                                    type: 'category',
+                                    data: listAyDate
+                                }],
+                                yAxis: [{
+                                    type: 'value',
+                                    name: _production,
+                                    axisLabel: {
+                                        formatter: '{value} MWh'
+                                    }
+                                }, {
+                                    type: 'value',
+                                    name: 'PR',
+                                    yAxisIndex: 1,
+                                    axisLabel: {
+                                        formatter: '{value} %'
+                                    }
+                                }],
+                                series: [{
+                                    name: _production,
+                                    type: 'bar',
+                                    yAxisIndex: 0,
+                                    data: listAylikToplam,
+                                    markPoint: {
+                                        data: [{
+                                            type: 'max',
+                                            name: 'MAX'
+                                        }]
+                                    }
+                                }, {
+                                    name: 'PR',
+                                    type: 'bar',
+                                    yAxisIndex: 1,
+                                    data: listPR
+                                }, {
+                                    name: _target,
+                                    type: 'line',
+                                    yAxisIndex: 0,
+                                    data: listTarget
+                                }]
+                            });
+                        }
+                    });
+                }
+
+            //Günlük Grafik bit.
+
+            //Haftalık Grafik bas.
+                $('#profile-tab24').click(function () {
+                    setTimeout(function () {
+                      CallWeeklyChartData();
+                    }, 250);
+                });
+
+                $('#btnList12').click(function () {
+                    CallWeeklyChartData();
+                });
+                function CallWeeklyChartData() {
+                    $("#LoadingImage3").show();
+                    $.ajax({
+                        type: "Post",
+                        url: "/Home/GetWeeklyProduction?stationId=@Model",
+                        dataType: "json",
+                        contentType: "application/json; charset=utf-8",
+                        success: function (data) {
+                            var _monday = $('#hdn_monday').val();
+                            var _tuesday = $('#hdn_tuesday').val();
+                            var _wednesday = $('#hdn_wednesday').val();
+                            var _thursday = $('#hdn_thursday').val();
+                            var _friday = $('#hdn_friday').val();
+                            var _saturday = $('#hdn_saturday').val();
+                            var _sunday = $('#hdn_sunday').val();
+                            var _target = $('#hdn_target').val();
+                            var _production = $('#hdn_production').val();
+                            $("#LoadingImage3").hide();
+
+                            if (data.length != 0) {
+                                var listWeekEnerji = [];
+                                var listWeekTarget = [];
+                                var listWeekDate = [];
+                                var listWeekPR = [];
+
+                                for (var i = 0; i < data.listPR.length; i++) {
+                                    listWeekEnerji.push((data.listPR[i]._enerji).toFixed(2));
+                                    listWeekDate.push(data.listPR[i]._dayName);
+                                    listWeekTarget.push(data._target);
+                                    listWeekPR.push(data.listPR[i]._pr.toFixed(1));
+                                }
+                            }
+                            else {
+                                var listWeekDate = [];
+                                var listWeekTarget = [];
+                                var listWeekPR = [];
+                                for (var i = 0; i < 7; i++) {
+                                    listWeekDate.push(i + 1);
+                                    listWeekTarget.push(0);
+                                    listWeekPR.push(0);
+                                }
+                            }
+
+                            var echartBar5 = echarts.init(document.getElementById('mainb5'), theme);
+
+                            echartBar5.setOption({
+                                title: {
+
+                                },
+                                tooltip: {
+                                    trigger: 'axis',
+                                    axisPointer: {
+                                        animation: true
+                                    },
+                                    formatter: function (params) {
+                                        let ItemsArray = ['MWh', '%', 'MWh'];
+                                        var tooltipText = "";
+                                        var _unit;
+                                        tooltipText += params[0].name;
+                                        for (var i = 0; i < params.length; i++) {
+                                            _unit = ItemsArray[params[i].seriesIndex];
+                                            tooltipText += "<br/>" + '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background-color:' + params[i].color + '"></span>' + params[i].seriesName + " : " + NumberConvert2(params[i].value) + " " + _unit;
+                                        }
+                                        return tooltipText;
+                                    }
+                                },
+                                legend: {
+                                    data: [_production, 'PR', _target]
+                                },
+                                toolbox: {
+                                    show: true,
+                                    feature: {
+                                        mark: { show: false },
+                                        dataZoom: { show: false },
+                                        dataView: { show: false },
+                                        magicType: {
+                                            show: true,
+                                            title: {
+                                                line: 'Line',
+                                                bar: 'Bar'
+                                            },
+                                            type: ['line', 'bar']
+                                        },
+                                        restore: {
+                                            show: true,
+                                            title: "Restore"
+                                        },
+                                        saveAsImage: {
+                                            show: true,
+                                            title: "Save Image"
+                                        }
+                                    }
+                                },
+                                calculable: false,
+                                xAxis: [{
+                                    type: 'category',
+                                    data: listWeekDate
+                                }],
+                                yAxis: [{
+                                    type: 'value',
+                                    name: _production,
+                                    axisLabel: {
+                                        formatter: '{value} MWh'
+                                    }
+                                }, {
+                                    type: 'value',
+                                    name: 'PR',
+                                    yAxisIndex: 1,
+                                    axisLabel: {
+                                        formatter: '{value} %'
+                                    }
+                                }],
+                                series: [{
+                                    name: _production,
+                                    type: 'bar',
+                                    yAxisIndex: 0,
+                                    data: listWeekEnerji,
+                                    markPoint: {
+                                        data: [{
+                                            type: 'max',
+                                            name: 'MAX'
+                                        }]
+                                    }
+                                }, {
+                                    name: 'PR',
+                                    type: 'bar',
+                                    yAxisIndex: 1,
+                                    data: listWeekPR
+                                }, {
+                                    name: _target,
+                                    type: 'line',
+                                    yAxisIndex: 0,
+                                    data: listWeekTarget
+                                }]
+                            });
+
+                        }
+                    });
+                }
+
+            //Haftalık Grafik bit.
+
+            //Aylık Grafik Bas.
+                function getMonth(vl) {
+                    var value = new Date
+                        (
+                        parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+                        );
+                    var ay = (value.getMonth() + 1);
+                    return ay;
+                }
+                function getDay(vl) {
+                    var value = new Date
+                        (
+                        parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+                    );
+                    var gun = (value.getDate());
+
+                    return gun;
+                }
+
+                var beginDate4 = $('#selected2Year').val();
+                $('#profile-tab21').click(function () {
+
+                    setTimeout(function () {
+                        var dty = new Date($.now());
+                        nowyear = dty.getFullYear();
+                        $('#selected2Year').val(nowyear);
+                        CallAnnualyChartData(beginDate4);
+                        $('#btnList3').button('loading');
+                        $("#yillikDetay").empty();
+                        $("#yillikFooter").empty();
+                    }, 250);
+                });
+
+                $('#btnList3').click(function () {
+                    $(this).button('loading');
+                    $("#yillikDetay").empty();
+                    $("#yillikFooter").empty();
+                    var beginDate5 = $('#selected2Year').val();
+                    CallAnnualyChartData(beginDate5);
+                });
+                       @*$.ajax({
+                           url: "/Home/GetKFProduction",
+                        type: "POST",
+                        dataType: "json",
+                        data: { stationId: @Model,slcYear: yil },
+                        success: function (data) {
+                            debugger;
+                        });*@
+                function CallAnnualyChartData(yil) {
+                    $.ajax({
+                        url: "/Home/GetMonthlyProduction",
+                        type: "POST",
+                        dataType: "json",
+                        data: { stationId: @Model,slcYear: yil },
+                        success: function (data) {
+                            var _january = $('#hdn_january').val();
+                            var _february = $('#hdn_february').val();
+                            var _march = $('#hdn_march').val();
+                            var _april = $('#hdn_april').val();
+                            var _may = $('#hdn_may').val();
+                            var _june = $('#hdn_june').val();
+                            var _july = $('#hdn_july').val();
+                            var _august = $('#hdn_august').val();
+                            var _september = $('#hdn_september').val();
+                            var _october = $('#hdn_october').val();
+                            var _november = $('#hdn_november').val();
+                            var _december = $('#hdn_december').val();
+                            var _target = $('#hdn_target').val();
+                            var _production = $('#hdn_production').val();
+                            $('#btnList3').button('reset');
+                            var listAnnualTotal = [];
+                            var listAnnualPR = [];
+
+                            var aa = data.listPR[0].month;
+                            for (var j = 0; j < aa - 1; j++) {
+                                listAnnualTotal.push(0);
+                                listAnnualPR.push(0);
+                            }
+                            for (var i = 0; i < data.listPR.length; i++) {
+                                listAnnualTotal.push(data.listPR[i].energy);
+                                listAnnualPR.push(data.listPR[i].pr);
+                            }
+
+                                if (aa==1) {
+                                    for (var k = 0; k < 10 - aa; k++)
+                                    {
+                                        listAnnualTotal.push(0);
+                                        listAnnualPR.push(0);
+                                     }
+                                           }
+
+                                $.each(data.listPR, function (i, item) {
+                                    $("#yillikDetay").append("<tr><td>" + item.month + "</td><td>" + (item.energy).toFixed(2).replace('.', ',') + " MWh" + "</td><td>" + (item.irradiationSum).toFixed(1).replace('.', ',') + " Wh" +"</td><td>" + "% " + (item.pr).toFixed(1).replace('.', ',') + "</td><td>" + (item.target).toFixed(1).replace('.', ',') + " MWh" + "</td></tr>");
+                                });
+                                $("#yillikFooter").append("<tr><td>@Resources.Total :</td><td>" + data.toplamEnerji.toFixed(2).replace('.', ',') + " MWh" + "</td><td>" + data.toplamIsinim.toFixed(1).replace('.', ',') + " Wh" +"</td><td>" + "% " + data.ortalamaPR.toFixed(1).replace('.', ',') + "</td><td></td></tr>");
+                                $("#yillikFooter").append("<tr><td>@Resources.Average :</td><td>" + data.ortalamaEnerji.toFixed(2).replace('.', ',') + " MWh" + "</td><td>" + data.ortalamaIsinim.toFixed(1).replace('.', ',') + " Wh" +"</td><td>" + "% " + data.ortalamaPR.toFixed(1).replace('.', ',') + "</td><td></td></tr>");
+
+                                var echartBar2 = echarts.init(document.getElementById('mainb2'), theme);
+                                echartBar2.setOption({
+                                    title: {
+
+                                    },
+                                    tooltip: {
+                                        trigger: 'axis',
+                                        axisPointer: {
+                                            animation: true
+                                        },
+                                        formatter: function (params) {
+                                            let ItemsArray = ['MWh', '%', 'MWh'];
+                                            var tooltipText = "";
+                                            var _unit;
+                                            tooltipText += params[0].name;
+                                            for (var i = 0; i < params.length; i++) {
+                                                _unit = ItemsArray[params[i].seriesIndex];
+                                                tooltipText += "<br/>" + '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background-color:' + params[i].color + '"></span>' + params[i].seriesName + " : " + NumberConvert2(params[i].value) + " " + _unit;
+                                            }
+                                            return tooltipText;
+                                        }
+                                    },
+                                    legend: {
+                                        data: [_production, 'PR', _target]
+                                    },
+                                    toolbox: {
+                                        show: false
+                                    },
+                                    calculable: false,
+                                    xAxis: [{
+                                        type: 'category',
+                                        data: [_january, _february, _march, _april, _may, _june, _july, _august, _september, _october, _november, _december],
+                                        axisLabel: {
+                                            show: true,
+                                            interval: 0,
+                                            rotate: 30,
+                                            margin: 8,
+                                            clickable: false,
+                                            formatter: null,
+                                            textStyle: {
+                                                fontSize: 12,
+                                                fontStyle: 'normal',
+                                                fontWeight: 'normal',
+                                            },
+                                        }
+                                    }],
+                                    yAxis: [{
+                                        type: 'value',
+                                        name: _production,
+                                        axisLabel: {
+                                            formatter: '{value} MWh'
+                                        }
+                                    }, {
+                                        type: 'value',
+                                        name: 'PR',
+                                        axisLabel: {
+                                            formatter: '{value} %'
+                                        }
+                                    }],
+                                    series: [{
+                                        name: _production,
+                                        type: 'bar',
+                                        yValueFormatString: "$####.00",
+                                        data: listAnnualTotal,
+                                        markPoint: {
+                                            data: []
+                                        },
+                                        markLine: {
+                                            data: []
+                                        }
+                                    },
+                                    {
+                                        name: 'PR',
+                                        type: 'bar',
+                                        data: listAnnualPR,
+                                        yAxisIndex: 1,
+                                        markPoint: {
+                                            data: []
+                                        },
+                                        markLine: {
+                                            data: []
+                                        }
+                                        }, {
+                                            name: _target,
+                                            type: 'line',
+                                            yAxisIndex: 0,
+                                            data: data.listTarget
+                                        }]
+                                });
+
+                            }
+                        });
+                    }
+            //Aylık Grafik Bit.
+
+            //Yıllık Grafik Bas.
+                $('#profile-tab22').click(function () {
+                    setTimeout(function () {
+                        CallAnnualChartData();
+                    }, 250);
+                });
+
+                function CallAnnualChartData() {
+                    $.ajax({
+                        url: "/Home/GetAnnualProduction",
+                        type: "POST",
+                        dataType: "json",
+                        data: { stationId: @Model},
+                        success: function (data) {
+                            var _production = $('#hdn_production').val();
+                            var listAnnualProduction = [];
+                            var listAnnualPR = [];
+                            var listAnnualTarget = [];
+                            var listYear = [];
+                            for (var i = 0; i < data.length; i++) {
+                                listAnnualProduction.push(data[i].energy);
+                                listAnnualPR.push(data[i].pr);
+                                listAnnualTarget.push(0);
+                                listYear.push(data[i].year);
+                            }
+                                var echartBar3 = echarts.init(document.getElementById('mainb3'), theme);
+                                echartBar3.setOption({
+                                    title: {
+
+                                    },
+                                    tooltip: {
+                                        trigger: 'axis',
+                                        axisPointer: {
+                                            animation: true
+                                        },
+                                        formatter: function (params) {
+                                            let ItemsArray = ['MWh', '%', 'MWh'];
+                                            var tooltipText = "";
+                                            var _unit;
+                                            tooltipText += params[0].name;
+                                            for (var i = 0; i < params.length; i++) {
+                                                _unit = ItemsArray[params[i].seriesIndex];
+                                                tooltipText += "<br/>" + '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background-color:' + params[i].color + '"></span>' + params[i].seriesName + " : " + NumberConvert2(params[i].value) + " " + _unit;
+                                            }
+                                            return tooltipText;
+                                        }
+                                    },
+                                    legend: {
+                                        data: [_production, 'PR']
+                                    },
+                                    toolbox: {
+                                        show: false
+                                    },
+                                    calculable: false,
+                                    xAxis: [{
+                                        type: 'category',
+                                        data: listYear
+                                    }],
+                                    yAxis: [{
+                                        type: 'value',
+                                        name: _production,
+                                        axisLabel: {
+                                            formatter: '{value} MWh'
+                                        }
+                                    }, {
+                                        type: 'value',
+                                        name: 'PR',
+                                        axisLabel: {
+                                            formatter: '{value} %'
+                                        }
+                                    }],
+                                    series: [{
+                                        name: _production,
+                                        type: 'bar',
+                                        data: listAnnualProduction,
+                                        markPoint: {
+                                            data: []
+                                        },
+                                        markLine: {
+                                            data: []
+                                        }
+                                    },
+                                    {
+                                        name: 'PR',
+                                        type: 'bar',
+                                        data: listAnnualPR,
+                                        yAxisIndex: 1,
+                                        markPoint: {
+                                            data: []
+                                        },
+                                        markLine: {
+                                            data: []
+                                        }
+                                        }]
+                                });
+
+                            }
+                        });
+                    }
+
+            //Yıllık Grafik Bit.
+
+                 //Total Grafik Bas.
+
+                $('#profile-tab23').click(function () {
+                    setTimeout(function () {
+                        CallTotalChartData();
+                    }, 250);
+                });
+                function CallTotalChartData() {
+                    $.ajax({
+                        url: "/Home/GetTotalProduction",
+                        type: "POST",
+                        dataType: "json",
+                        data: { stationId: @Model},
+                        success: function (data) {
+                            var _total = $('#hdn_total').val();
+                            var _production = $('#hdn_production').val();
+                            var listTotalProduction = [];
+                            var listTotalPR = [];
+                                listTotalProduction.push(data.energy);
+                                listTotalPR.push(data.pr);
+                                var echartBar4 = echarts.init(document.getElementById('mainb4'), theme);
+                                echartBar4.setOption({
+                                    title: {
+                                    },
+                                    tooltip: {
+                                        trigger: 'axis',
+                                        axisPointer: {
+                                            animation: true
+                                        },
+                                        formatter: function (params) {
+                                            let ItemsArray = ['MWh', '%', 'MWh'];
+                                            var tooltipText = "";
+                                            var _unit;
+                                            tooltipText += params[0].name;
+                                            for (var i = 0; i < params.length; i++) {
+                                                _unit = ItemsArray[params[i].seriesIndex];
+                                                tooltipText += "<br/>" + '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background-color:' + params[i].color + '"></span>' + params[i].seriesName + " : " + NumberConvert2(params[i].value) + " " + _unit;
+                                            }
+                                            return tooltipText;
+                                        }
+                                    },
+                                    legend: {
+                                        data: [_production, 'PR']
+                                    },
+                                    toolbox: {
+                                        show: false
+                                    },
+                                    calculable: false,
+                                    xAxis: [{
+                                        type: 'category',
+                                        data: [_total]
+                                    }],
+                                    yAxis: [{
+                                        type: 'value',
+                                        name: _production,
+                                        axisLabel: {
+                                            formatter: '{value} MWh'
+                                        }
+                                    }, {
+                                        type: 'value',
+                                        name: 'PR',
+                                        axisLabel: {
+                                            formatter: '{value} %'
+                                        }
+                                    }],
+                                    series: [{
+                                        name: _production,
+                                        type: 'bar',
+                                        data: listTotalProduction,
+                                        markPoint: {
+                                            data: []
+                                        },
+                                        markLine: {
+                                            data: []
+                                        }
+                                    },
+                                    {
+                                        name: 'PR',
+                                        type: 'bar',
+                                        data: listTotalPR,
+                                        yAxisIndex: 1,
+                                        markPoint: {
+                                            data: []
+                                        },
+                                        markLine: {
+                                            data: []
+                                        }
+                                        }]
+                                });
+
+                            }
+                        });
+                    }
+
+            //Total Grafik Bit.
+                //Hourly Average bas.
+                    $('#Rapor_Al').click(function () {
+                    var hourlyAvgDate = $('input[name="HourlyAvgDate"]').val();
+                    if (!hourlyAvgDate || hourlyAvgDate.length == 0) {
+                        hourlyAvgDate = new Date().toISOString();
+                        }
+
+                        $.ajax({
+                            url: "/Home/Rapor_Al/",
+                            type: "Post",
+                            dataType: "json",
+                            contentType: "application/json; charset=utf-8",
+                            data: "{'stationId':'" + @Model + "','slcDate':'" + hourlyAvgDate + "'}",
+                            success: function (data) {
+
+
+                            }
+                        });
+
+                    });
+
+                    $('#btnHourlyAVG').click(function () {
+                        setTimeout(function () {
+                            HourlyAverage();
+                        }, 250);
+                    });
+
+                    $('#btnListHourly').click(function () {
+                            HourlyAverage();
+                    });
+
+                    function HourlyAverage() {
+                        var hourlyAvgDate = $('input[name="HourlyAvgDate"]').val();
+                        var hourlyAvgDate2 = $('input[name="HourlyAvgDate2"]').val();
+                        if (!hourlyAvgDate || hourlyAvgDate.length == 0) {
+                            hourlyAvgDate = new Date().toISOString();
+                            hourlyAvgDate2 = new Date().toISOString();
+                        }
+
+                    $.ajax({
+                        url: "/Home/HourlyReport/",
+                        type: "Post",
+                        dataType: "json",
+                        contentType: "application/json; charset=utf-8",
+                        data: "{'slctDate':'" + hourlyAvgDate + "','endDate':'" + hourlyAvgDate2 + "','stationId':'" +@Model+ "'}",
+                        success: function (data) {
+                                    var _irradiation = $('#hdn_irradiation').val();
+                                    var _production = $('#hdn_production').val();
+                                    var _production_Hourly = $('#hdn_production_energy').val();
+                                    var listEnerji = [];
+                                    var listHour = [];
+                                    var listIsinim = [];
+                                    var listuretilen_enerji = [];
+
+                                    for (var i = 0; i < data.length; i++) {
+                                        listEnerji.push(data[i]._enerji);
+                                        listHour.push(data[i]._saat);
+                                        listuretilen_enerji.push(data[i]._uretilen_enerji);
+                                        listIsinim.push(data[i]._isinimToplam);
+                                    }
+                                var echartBar6 = echarts.init(document.getElementById('mainb6'), theme);
+                                echartBar6.setOption({
+                                    title: {
+                                    },
+                                    tooltip: {
+                                        trigger: 'axis',
+                                        axisPointer: {
+                                            animation: true
+                                        },
+                                        formatter: function (params) {
+                                            let ItemsArray = ['MWh', 'Wh/m²', 'MWh'];
+                                            var tooltipText = "";
+                                            var _unit;
+                                            tooltipText += params[0].name;
+
+                                            for (var i = 0; i < params.length; i++) {
+                                                _unit = ItemsArray[params[i].seriesIndex];
+                                                tooltipText += "<br/>" + '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background-color:' + params[i].color + '"></span>' + params[i].seriesName + " : " + NumberConvert2(params[i].value) + " " + _unit;
+                                            }
+
+                                            return tooltipText;
+
+                                        }
+                                    },
+                                    legend: {
+                                        data: [_production, _production_Hourly, _irradiation]
+                                    },
+                                    toolbox: {
+                                        show: true,
+                                        feature: {
+                                            mark: { show: false },
+                                            dataZoom: { show: false },
+                                            dataView: { show: false },
+                                            magicType: {
+                                                show: true,
+                                                title: {
+                                                    line: 'Line',
+                                                    bar: 'Bar'
+                                                },
+                                                type: ['line', 'bar']
+                                            },
+                                            restore: {
+                                                show: true,
+                                                title: "Restore"
+                                            },
+                                            saveAsImage: {
+                                                show: true,
+                                                title: "Save Image"
+                                            }
+                                        }
+                                    },
+                                    calculable: false,
+                                    dataZoom: [
+                                        {
+                                            show: true,
+                                            realtime: true,
+                                            start: 0,
+                                            end: 100
+                                        },
+                                        {
+                                            type: 'inside',
+                                            realtime: true,
+                                            start: 0,
+                                            end: 100
+                                        }
+                                    ],
+                                    xAxis: [{
+                                        type: 'category',
+                                        data: listHour,
+                                        axisLabel: {
+                                            show: true,
+                                            interval: 0,
+                                            rotate: 0,
+                                            clickable: false,
+                                            formatter: null,
+                                            textStyle: {
+                                                fontSize: 11,
+                                                fontStyle: 'normal',
+                                                fontWeight: 'normal',
+                                            },
+                                        }
+                                    }],
+                                    yAxis: [
+                                        {
+                                            type: 'value',
+                                            name: _production,
+                                            axisLabel: {
+                                                formatter: '{value} MWh'
+                                            },
+                                            beginAtZero: true,
+                                            steps: 100,
+                                            stepValue: 100
+                                        },
+                                        {
+                                            type: 'value',
+                                            name: '                                    ' + _irradiation + '          ' + "EKK Ü.E" + '',
+                                            axisLabel: {
+                                                formatter: '{value} Wh/m²'
+                                            }
+                                        },
+
+                                        {
+                                            type: 'value',
+                                            name: '',
+                                            axisLabel: {
+                                                formatter: '                       {value} MWh'
+                                            },
+                                            beginAtZero: true,
+                                            steps: 100,
+                                            stepValue: 100
+                                        }
+                                    ],
+                                    series: [
+                                        {
+                                            name: _production,
+                                            type: 'bar',
+                                            yAxisIndex: 0,
+                                            data: listEnerji,
+                                            markPoint: {
+                                                label: {
+                                                    normal: {
+                                                        textStyle: {
+                                                            color: '#000',
+                                                            fontWeight: 'bold',
+                                                            fontSize: 10
+                                                        }
+                                                    }
+                                                },
+                                                data: [{
+                                                    type: 'max',
+                                                    name: 'MAX'
+                                                }, {
+                                                    type: 'min',
+                                                    name: 'MIN'
+                                                }]
+                                            },
+                                            markLine: {
+                                                data: [{
+                                                    type: 'average',
+                                                    name: 'Average'
+                                                }]
+                                            }
+                                        }, {
+                                            name: _irradiation,
+                                            type: 'line',
+                                            yAxisIndex: 1,
+                                            data: listIsinim,
+                                            markPoint: {
+                                                label: {
+                                                    normal: {
+                                                        textStyle: {
+                                                            color: '#000',
+                                                            fontWeight: 'bold',
+                                                            fontSize: 10
+                                                        }
+                                                    }
+                                                },
+                                                data: [{
+                                                    type: 'max',
+                                                    name: 'MAX'
+                                                }, {
+                                                    type: 'min',
+                                                    name: 'MIN'
+                                                }]
+
+                                            },
+                                            markLine: {
+                                                data: [{
+                                                    type: 'average',
+                                                    name: 'Average'
+                                                }]
+                                            }
+                                        },
+                                        {
+                                            name: _production_Hourly,
+                                            type: 'line',
+                                            yAxisIndex: 2,
+                                            data: listuretilen_enerji,
+                                            markPoint: {
+                                                label: {
+                                                    normal: {
+                                                        textStyle: {
+                                                            color: '#000',
+                                                            fontWeight: 'bold',
+                                                            fontSize: 10
+                                                        }
+                                                    }
+                                                },
+                                                data: [{
+                                                    type: 'max',
+                                                    name: 'MAX'
+                                                }, {
+                                                    type: 'min',
+                                                    name: 'MIN'
+                                                }]
+
+                                            },
+                                            markLine: {
+                                                data: [{
+                                                    type: 'average',
+                                                    name: 'Average'
+                                                }]
+                                            }
+                                        }
+                                    ]
+                                });
+                        }
+                    });
+                }
+                    //Hourly Average bit.
+
+            //DateTimePicker bas.
+                $('#single_cal4').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+                $('#single_cal5').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+                $('#single_cal6').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+
+                $('#inpHour').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+
+                $('#inpAkim').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+
+                $('#inpHour').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+
+                $('#inpHour2').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                    });
+               //DateTimePicker bit.
+                });
+
+        </script>
+        <script src="~/Content/weather/date.js"></script>
+        <script>
+
+            var openWeatherAppId = 'b7204938043031ab1c7e0eb6df69baef',
+                openWeatherUrl = 'http://api.openweathermap.org/data/2.5/forecast/daily'
+
+            var prepareData = function (units) {
+                // Replace loading image
+                var cityName = $('#city-name').val()
+                // Make ajax call, callback
+
+                getData(openWeatherUrl, cityName, openWeatherAppId, units)
+
+            }
+
+            $(document).ready(function () {
+
+                prepareData('metric')
+
+                $('.btn-imperial').click(function () {
+                    prepareData('imperial')
+                });
+
+                })
+                function ConvertDateJson(vl) {
+
+                    vl = vl.replace("Date", "");
+                    vl = vl.replace("/", "");
+                    vl = vl.replace("(", "");
+                    vl = vl.replace(")", "");
+                    vl = vl.replace("/", "").trim();
+
+                    var vlDate = new Date(parseInt(vl));
+                    return vlDate.toLocaleDateString();
+                }
+
+            function getData(url, cityName, appId, units) {
+                var request = $.ajax({
+                    url: url,
+                    dataType: "jsonp",
+                    data: { q: '@_stationDetail.WEATHER_LOCATION', appid: appId, units: units },
+                    jsonpCallback: "fetchData",
+                    type: "GET"
+                }).fail(function (error) {
+                    //console.error(error)
+                    //alert('Error sending request')
+                })
+            }
+                function fetchData(forecast) {
+
+                console.log(forecast)
+
+                $('#weatherState0').html(forecast.list[0].weather[0].description)
+                    $('#CityCountry').html(forecast.city.country)
+                    $('#City').html(forecast.city.name)
+                    var _humidity = $('#hdn_humidity').val();
+                    var _pressure = $('#hdn_pressure').val();
+                    var _cloudiness = $('#hdn_cloudiness').val();
+                    for (var i = 0; i < forecast.list.length; i++) {
+
+                        var divNum = ".hava" + i;
+                        $(divNum).attr('src', "/images/Weather/" + forecast.list[i].weather[0].icon + ".png");
+
+                        var divTemp = "#temp" + i;
+                        $(divTemp).html(forecast.list[i].temp.day + "°");
+
+                        var divWind = "#wind" + i;
+                        $(divWind).html(forecast.list[i].speed + " km/h");
+
+                        var divDate = "#weatherDate" + i;
+                        var date = "/Date(" + forecast.list[i].dt + "000)/";
+                        $(divDate).html(ConvertDateJson(date));
+
+                        var tooltipWeather = "#tooltipWeatherState" + i;
+                        $(tooltipWeather).attr('title', forecast.list[i].weather[0].description);
+
+                        var tooltipWeatherInfo = "#tooltip" + i;
+                        $(tooltipWeatherInfo).attr('title', _humidity + ' : ' + forecast.list[i].humidity + '% \n' + _pressure + ' : ' + forecast.list[i].pressure + ' hpa \n' + _cloudiness + ' : ' + forecast.list[i].clouds + '%');
+
+                    }
+            }
+        </script>
+    }
+}

@@ -1,0 +1,723 @@
+﻿@using language
+@{
+    ViewBag.Title = @Resources.Alarm_State_List;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Partial("MenuPartial")
+
+<style>
+    table.dataTable tbody tr.myeven {
+        color: #ff0000;
+    }
+
+    table.dataTable tbody tr.myodd {
+        color: #ffd800;
+    }
+</style>
+@section scripts{
+
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script src="~/Scripts/bootstrap-datepicker.min.js"></script>
+    <script src="~/Scripts/jquery.inputmask.min.js"></script>
+
+
+    <link href="  https://cdn.datatables.net/select/1.2.7/css/select.dataTables.min.css" rel="stylesheet" />
+    <link href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" rel="stylesheet" />
+    <link href="https://editor.datatables.net/extensions/Editor/css/editor.dataTables.min.css" rel="stylesheet" />
+
+    <script src="https://cdn.datatables.net/select/1.2.7/js/dataTables.select.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.10/jquery.mask.js"></script>
+    <script src="https://cdn.datatables.net/select/1.2.7/js/dataTables.select.min.js"></script>
+    <link href="~/css/bootstrap-datepicker.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker.css" rel="stylesheet" />
+
+    }
+<h2>@Resources.Alarm_State_List</h2>
+<div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12">
+        <div class="x_panel">
+            <div class="x_content">
+                <div class="" role="tabpanel" data-example-id="togglable-tabs">
+                    <ul id="myTab1" class="nav nav-tabs bar_tabs" role="tablist">
+                        <li role="presentation" class="active">
+                            <a href="#tab_contentA" id="profile-tabA" role="tab" data-toggle="tab" aria-controls="home" aria-expanded="true">@Resources.New_Alarm</a>
+                        </li>
+                        <li role="presentation" id="profile-tabB" class="">
+                            <a href="#tab_contentB" id="profile-tabB" role="tab"   data-toggle="tab"aria-controls="home" aria-expanded="true">@Resources.Seen_Alarm</a>
+                        </li>
+                       
+                    </ul>
+                    <div id="myTabContent" class="tab-content">
+                        <div role="tabpanel" class="tab-pane fade active in" id="tab_contentA" aria-labelledby="home-tab">
+                            <div class="x_panel">
+                                @*<img id="LoadingImage3" src="~/images/loader.gif" />*@
+                                <div class="x_content">
+
+                                    <div class="well" style="overflow: auto">
+                                        @Resources.From
+                                        <input name="inpHour" id="inpHour" type="text" />&nbsp;&nbsp;
+                                        @Resources.To
+                                        <input name="inpHour2" id="inpHour2" type="text" />&nbsp;&nbsp;
+                                        <input type="button" class="btn btn-info" id="button2" value="@Resources.Show" />
+                                        <input type="button" class="btn btn-info" id="button" value="@Resources.Seen" />
+                                        <input type="button" class="btn btn-info" id="buttonExcel"  value="Excel" />
+                                        <table id="AlarmListTable" class="table table-striped table-bordered" width="100%">
+                                            <thead style="background-color:#337ab7;color:#E7E7E7">
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th></th>
+                                                    <th>@Resources.Error_Name</th>
+                                                    <th>@Resources.Inverter_Name</th>
+                                                    <th>@Resources.From</th>
+                                                    <th>@Resources.To</th>
+
+
+                                                </tr>
+                                            </thead>
+                                        </table>
+                                 
+                                            <script>
+
+        $(document).ready(function () {
+            //$("#tab_contentB").on("click", function () {
+
+            //    var url_string = document.URL;
+            //    var url = new URL(url_string);
+            //    var stationId = url.searchParams.get("stationId");
+            //    var startDate = $('input[name="inpHour"]').val();
+            //    var endDate = $('input[name="inpHour2"]').val();
+
+            //    window.location.href = '/AlarmNew/ExportExcel?startDate=' + startDate + "&endDate=" + endDate + "&stationId=" + stationId;
+
+            //});
+            $('#inpHour').daterangepicker({
+                singleDatePicker: true,
+                showDropdowns: true,
+                startDate: moment().add(-30, 'day'),
+                //minDate: moment(),
+                locale: {
+                    format: 'DD/MM/YYYY'
+                }
+            });
+
+            $('#inpHour2').daterangepicker({
+                singleDatePicker: true,
+                showDropdowns: true,
+                startDate: moment().add(0, 'day'),
+                //minDate: moment(),
+                locale: {
+                    format: 'DD/MM/YYYY'
+                }
+            });
+
+            $("#buttonExcel").on("click", function () {
+                debugger;
+                var url_string = document.URL;
+                var url = new URL(url_string);
+                var stationId = url.searchParams.get("stationId");
+                var startDate = $('input[name="inpHour"]').val();
+                var endDate = $('input[name="inpHour2"]').val();
+                if (!startDate || startDate.length == 0) {
+                    startDate = new Date().toISOString();
+                }
+                if (!endDate || endDate.length == 0) {
+                    endDate = new Date().toISOString();
+                }
+                var searchValue = $('input[type="search"]').val();
+                window.location.href = '/AlarmNew/ExportExcel?stationId=' + stationId + "&startDate=" + startDate + "&endDate=" + endDate + "&searchValue=" + searchValue;                                            
+            });
+
+
+
+
+            $("#button2").on("click", function () {
+
+                var url_string = document.URL;
+                var url = new URL(url_string);
+                var stationId = url.searchParams.get("stationId");
+                var startDate = $('input[name="inpHour"]').val();
+                var endDate = $('input[name="inpHour2"]').val();
+
+                if (!startDate || startDate.length == 0) {
+                    startDate = new Date().toISOString();
+                }
+                if (!endDate || endDate.length == 0) {
+                    endDate = new Date().toISOString();
+                }
+                $("#AlarmListTable").DataTable().destroy();
+                $("#AlarmListTable").DataTable({
+
+                    "processing": true,
+                    "serverSide": true,
+                    "order": [3, "desc"],
+                    "ajax": {
+                        "url": "/AlarmNew/GetData",
+                        "type": "POST",
+                        "data": {
+                            "stationId": stationId,
+                            "startDate": startDate,
+                            "endDate": endDate
+                        },
+                        "datatype": "json"
+
+                    },
+                    select: {
+                        style: 'multi'
+                    },
+                    "columns": [
+                        { "data": "ID" },
+                        { "defaultContent": "" },
+                        { "data": "ERROR_NUMBER" },
+                        { "data": "INVERTER_NAME" },
+                        { "data": "START_DATE" },
+                        { "data": "END_DATE" },
+
+                    ],
+                    columnDefs: [
+                        { "visible": false, "targets": 0 },
+                        {
+
+                            orderable: false,
+                            className: 'select-checkbox',
+                            targets: 1
+                        }],
+                                                "rowCallback": function (row, data, index) {
+                                                    var data1 = data;
+                        //                            Console(data);
+                        //debugger;
+                                                if (data.TYPE == 0) {
+                                                    debugger;
+                            $(row).removeClass('myodd myeven');
+                            $(row).addClass('myodd');
+                        }
+                                                if (data.TYPE == 1) {
+                                                    debugger;
+                            $(row).removeClass('myodd myeven');
+                            $(row).addClass('myodd');
+                        }
+                                                else {
+                                                    debugger;
+                            $(row).removeClass('myodd myeven');
+                            $(row).addClass('myeven');
+                        }
+                    },
+                     "language": {
+
+                        "emptyTable": "@Resources.emptyTable",
+                        "decimal": "",
+                        "info": "@Resources.Showing_START_to_END_of_TOTAL_entries",
+                        "infoEmpty": "@Resources.Showing_0_to_0_of_0_entries",
+                        "infoFiltered": "@Resources.filtered_from_MAX_total_entries",
+                        "infoPostFix": "",
+                        "thousands": ",",
+                        "lengthMenu": "@Resources.Show_MENU_entries",
+                        "loadingRecords": "@Resources.loadingRecords",
+                        "processing": "@Resources.processing",
+                        "search": "@Resources.Search",
+                        "zeroRecords": "@Resources.No_matching_records_found",
+                        "paginate": {
+                            "first": "@Resources.First",
+                            "last": "@Resources.Last",
+                            "next": "@Resources.Next",
+                            "previous": "@Resources.Previous"
+                        },
+                        "aria": {
+                            "sortAscending": "@Resources.activate_to_sort_column_ascending",
+                            "sortDescending": "@Resources.activate_to_sort_column_descending"
+                        },
+                        "select": {
+                            "rows": {
+                                "_": "@Resources.Select_records_",
+                                "0": "",
+                                "1": "@Resources.Select_records_1"
+                            }
+                        }
+                    }
+
+                                                });
+
+
+
+                //$('#AlarmListTable').DataTable().ajax.reload();
+
+            });
+            $("#button").on("click", function () {
+                var oTable = $('#AlarmListTable').DataTable();
+
+                var oAll = [];
+                $('#AlarmListTable tbody tr.selected').each(function () {
+                    var pos = oTable.row(this).index();
+                    var row = oTable.row(pos).data();
+                    oAll.push(row);
+                });
+
+                for (var i = 0; i < oAll.length; i++) {
+
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("Update","AlarmNew")/' + oAll[i].ID,
+                    success: function (data) {
+                        if (data.success) {
+
+
+                            $.notify(data.message, {
+                                globalPosition: "Top center",
+                                className: "success"
+                            })
+                        }
+                    }
+
+
+                });
+                }
+
+                $('#AlarmListTable').DataTable().ajax.reload();
+
+            });
+            $('#AlarmListTable').hide();
+            $('#AlarmListTable').fadeIn(1000);
+        });
+
+
+        var Popup;
+        GetAlarmTable();
+        function GetAlarmTable() {
+        var dataTable = $(document).ready(function () {
+            var url_string = document.URL;
+            var url = new URL(url_string);
+            var stationId = url.searchParams.get("stationId");
+
+            var startDate = $('input[name="inpHour"]').val();
+            var endDate = $('input[name="inpHour2"]').val();
+
+
+            //$(endDate).datepicker('setDate', null);
+            if (!startDate || startDate.length == 0) {
+                startDate = new Date().toISOString();
+            }
+            if (!endDate || endDate.length == 0) {
+                endDate = new Date().toISOString();
+            }
+
+
+                $("#AlarmListTable").DataTable().destroy();
+                $("#AlarmListTable").DataTable({
+
+                    "processing": true,
+                    "serverSide": true,
+                    "order": [3, "desc"],
+                    "ajax": {
+                        "url": "/AlarmNew/GetData",
+                        "type": "POST",
+                        "data": {
+                            "stationId": stationId,
+                            "startDate": startDate,
+                            "endDate": endDate
+                        },
+                        "datatype": "json"
+
+                    },
+                    select: {
+                        style: 'multi'
+                    },
+                    "columns": [
+                        { "data": "ID" },
+                        { "defaultContent": "" },
+                        { "data": "ERROR_NUMBER" },
+                        { "data": "INVERTER_NAME" },
+                        { "data": "START_DATE" },
+                        { "data": "END_DATE" },
+
+                    ],
+                    columnDefs: [
+                        { "visible": false, "targets": 0 },
+                        {
+
+                            orderable: false,
+                            className: 'select-checkbox',
+                            targets: 1
+                        }],
+                    "rowCallback": function (row, data, index) {
+                        var data1 = data;
+                        debugger;
+                                                if (data.TYPE == 0) {
+                                                    debugger;
+                            $(row).removeClass('myodd myeven');
+                            $(row).addClass('myodd');
+                        }
+                                                if (data.TYPE == 1) {
+                                                    debugger;
+                            $(row).removeClass('myodd myeven');
+                            $(row).addClass('myodd');
+                        }
+                                                else {
+                                                    debugger;
+                            $(row).removeClass('myodd myeven');
+                            $(row).addClass('myeven');
+                        }
+                    },
+                  "language": {
+
+                        "emptyTable": "@Resources.emptyTable",
+                        "decimal": "",
+                        "info": "@Resources.Showing_START_to_END_of_TOTAL_entries",
+                        "infoEmpty": "@Resources.Showing_0_to_0_of_0_entries",
+                        "infoFiltered": "@Resources.filtered_from_MAX_total_entries",
+                        "infoPostFix": "",
+                        "thousands": ",",
+                        "lengthMenu": "@Resources.Show_MENU_entries",
+                        "loadingRecords": "@Resources.loadingRecords",
+                        "processing": "@Resources.processing",
+                        "search": "@Resources.Search",
+                        "zeroRecords": "@Resources.No_matching_records_found",
+                        "paginate": {
+                            "first": "@Resources.First",
+                            "last": "@Resources.Last",
+                            "next": "@Resources.Next",
+                            "previous": "@Resources.Previous"
+                        },
+                        "aria": {
+                            "sortAscending": "@Resources.activate_to_sort_column_ascending",
+                            "sortDescending": "@Resources.activate_to_sort_column_descending"
+                        },
+                        "select": {
+                            "rows": {
+                                "_": "@Resources.Select_records_",
+                                "0": "",
+                                "1": "@Resources.Select_records_1"
+                            }
+                        }
+                    }
+
+                });
+
+        });
+        }
+
+
+
+
+
+
+                                            </script>
+
+
+                                        
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                     
+
+
+
+
+
+
+
+
+
+
+                        <div role="tabpanel" class="tab-pane fade" id="tab_contentB" aria-labelledby="home-tab">
+                            <div class="x_panel">
+                                @*<img id="LoadingImage3" src="~/images/loader.gif" />*@
+                                <div class="x_content">
+                                   
+                                   
+                                    
+                                    <div class="well" style="overflow: auto">
+                                        @Resources.From
+                                        <input name="inpHour3" id="inpHour3" type="text" />&nbsp;&nbsp;
+                                        @Resources.To
+                                        <input name="inpHour4" id="inpHour4" type="text" />&nbsp;&nbsp;
+                                        <input type="button" class="btn btn-info" id="button4" value="@Resources.Show" />
+                                        <input type="button" class="btn btn-info" id="buttonExcel2" value="Excel" />
+                                        <table id="AlarmListTable2" class="table table-striped table-bordered" width="100%">
+                                            <thead style="background-color:#337ab7;color:#E7E7E7">
+                                                <tr>
+                                                   
+                                                    <th>ID</th>
+                                                    <th>@Resources.Error_Name</th>
+                                                    <th>@Resources.Inverter_Name</th>
+                                                    <th>@Resources.From</th>
+                                                    <th>@Resources.To</th>
+
+                                                </tr>
+                                            </thead>
+                                        </table>
+                                    
+                                            <script>
+        $(document).ready(function () {
+
+
+
+            $('#inpHour3').daterangepicker({
+                singleDatePicker: true,
+                showDropdowns: true,
+                startDate: moment().add(-30, 'day'),
+                //minDate: moment(),
+                locale: {
+                    format: 'DD/MM/YYYY'
+                }
+            });
+
+            $('#inpHour4').daterangepicker({
+                singleDatePicker: true,
+                showDropdowns: true,
+                startDate: moment().add(0, 'day'),
+                //minDate: moment(),
+                locale: {
+                    format: 'DD/MM/YYYY'
+                }
+            });
+            $("#buttonExcel2").on("click", function () {
+
+                 var url_string = document.URL;
+                 var url = new URL(url_string);
+                 var stationId = url.searchParams.get("stationId");
+                 var startDate = $('input[name="inpHour"]').val();
+                 var endDate = $('input[name="inpHour2"]').val();
+
+                 window.location.href = '/AlarmNew/ExportExcel2?startDate=' + startDate + "&endDate=" + endDate + "&stationId=" + stationId;
+
+             });
+                                          
+            $("#button4").on("click", function () {
+                var url_string = document.URL;
+                var url = new URL(url_string);
+                var stationId = url.searchParams.get("stationId");
+
+                var startDate = $('input[name="inpHour3"]').val();
+                var endDate = $('input[name="inpHour4"]').val();
+
+
+
+                //$(endDate).datepicker('setDate', null);
+                if (!startDate || startDate.length == 0) {
+                    startDate = new Date().toISOString();
+                }
+                if (!endDate || endDate.length == 0) {
+                    endDate = new Date().toISOString();
+                }
+                $("#AlarmListTable2").DataTable().destroy();
+                $("#AlarmListTable2").DataTable({
+
+                    "processing": true,
+                    "serverSide": true,
+                    "order": [3, "desc"],
+                    "ajax": {
+                        "url": "/AlarmNew/GetData2",
+                        "type": "POST",
+                        "data": {
+                            "stationId": stationId,
+                            "startDate": startDate,
+                            "endDate": endDate
+                        },
+                        "datatype": "json"
+
+                    },
+
+                    "columns": [
+                        { "data": "ID" },
+                        { "data": "ERROR_NUMBER" },
+                        { "data": "INVERTER_NAME" },
+                        { "data": "START_DATE" },
+                        { "data": "END_DATE" },
+
+                    ],
+                    columnDefs: [
+                        { "visible": false, "targets": 0 },
+                                                ],
+                    "rowCallback": function (row, data, index) {
+                        var data1 = data;
+                        debugger;
+                        if (data.TYPE == 0) {
+                            $(row).removeClass('myodd myeven');
+                            $(row).addClass('myodd');
+                        }
+                        if (data.TYPE == 1) {
+                            $(row).removeClass('myodd myeven');
+                            $(row).addClass('myodd');
+                        }
+                        else {
+                            $(row).removeClass('myodd myeven');
+                            $(row).addClass('myeven');
+                        }
+                    },
+                            "language": {
+
+                        "emptyTable": "@Resources.emptyTable",
+                        "decimal": "",
+                        "info": "@Resources.Showing_START_to_END_of_TOTAL_entries",
+                        "infoEmpty": "@Resources.Showing_0_to_0_of_0_entries",
+                        "infoFiltered": "@Resources.filtered_from_MAX_total_entries",
+                        "infoPostFix": "",
+                        "thousands": ",",
+                        "lengthMenu": "@Resources.Show_MENU_entries",
+                        "loadingRecords": "@Resources.loadingRecords",
+                        "processing": "@Resources.processing",
+                        "search": "@Resources.Search",
+                        "zeroRecords": "@Resources.No_matching_records_found",
+                        "paginate": {
+                            "first": "@Resources.First",
+                            "last": "@Resources.Last",
+                            "next": "@Resources.Next",
+                            "previous": "@Resources.Previous"
+                        },
+                        "aria": {
+                            "sortAscending": "@Resources.activate_to_sort_column_ascending",
+                            "sortDescending": "@Resources.activate_to_sort_column_descending"
+                        },
+                        "select": {
+                            "rows": {
+                                "_": "@Resources.Select_records_",
+                                "0": "",
+                                "1": "@Resources.Select_records_1"
+                            }
+                        }
+                    }
+
+                                                });
+
+
+
+                //$('#AlarmListTable').DataTable().ajax.reload();
+
+            });
+
+            $('#AlarmListTable2').hide();
+            $('#AlarmListTable2').fadeIn(1000);
+        });
+
+
+        var Popup;
+        GetAlarmTable();
+        function GetAlarmTable() {
+        var dataTable = $(document).ready(function () {
+            var url_string = document.URL;
+            var url = new URL(url_string);
+            var stationId = url.searchParams.get("stationId");
+
+            var startDate = $('input[name="inpHour3"]').val();
+            var endDate = $('input[name="inpHour4"]').val();
+
+
+            //$(endDate).datepicker('setDate', null);
+            if (!startDate || startDate.length == 0) {
+                startDate = new Date().toISOString();
+            }
+            if (!endDate || endDate.length == 0) {
+                endDate = new Date().toISOString();
+            }
+
+
+                $("#AlarmListTable2").DataTable().destroy();
+                $("#AlarmListTable2").DataTable({
+
+                    "processing": true,
+                    "serverSide": true,
+                    "order": [3, "desc"],
+                    "ajax": {
+                        "url": "/AlarmNew/GetData2",
+                        "type": "POST",
+                        "data": {
+                            "stationId": stationId,
+                            "startDate": startDate,
+                            "endDate": endDate
+                        },
+                        "datatype": "json"
+
+                    },
+
+                    "columns": [
+                        { "data": "ID" },
+                        { "data": "ERROR_NUMBER" },
+                        { "data": "INVERTER_NAME" },
+                        { "data": "START_DATE" },
+                        { "data": "END_DATE" },
+
+                    ],
+                    columnDefs: [
+                        { "visible": false, "targets": 0 },
+                      ],
+                    "rowCallback": function (row, data, index) {
+
+                        if (data.TYPE == 0) {
+                            $(row).removeClass('myodd myeven');
+                            $(row).addClass('myodd');
+                        }
+                        if (data.TYPE == 1) {
+                            $(row).removeClass('myodd myeven');
+                            $(row).addClass('myodd');
+                        }
+                        else {
+                            $(row).removeClass('myodd myeven');
+                            $(row).addClass('myeven');
+                        }
+                    },
+                            "language": {
+
+                        "emptyTable": "@Resources.emptyTable",
+                        "decimal": "",
+                        "info": "@Resources.Showing_START_to_END_of_TOTAL_entries",
+                        "infoEmpty": "@Resources.Showing_0_to_0_of_0_entries",
+                        "infoFiltered": "@Resources.filtered_from_MAX_total_entries",
+                        "infoPostFix": "",
+                        "thousands": ",",
+                        "lengthMenu": "@Resources.Show_MENU_entries",
+                        "loadingRecords": "@Resources.loadingRecords",
+                        "processing": "@Resources.processing",
+                        "search": "@Resources.Search",
+                        "zeroRecords": "@Resources.No_matching_records_found",
+                        "paginate": {
+                            "first": "@Resources.First",
+                            "last": "@Resources.Last",
+                            "next": "@Resources.Next",
+                            "previous": "@Resources.Previous"
+                        },
+                        "aria": {
+                            "sortAscending": "@Resources.activate_to_sort_column_ascending",
+                            "sortDescending": "@Resources.activate_to_sort_column_descending"
+                        },
+                        "select": {
+                            "rows": {
+                                "_": "@Resources.Select_records_",
+                                "0": "",
+                                "1": "@Resources.Select_records_1"
+                            }
+                        }
+                    }
+
+                });
+
+        });
+        }
+
+
+
+
+
+
+                                            </script>
+
+
+                                        
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

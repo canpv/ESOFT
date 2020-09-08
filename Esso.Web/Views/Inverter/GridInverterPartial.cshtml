@@ -1,0 +1,62 @@
+﻿@using System.Web.UI.WebControls
+@model int
+
+@{
+
+    GridViewSettings settings = new GridViewSettings();
+
+    settings.Name = "gvInverters";
+    settings.KeyFieldName = "ID";
+    settings.CallbackRouteValues = new { Controller = "Inverter", Action = "GridInverterPartial", stationId = Model };
+    settings.SettingsEditing.AddNewRowRouteValues = new { Controller = "Inverter", Action = "Create", stationId = Model };
+    settings.SettingsEditing.UpdateRowRouteValues = new { Controller = "Inverter", Action = "Edit", stationId = Model };
+    settings.SettingsEditing.DeleteRowRouteValues = new { Controller = "Inverter", Action = "Delete", stationId = Model };
+    settings.SettingsEditing.Mode = GridViewEditingMode.EditFormAndDisplayRow;
+    settings.SettingsBehavior.ConfirmDelete = true;
+    settings.Width = Unit.Percentage(100);
+
+    settings.CommandColumn.ShowNewButtonInHeader = true;
+    settings.SettingsBehavior.AllowSort = false;
+    settings.EnableRowsCache = true;
+
+    settings.CommandColumn.Visible = true;
+    settings.CommandColumn.ShowDeleteButton = true;
+    settings.CommandColumn.ShowEditButton = true;
+    settings.CommandColumn.ShowUpdateButton = true;
+    settings.CommandColumn.Width = Unit.Point(75);
+
+    settings.CommandColumn.ButtonRenderMode = GridCommandButtonRenderMode.Image;
+    settings.SettingsCommandButton.NewButton.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ActionsAdd16x16;
+    settings.SettingsCommandButton.DeleteButton.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ActionsTrash16x16;
+    settings.SettingsCommandButton.EditButton.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ActionsEditname16x16;
+    settings.SettingsCommandButton.UpdateButton.Image.IconID = DevExpress.Web.ASPxThemes.IconID.SaveSave16x16;
+
+    settings.Settings.VerticalScrollBarMode = ScrollBarMode.Visible;
+    settings.Settings.VerticalScrollableHeight = 250;
+
+    //settings.SettingsDetail.AllowOnlyOneMasterRowExpanded = true;
+    //settings.SettingsDetail.ShowDetailRow = true;
+
+    //settings.SetDetailRowTemplateContent(c =>
+    //{
+    //    Html.RenderAction("InvAdressDetailPartial", "Inverter", new { inverterId = DataBinder.Eval(c.DataItem, "ID") });
+    //});
+
+    //settings.PreRender = (sender, e) =>
+    //{
+    //    ((MVCxGridView)sender).DetailRows.ExpandRow(0);
+    //};
+
+    //Column info
+    settings.Columns.Add(c => { c.FieldName = "NAME"; c.Caption = "Inverter"; });
+
+
+    var grid = Html.DevExpress().GridView(settings);
+
+}
+
+@grid.BindToLINQ(string.Empty, string.Empty, (s, e) =>
+{
+    e.KeyExpression = "ID";
+    e.QueryableSource = Esso.Service.InverterService.GetInvertersAsQuery(x => x.STATION_ID == Model && x.IS_DELETED == false).OrderByDescending(x => x.NAME);
+}).GetHtml()

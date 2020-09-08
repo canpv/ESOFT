@@ -1,0 +1,61 @@
+﻿@model List<Esso.Models.TBL_TAG>
+
+<script type="text/javascript">
+
+    //Global Start
+    var companyId;
+    var templateId;
+    //Global End
+
+    //Company combo start
+        function onCompanySelected(e)
+        {
+            companyId = e.GetValue(); ;
+            gvTemplate.Refresh();
+        }
+    //Company combo end
+
+    //Templategrid start
+
+        function onTemplateGridCallback(s, e) {
+
+            e.customArgs["companyId"] = companyId;
+        }
+
+        function onTemplateSelected(s, e) {
+            debugger;
+            if (gvTemplateDet.batchEditApi.HasChanges()) {
+                gvTemplateDet.CancelEdit();
+            }
+            s.GetRowValues(s.GetFocusedRowIndex(), 'ID', OnGetTempValues);
+        }
+
+        function OnGetTempValues(values) {
+            templateId = values;
+            gvTemplateDet.PerformCallback();
+            //gvStation.PerformCallback();
+        }
+
+    //Templategrid end
+
+    //TemplateDetGrid start
+        function onTemplateDetGridCallback(s, e) {
+
+            e.customArgs["templateId"] = templateId;
+        }
+    //TemplateDetGrid End
+    
+    //TemplateDet start
+    $(document).ready(function () {
+        $('#dd').html(@{Model.Count.ToString();});
+        });
+    //TemplateDet start
+
+</script>
+
+<div id="dd"></div>
+
+
+@{Html.RenderAction("CompanyPartial", "TagTemplate");}
+@{Html.RenderAction("GridTagTemplatePartial", "TagTemplate");}
+@{Html.RenderAction("GridTagTemplateDetPartial", "TagTemplate");}

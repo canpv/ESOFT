@@ -1,0 +1,265 @@
+﻿@using System.Web.UI.WebControls
+@using Esso.Data
+@using Microsoft.AspNet.Identity.EntityFramework;
+@using Esso.Web.Models
+@using DevExpress.Data.Filtering
+@using Esso.Models
+@using Esso.Web.ViewModels
+@using System.Threading;
+@using System.Globalization;
+@model Esso.Web.Controllers.CompanyAlarmController.CompanyAlarmListPartialModel
+@{
+    //Thread.CurrentThread.CurrentCulture = new CultureInfo("tr-TR");
+    DateTime date1 = DateTime.Parse(Model.FirstDate);
+    DateTime date2 = DateTime.Parse(Model.EndDate);
+
+    int CompanyId = Model.CompanyId;
+
+    EssoEntities DB = new EssoEntities();
+    List<TBL_STATION> stations = new List<TBL_STATION>();
+    var _listAlarmDesc = DB.AlarmDesc.ToList();
+    string userId = ViewBag.UserId;
+    bool? isDemo = false;
+
+    if (User.IsInRole("M_ADMIN"))
+    {
+        stations = DB.Stations.Where(a => a.IS_DELETED == false && a.IS_ACTIVE == true && a.STATION_TYPE != 4 && a.COMPANY_ID == CompanyId).ToList();
+    }
+    else if (User.IsInRole("COMP_ADMIN"))
+    {
+        stations = DB.Stations.Where(a => a.IS_DELETED == false && a.IS_ACTIVE == true && a.STATION_TYPE != 4 && a.COMPANY_ID == CompanyId).ToList();
+    }
+    else if (User.IsInRole("COMP_USER"))
+    {
+        int[] ibs = DB.StationUsers.Where(a => a.USER_ID == userId && a.IS_DELETED == false).Select(a => a.STATION_ID).ToArray();
+        stations = DB.Stations.Where(a => a.IS_DELETED == false && a.IS_ACTIVE == true && ibs.Contains(a.ID) && a.STATION_TYPE != 4 && a.COMPANY_ID == CompanyId).ToList();
+    }
+    else if (User.IsInRole("DEMO"))
+    {
+        isDemo = true;
+        int[] ibs = DB.StationUsers.Where(a => a.USER_ID == userId && a.IS_DELETED == false).Select(a => a.STATION_ID).ToArray();
+        stations = DB.Stations.Where(a => a.IS_DELETED == false && a.IS_ACTIVE == true && ibs.Contains(a.ID) && a.STATION_TYPE != 4 && a.COMPANY_ID == CompanyId).ToList();
+    }
+
+    var _list = (from tt in DB.AlarmStatus.ToList()
+                 join t in stations on tt.STATION_ID equals t.ID
+                 where t.COMPANY_ID == CompanyId && tt.STATUS != 2
+                 select new { tt.INVERTER_ID, tt.ERROR_NUMBER, tt.START_DATE, tt.STATION_ID, tt.END_DATE, tt.STATUS, t.NAME, t.DEMO_NAME }).OrderBy(X => X.START_DATE).ToList();
+
+    var _listInv = DB.Inverters.ToList();
+
+    List<AlarmStatusDTO> _ListDataSource = new List<AlarmStatusDTO>();
+
+    for (int i = 0; i < _list.Count; i++)
+    {
+        AlarmStatusDTO alarmStatus = new AlarmStatusDTO();
+
+        alarmStatus.INVERTER_ID = _list[i].INVERTER_ID;
+
+        TBL_INVERTER _TblInv = _listInv.Where(x => x.ID == _list[i].INVERTER_ID).FirstOrDefault();
+
+        if (_TblInv != null)
+        {
+            alarmStatus.INV_NAME = _TblInv.NAME;
+        }
+        else
+        {
+            alarmStatus.INV_NAME = "-";
+        }
+
+        alarmStatus.ERROR_NUMBER = _list[i].ERROR_NUMBER;
+        alarmStatus.STATUS = _list[i].STATUS;
+        alarmStatus.START_DATE = _list[i].START_DATE;
+        alarmStatus.STATION_NAME = isDemo == true ? _list[i].DEMO_NAME : _list[i].NAME;
+        alarmStatus.END_DATE = _list[i].END_DATE;
+        alarmStatus.STATION_ID = _list[i].STATION_ID;
+
+        alarmStatus.ERROR_NUMBER_NAME = _listAlarmDesc.Where(a => a.ERROR_NUMBER == _list[i].ERROR_NUMBER).FirstOrDefault().ERROR_DESC;
+
+        _ListDataSource.Add(alarmStatus);
+    }
+
+    var __list = _ListDataSource.Where(x => x.START_DATE >= date1 && x.START_DATE <= date2).OrderBy(x => x.START_DATE).ToList();
+
+    Esso.Web.App_Start.ApplicationUserManager userManager = new Esso.Web.App_Start.ApplicationUserManager(new UserStore<ApplicationUser>(new ApplicationDbContext()));
+
+    GridViewSettings settings = new Esso.Web.Controllers.CompanyAlarmController.GridHelper(Model.CompanyId).GridStationSetting;
+
+    settings.HtmlRowPrepared = (s, e) =>
+    {
+
+        if (e.RowType != GridViewRowType.Data) return;
+        var _type = _listAlarmDesc.Where(a => a.ERROR_NUMBER == e.GetValue("ERROR_NUMBER").ToString()).FirstOrDefault().TYPE;
+        if (_type == 1)
+        {
+
+            e.Row.ForeColor = System.Drawing.Color.FromArgb(1, 241, 39, 39);
+            e.Row.Font.Bold = true;
+        }
+        else if (_type == 2)
+        {
+
+            e.Row.ForeColor = System.Drawing.Color.FromArgb(1, 234, 187, 4);
+            e.Row.Font.Bold = true;
+
+        }
+        else
+        {
+            e.Row.ForeColor = System.Drawing.Color.FromArgb(0, 0, 0, 1);
+            e.Row.Font.Bold = true;
+        }
+    };
+
+
+
+
+    settings.SettingsAdaptivity.AdaptivityMode = GridViewAdaptivityMode.HideDataCells;
+    settings.SettingsAdaptivity.AllowOnlyOneAdaptiveDetailExpanded = true;
+    settings.EditFormLayoutProperties.SettingsAdaptivity.AdaptivityMode = FormLayoutAdaptivityMode.SingleColumnWindowLimit;
+    settings.EditFormLayoutProperties.SettingsAdaptivity.SwitchToSingleColumnAtWindowInnerWidth = 600;
+    settings.SettingsBehavior.AllowEllipsisInText = true;
+
+    settings.Width = Unit.Percentage(100);
+    settings.Height = Unit.Percentage(100);
+    settings.CallbackRouteValues = new { Controller = "CompanyAlarm", Action = "CompanyAlarmListPartial", CompanyId = Model.CompanyId };
+
+    settings.SettingsBehavior.AllowFixedGroups = true;
+    settings.Settings.ShowGroupPanel = false;
+    settings.Settings.ShowGroupButtons = false;
+    settings.Settings.ShowGroupedColumns = false;
+
+    settings.Styles.GroupRow.ForeColor = System.Drawing.Color.FromArgb(1, 0, 98, 158);
+    settings.Styles.GroupRow.Font.Bold = true;
+
+    settings.Styles.Header.ForeColor = System.Drawing.Color.FromArgb(1, 0, 98, 158);
+    settings.Styles.FilterBar.ForeColor = System.Drawing.Color.FromArgb(1, 0, 98, 158);
+    settings.Styles.PagerBottomPanel.ForeColor = System.Drawing.Color.FromArgb(1, 0, 98, 158);
+
+    settings.ControlStyle.Border.BorderColor = System.Drawing.Color.White;
+
+    settings.Styles.Table.Border.BorderColor = System.Drawing.Color.FromArgb(1, 84, 130, 175);
+
+    settings.Styles.DetailCell.BackColor = System.Drawing.Color.White;
+    settings.Styles.Header.BackColor = System.Drawing.Color.White;
+    settings.Styles.PagerBottomPanel.BackColor = System.Drawing.Color.White;
+    settings.Styles.PagerBottomPanel.BorderBottom.BorderColor = System.Drawing.Color.FromArgb(1, 84, 130, 175);
+
+    settings.Styles.GroupPanel.BorderBottom.BorderColor = System.Drawing.Color.FromArgb(1, 84, 130, 175);
+
+    settings.Styles.Header.Border.BorderColor = System.Drawing.Color.LightGray;
+    settings.Styles.Header.Border.BorderStyle = BorderStyle.Solid;
+
+    settings.Styles.PagerTopPanel.BackColor = System.Drawing.Color.White;
+
+    settings.Styles.Table.BackColor = System.Drawing.Color.White;
+    settings.Styles.Table.ForeColor = System.Drawing.Color.FromArgb(1, 0, 98, 158);
+
+    settings.Styles.CommandColumnItem.BackColor = System.Drawing.Color.White;
+    settings.Styles.GroupPanel.BackColor = System.Drawing.Color.White;
+
+    settings.Styles.FilterRow.BackColor = System.Drawing.Color.White;
+
+    settings.Styles.CommandColumn.BackColor = System.Drawing.Color.White;
+    settings.Settings.GridLines = System.Web.UI.WebControls.GridLines.None;
+
+    settings.ClientSideEvents.BeginCallback = "GridBgCallBack";
+
+    settings.ClientSideEvents.ToolbarItemClick = "OnToolbarItemClick1";
+
+    settings.CommandColumn.Visible = false;
+
+    settings.SettingsBehavior.AllowGroup = true;
+    settings.SettingsBehavior.AllowSort = true;
+    settings.Settings.ShowFilterRow = true;
+
+    settings.Styles.AlternatingRow.BackColor = System.Drawing.Color.FromArgb(237, 237, 237);
+    settings.SettingsExport.Landscape = true;
+
+    if (settings.Toolbars.Count == 0)
+    {
+        settings.Toolbars.Add(toolbar =>
+        {
+            toolbar.Enabled = true;
+            toolbar.Position = GridToolbarPosition.Top;
+            toolbar.ItemAlign = GridToolbarItemAlign.Right;
+            toolbar.Items.Add(GridViewToolbarCommand.Refresh, true);
+
+            toolbar.Items.Add(i =>
+            {
+                i.Text = "Export to";
+                i.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ActionsDownload16x16office2013;
+                i.BeginGroup = true;
+                i.Items.Add(exportitem =>
+                {
+                    exportitem.Name = "Pdf";
+                    exportitem.Text = "PDF";
+                    exportitem.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ExportExporttopdf16x16office2013;
+                });
+                i.Items.Add(exportitem =>
+                {
+                    exportitem.Name = "Xls";
+                    exportitem.Text = "XLS";
+                    exportitem.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ExportExporttoxls16x16office2013;
+                });
+            });
+        });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "ERROR_NUMBER";
+            c.Caption = "Error Description";
+            c.Width = Unit.Percentage(70);
+            c.Visible = false;
+        });
+
+        settings.Columns.Add(c =>
+        {
+            c.Caption = "Station Name";
+            c.FieldName = "STATION_NAME";
+
+        });
+        settings.Columns.Add(c =>
+        {
+            c.Caption = "Device";
+            c.FieldName = "INV_NAME";
+            //c.Width = Unit.Pixel(200);
+        });
+        settings.Columns.Add(c =>
+        {
+            c.Caption = "Error Description Name";
+            c.FieldName = "ERROR_NUMBER_NAME";
+            c.Width = Unit.Percentage(50);
+        });
+
+
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "START_DATE";
+            //c.Width = Unit.Pixel(250);
+            c.Caption = "Alert Start Date ";
+            c.SortOrder = DevExpress.Data.ColumnSortOrder.Descending;
+        });
+        settings.Columns.Add(c =>
+        {
+            c.FieldName = "END_DATE";
+            //c.Width = Unit.Pixel(250);
+            c.Caption = "Alert End Date ";
+            c.SortOrder = DevExpress.Data.ColumnSortOrder.Descending;
+        });
+
+        settings.CellEditorInitialize += (s, e) =>
+        {
+            ASPxEdit editor = (ASPxEdit)e.Editor;
+            editor.ValidationSettings.Display = Display.None;
+            if (e.Column.FieldName == "START_DATE" || e.Column.FieldName == "END_DATE")
+            {
+                e.Editor.ReadOnly = true;
+            }
+        };
+    }
+}
+
+@(Html.DevExpress().GridView(settings).BindToEF(string.Empty, string.Empty, (s, e) =>
+    {
+        e.KeyExpression = "Id";
+    }).Bind(__list)
+    .GetHtml())

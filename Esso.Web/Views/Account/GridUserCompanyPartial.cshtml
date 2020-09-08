@@ -1,0 +1,46 @@
+﻿@using System.Web.UI.WebControls;
+
+@model List<Esso.Web.ViewModels.CompanyUserViewModel>
+@{
+    Html.EnableClientValidation();
+    Html.EnableUnobtrusiveJavaScript();
+}
+
+@{
+
+    var grid = Html.DevExpress().GridView(
+     settings =>
+     {
+         settings.Name = "gvUserCompany";
+         settings.KeyFieldName = "COMPANY_ID";
+         settings.Width = Unit.Percentage(100);
+         settings.CallbackRouteValues = new { Controller = "Account", Action = "GridUserCompanyPartial" };
+         settings.ClientSideEvents.BeginCallback = "OnUserCompBeginCallback";
+         settings.ClientSideEvents.EndCallback = "OnUserCompEndCallback";
+         settings.SettingsEditing.BatchUpdateRouteValues = new { Controller = "Account", Action = "UpdateUserCompanies" };
+
+         settings.Settings.ShowFilterRow = true;
+
+         settings.SettingsEditing.Mode = GridViewEditingMode.Batch;
+         settings.SettingsEditing.BatchEditSettings.EditMode = GridViewBatchEditMode.Cell;
+         settings.SettingsEditing.BatchEditSettings.StartEditAction = GridViewBatchStartEditAction.Click;
+
+         settings.Settings.VerticalScrollBarMode = ScrollBarMode.Visible;
+         settings.Settings.VerticalScrollableHeight = 200;
+
+                 //Column info
+                 settings.Columns.Add(c => { c.FieldName = "COMPANY_NAME"; c.Caption = "Company Name"; c.Settings.AllowCellMerge = DefaultBoolean.True; c.EditFormSettings.Visible = DefaultBoolean.False; });
+
+         settings.Columns.Add("AUTH", MVCxGridViewColumnType.CheckBox);
+         settings.Columns["AUTH"].Width = 50;
+
+
+                 //settings.SetDetailRowTemplateContent(c =>
+                 //{
+                 //    Html.RenderAction("MasterDetailDetailPartial", new { CustomerID = DataBinder.Eval(c.DataItem, "COMPANY_ID") });
+                 //});
+             });
+
+}
+
+@grid.Bind(Model).GetHtml()

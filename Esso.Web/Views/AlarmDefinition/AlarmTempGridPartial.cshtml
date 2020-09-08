@@ -1,0 +1,76 @@
+﻿@using System.Web.UI.WebControls
+@using Esso.Data
+@using Esso.Models
+@using Esso.Web.ViewModels
+@{
+    EssoEntities DB = new EssoEntities();
+}
+@(
+        Html.DevExpress().GridView<TBL_ALARM_TEMP>(settings =>
+        {
+            settings.Name = "alarmTempGrid";
+
+            settings.KeyFieldName = "ID";
+            settings.CallbackRouteValues = new { Controller = "AlarmDefinition", Action = "AlarmTempGridPartial" };
+            settings.SettingsEditing.BatchUpdateRouteValues = new { Controller = "AlarmDefinition", Action = "GridUpdateTemp" };
+
+            settings.SettingsEditing.Mode = GridViewEditingMode.Batch;
+            settings.SettingsEditing.BatchEditSettings.EditMode = GridViewBatchEditMode.Cell;
+            settings.SettingsEditing.BatchEditSettings.StartEditAction = GridViewBatchStartEditAction.DblClick;
+            settings.SettingsEditing.BatchEditSettings.HighlightDeletedRows = true;
+
+            settings.CommandColumn.Visible = true;
+            settings.CommandColumn.ShowDeleteButton = true;
+            settings.CommandColumn.ShowNewButtonInHeader = true;
+            settings.CommandColumn.Width = Unit.Point(50);
+
+            settings.Width = Unit.Percentage(100);
+
+            settings.SettingsBehavior.AllowSort = true;
+            settings.SettingsBehavior.AllowFocusedRow = true;
+            settings.Settings.ShowFilterRow = true;
+
+            //settings.SettingsAdaptivity.AdaptivityMode = GridViewAdaptivityMode.HideDataCells;
+            //settings.SettingsAdaptivity.AllowOnlyOneAdaptiveDetailExpanded = true;
+            //settings.EditFormLayoutProperties.SettingsAdaptivity.AdaptivityMode = FormLayoutAdaptivityMode.SingleColumnWindowLimit;
+
+
+            settings.SettingsBehavior.AllowEllipsisInText = true;
+
+            settings.SettingsResizing.ColumnResizeMode = ColumnResizeMode.NextColumn;
+            settings.SettingsResizing.Visualization = ResizingMode.Live;
+
+            settings.SettingsBehavior.ConfirmDelete = true;
+            settings.SettingsText.ConfirmDelete = "Kaydı silmek istediğinize emin misiniz?";
+                        
+            settings.Columns.Add(c =>
+            {
+                c.FieldName = "NAME";
+                c.Caption = "Template Name";
+            });
+
+
+            settings.EditFormLayoutProperties.Items.Add("NAME");
+
+            settings.EditFormLayoutProperties.Items.AddEmptyItem(new EmptyLayoutItem());
+            settings.EditFormLayoutProperties.Items.AddCommandItem(i =>
+            {
+                i.ShowUpdateButton = true;
+                i.ShowCancelButton = true;
+                i.HorizontalAlign = FormLayoutHorizontalAlign.Right;
+            });
+
+            settings.SettingsPager.PageSize = 10;
+            settings.ClientSideEvents.FocusedRowChanged = "OnTempSelected";
+
+        }).SetEditErrorText(ViewData["EditError"] as string).BindToLINQ(string.Empty, string.Empty, (s, e) =>
+        {
+            e.KeyExpression = "ID";
+            e.QueryableSource = from al in DB.AlarmTemplate
+                                where al.IS_DELETED == false
+                                select al;
+        }).GetHtml()
+)
+
+
+

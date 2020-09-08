@@ -1,0 +1,147 @@
+﻿@using System.Web.UI.WebControls
+@using Esso.Data
+@using Esso.Models
+@model int 
+@{
+    EssoEntities DB = new EssoEntities();
+    List<TBL_TAG> tags = DB.Tags.Where(x => x.IS_DELETED == false).OrderBy(x => x.NAME).ToList();
+}
+@(
+        Html.DevExpress().GridView<TBL_ALARM_TEMP>(settings =>
+        {
+            settings.Name = "alarmDefGrid";
+
+            settings.KeyFieldName = "ID";
+            settings.CallbackRouteValues = new { Controller = "AlarmDefinition", Action = "AlarmDefinitionGridPartial" };
+            settings.SettingsEditing.BatchUpdateRouteValues = new { Controller = "AlarmDefinition", Action = "GridUpdateTemDet" };
+
+            settings.SettingsEditing.Mode = GridViewEditingMode.Batch;
+            settings.SettingsEditing.BatchEditSettings.EditMode = GridViewBatchEditMode.Cell;
+            settings.SettingsEditing.BatchEditSettings.StartEditAction = GridViewBatchStartEditAction.Click;
+            settings.SettingsEditing.BatchEditSettings.HighlightDeletedRows = true;
+
+            settings.CommandColumn.Visible = true;
+            settings.CommandColumn.ShowDeleteButton = true;
+            settings.CommandColumn.ShowNewButtonInHeader = true;
+            settings.CommandColumn.Width = Unit.Point(50);
+
+            settings.Width = Unit.Percentage(100);
+
+            settings.SettingsBehavior.AllowSort = true;
+            settings.Settings.ShowFilterRow = true;
+
+            settings.SettingsBehavior.AllowEllipsisInText = true;
+
+            settings.InitNewRow += (s, e) =>
+            {
+                e.NewValues["IS_ALARM"] = false;
+            };
+
+            settings.SettingsResizing.ColumnResizeMode = ColumnResizeMode.NextColumn;
+            settings.SettingsResizing.Visualization = ResizingMode.Live;
+
+            settings.SettingsBehavior.ConfirmDelete = true;
+            settings.SettingsText.ConfirmDelete = "Kaydı silmek istediğinize emin misiniz?";
+
+            settings.Columns.Add(c =>
+            {
+                c.FieldName = "TAG_ID";
+                c.Caption = "Tag";
+                c.EditFormSettings.Visible = DefaultBoolean.True;
+                c.Width = Unit.Pixel(300);
+                c.EditorProperties().ComboBox(p =>
+                {
+                    p.TextField = "NAME";
+                    p.ValueField = "ID";
+                    p.ValueType = typeof(int);
+                    p.DataSource = tags;
+                    p.NullText = "Please select...";
+                });
+            });
+
+            settings.Columns.Add(c =>
+            {
+                c.FieldName = "OP";
+                c.Caption = "Operator";
+                c.Width = Unit.Pixel(70);
+                c.EditFormSettings.Visible = DefaultBoolean.True;
+                c.EditorProperties().ComboBox(p =>
+                {
+                    p.ValueType = typeof(string);
+                    p.Items.Add(new ListEditItem { Text = ">", Value = ">" });
+                    p.Items.Add(new ListEditItem { Text = "<", Value = "<" });
+                    p.Items.Add(new ListEditItem { Text = "=", Value = "=" });
+                    p.NullText = "Please select...";
+                });
+            });
+
+            settings.Columns.Add(c =>
+            {
+                c.FieldName = "VALUE";
+                c.Caption = "Value";
+                c.Width = Unit.Pixel(150);
+                c.EditFormSettings.Visible = DefaultBoolean.True;
+                c.EditorProperties().TextBox(p =>
+                {
+                    p.MaskSettings.Mask = "9999999999";
+                    p.ValidationSettings.Display = Display.Dynamic;
+                    p.Width = Unit.Percentage(87);
+                });
+            });
+
+            settings.Columns.Add(c =>
+            {
+                c.FieldName = "ALARM_TYPE";
+                c.Caption = "Alarm Type";
+                c.Width = Unit.Pixel(150);
+                c.EditFormSettings.Visible = DefaultBoolean.True;
+                c.EditorProperties().ComboBox(p =>
+                {
+                    p.ValueType = typeof(int);
+                    p.Items.Add(new ListEditItem { Text = "Single output", Value = 0 });
+                    p.Items.Add(new ListEditItem { Text = "Multiple output", Value = 1 });
+                    p.NullText = "Please select...";
+                });
+            });
+
+            settings.Columns.Add(c =>
+            {
+                c.FieldName = "DESC";
+                c.Caption = "Description";
+                //c.ColumnType = MVCxGridViewColumnType.Memo;
+            });
+
+
+            settings.Columns.Add(c =>
+            {
+                c.FieldName = "IS_ALARM";
+                c.Caption = "Is Alarm";
+                c.ColumnType = MVCxGridViewColumnType.CheckBox;
+                c.Width = 70;
+            });
+
+            settings.EditFormLayoutProperties.Items.AddEmptyItem(new EmptyLayoutItem());
+            settings.EditFormLayoutProperties.Items.AddCommandItem(i =>
+            {
+                i.ShowUpdateButton = true;
+                i.ShowCancelButton = true;
+                i.HorizontalAlign = FormLayoutHorizontalAlign.Right;
+            });
+
+            settings.SettingsPager.PageSize = 15;
+            settings.ClientSideEvents.BeginCallback = "OnTempDetBeginCallback";
+
+        }).SetEditErrorText(ViewData["EditError"] as string).BindToLINQ(string.Empty, string.Empty, (s, e) =>
+        {
+            e.KeyExpression = "ID";
+            e.QueryableSource = from al in DB.AlarmDefinitions
+                                where
+                                al.TEMPLATE_ID== Model
+                                &&
+                                al.IS_DELETED == false
+                                select al;
+        }).GetHtml()
+)
+
+
+

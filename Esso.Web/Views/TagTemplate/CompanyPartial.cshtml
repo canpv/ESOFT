@@ -1,0 +1,32 @@
+﻿@model List<Esso.Models.TBL_COMPANY>
+
+@Html.DevExpress().ComboBox(
+      settings =>
+      {
+          settings.Name = "cmbCompanies";
+          settings.Width = 180;
+          settings.Properties.NullText = "Select Company...";
+          //settings.SelectedIndex = 0;
+          settings.Properties.DropDownWidth = 550;
+          settings.Properties.DropDownStyle = DropDownStyle.DropDownList;
+          settings.CallbackRouteValues = new
+          {
+              Controller = "TagTemplate",
+              Action = "CompanyPartial"
+          };
+
+          settings.Style.Add("margin-top","20px");
+          settings.Style.Add("margin-bottom", "10px");
+
+          settings.Properties.ClientSideEvents.ValueChanged = "onCompanySelected";
+          settings.Properties.CallbackPageSize = 30;
+          settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.StartsWith;
+          settings.Properties.TextFormatString = "{0}";
+          settings.Properties.ValueField = "ID";
+          settings.Properties.ValueType = typeof(string);
+
+          settings.Properties.Columns.Add("NAME", "Company Name", 130);
+          //settings.Properties.Columns.Add("CompanyName", "CompanyName", System.Web.UI.WebControls.Unit.Percentage(100));
+          //settings.Properties.Columns.Add("Country", "Country", 60);
+          //settings.Properties.Columns.Add("Phone", "Phone", 100);
+      }).BindList(Model).GetHtml()

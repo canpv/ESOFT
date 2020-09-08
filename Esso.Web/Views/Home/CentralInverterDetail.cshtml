@@ -1,0 +1,1244 @@
+﻿@model int
+@using Esso.Data;
+@{
+    ViewBag.Title = "CentralInverterDetail";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="page-title">
+    <div class="title_left">
+        <h3>stationName</h3>
+    </div>
+</div>
+@Html.Partial("MenuPartial")
+<div class="clearfix"></div>
+<div class="row">
+
+    <div class="col-md-12 col-sm-12 col-xs-12">
+        <div class="x_panel">
+            <div class="x_title">
+                <h2>Inverter Daily Production<small id="InvCount"></small></h2>
+                <ul class="nav navbar-right panel_toolbox">
+                    <li>
+                        <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                    </li>
+                    <li>
+                        <a class="close-link"><i class="fa fa-close"></i></a>
+                    </li>
+                </ul>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                <div id="graph_bar" style="width:100%; height:280px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-12 col-sm-12 col-xs-12">
+        <div class="x_panel">
+            <div class="x_title">
+                <h2>Inverter Graphic</h2>
+
+                <ul class="nav navbar-right panel_toolbox">
+                    <li>
+                        <button style="padding: 8px 22px" id="btnInvTblDetail" type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#InvModal">Yield Data Table</button>
+                    </li>
+                    <li>
+                        <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                    </li>
+                    <li>
+                        <a class="close-link"><i class="fa fa-close"></i></a>
+                    </li>
+                </ul>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                <div id="echart_line" style="height:500px;"></div>
+                <div class="well" style="overflow: auto">
+                    <div class="col-md-12">
+                        <div class="btn-group">
+                            <input name="begin" id="single_cal4" class="form-control has-feedback-left" type="text" />
+                        </div>
+                        <div class="btn-group">
+                            Tag:<select id="selectedTag" name="selectedTag">
+                                <option value="1">Power AC</option>
+                                <option value="2">Power DC</option>
+                                <option value="3">Current AC</option>
+                                <option value="4">Current DC</option>
+                                <option value="5">Voltage AC</option>
+                                <option value="6">Voltage DC</option>
+                            </select>
+                        </div>
+                        <div class="btn-group">
+                            <input type="button" class="btn btn-info" id="btnList" value="Show" />
+                        </div>
+                        <div class="btn-group">
+                            <img id="LoadingImage" src="~/images/loader.gif" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-12 col-sm-12 col-xs-12" id="div3">
+        <div class="x_panel">
+            <div class="x_title">
+                <h2>Inverter States</h2>
+
+                <img id="LoadingImage2" src="~/images/loader.gif" />
+
+                <ul class="nav navbar-right panel_toolbox">
+                    <li>
+                        <select id="selectedInverter" name="selectedTag"></select>
+                        <input type="button" class="btn btn-info" id="btnState" value="Show" />
+                    </li>
+                    <li>
+                        <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                    </li>
+                    <li>
+                        <a class="close-link"><i class="fa fa-close"></i></a>
+                    </li>
+                </ul>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+
+                <table id="datatable" class="table table-striped jambo_table bulk_action">
+                    <thead>
+                        <tr>
+                            <th width="155">Registers</th>
+                            <th>Value</th>
+                            <th>Tarih</th>
+                        </tr>
+                    </thead>
+
+                    <tr>
+                        <td id="BaslikGlobalState"></td>
+                        <td id="ValueGlobalState"></td>
+                        <td id="StateTarih1"></td>
+                    </tr>
+                    <tr>
+                        <td id="BaslikAlarmState"></td>
+                        <td id="ValueAlarmState"></td>
+                        <td id="StateTarih2"></td>
+                    </tr>
+                    <tr>
+                        <td id="BaslikDcDcConverterState"></td>
+                        <td id="ValueDcDcConverterState"></td>
+                        <td id="StateTarih3"></td>
+                    </tr>
+                    <tr>
+                        <td id="BaslikDcAcConverterState"></td>
+                        <td id="ValueDcAcConverterState"></td>
+                        <td id="StateTarih4"></td>
+                    </tr>
+                    <tr>
+                        <td id="BaslikDeratingState"></td>
+                        <td id="ValueDeratingState"></td>
+                        <td id="StateTarih5"></td>
+                    </tr>
+
+                </table>
+            </div>
+
+
+        </div>
+    </div>
+
+    <div class="modal fade" id="InvModal" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="x_title">
+                        <h2>Yield Data / Table</h2>
+                        <div class="clearfix"></div>
+                    </div>
+                    <table id="datatable" class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Inverters</th>
+                                <th>AC Power</th>
+                                <th>DC Power</th>
+                                <th>DC Voltage</th>
+                                <th>Daily Yield</th>
+                            </tr>
+                        </thead>
+                        <tbody id="InvTblDetail"></tbody>
+                    </table>
+                    <div id="invTotalPower"></div>
+                    <div id="invIsinim"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<br />
+
+<script src="~/js/jquery.min.js"></script>
+<script src="~/js/bootstrap.min.js"></script>
+<script src="~/Content/raphael.min.js"></script>
+<script src="~/Content/morris.min.js"></script>
+<script>
+
+    var theme = {
+
+        color: [
+            'rgba(52,152,219,0.5)', '#fea80c', '#e74c3c', '#179e17',
+            '#9B59B6', '#ff9201', '#755326', '#4c3a26'
+        ],
+
+
+        title: {
+            itemGap: 8,
+            textStyle: {
+                fontWeight: 'normal',
+                color: '#408829'
+            }
+        },
+
+        dataRange: {
+            color: ['#1f610a', '#97b58d']
+        },
+
+        toolbox: {
+            color: ['#408829', '#408829', '#408829', '#408829']
+        },
+
+        tooltip: {
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            axisPointer: {
+                type: 'line',
+                lineStyle: {
+                    color: '#408829',
+                    type: 'dashed'
+                },
+                crossStyle: {
+                    color: '#408829'
+                },
+                shadowStyle: {
+                    color: 'rgba(200,200,200,0.3)'
+                }
+            }
+        },
+
+        dataZoom: {
+            dataBackgroundColor: '#eee',
+            fillerColor: 'rgba(64,136,41,0.2)',
+            handleColor: '#408829'
+        },
+        grid: {
+            borderWidth: 0
+        },
+
+        categoryAxis: {
+            axisLine: {
+                lineStyle: {
+                    color: '#408829'
+                }
+            },
+            splitLine: {
+                lineStyle: {
+                    color: ['#eee']
+                }
+            }
+        },
+
+        valueAxis: {
+            axisLine: {
+                lineStyle: {
+                    color: '#408829'
+                }
+            },
+            splitArea: {
+                show: true,
+                areaStyle: {
+                    color: ['rgba(250,250,250,0.1)', 'rgba(200,200,200,0.1)']
+                }
+            },
+            splitLine: {
+                lineStyle: {
+                    color: ['#eee']
+                }
+            }
+        },
+        timeline: {
+            lineStyle: {
+                color: '#408829'
+            },
+            controlStyle: {
+                normal: { color: '#408829' },
+                emphasis: { color: '#408829' }
+            }
+        },
+
+        textStyle: {
+            fontFamily: 'Arial, Verdana, sans-serif'
+        }
+    };
+
+    function ConvertTicksToTime(vl) {
+        vl = vl.replace("Date", "");
+        vl = vl.replace("/", "");
+        vl = vl.replace("(", "");
+        vl = vl.replace(")", "");
+        vl = vl.replace("/", "").trim();
+
+        var vlDate = new Date(parseInt(vl));
+        return vlDate.toLocaleTimeString();
+    }
+    function DateFormat(vl) {
+        var value = new Date
+            (
+                 parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+            );
+        var dat = value.getDate() +
+       "/" +
+(value.getMonth() + 1) +
+       "/" +
+value.getFullYear();
+
+        var time = value.getHours() +
+       ":" +
+value.getMinutes()
+        return time.toString();
+    }
+
+    function ConvertTicksToDate(vl) {
+        vl = vl.replace("Date", "");
+        vl = vl.replace("/", "");
+        vl = vl.replace("(", "");
+        vl = vl.replace(")", "");
+        vl = vl.replace("/", "").trim();
+
+        var vlDate = new Date(parseInt(vl));
+        return vlDate.toLocaleDateString();
+    }
+
+    $(document).ready(function () {
+        //Inverter Grafiği bas.
+         CallChartData();
+
+        $('#btnList').click(function () {
+            CallChartData();
+        });
+        function CallChartData() {
+
+            var beginDate = $('input[name="begin"]').val();
+
+            if (!beginDate || beginDate.length == 0) {
+                beginDate = new Date().toISOString();
+            }
+
+            var secTag = $('#selectedTag').val();
+            if (!secTag) {
+                return;
+            }
+            //--------
+            $.ajax({
+                url: "/Home/GetInverterCount/",
+                type: "POST",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                data: "{'stationId':'" + @Model + "'}",
+                success: function (data) {
+
+                    getData(data)
+                }
+            });
+
+
+            $("#LoadingImage").show();
+            function getData(invData)
+            {
+                $("#LoadingImage").show();
+                $.ajax({
+                    type: "Post",
+                    url: "/Home/GetChartInverterDetail",
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    data: "{'beginDate':'" + beginDate +"','stationId':'"+@Model+ "'}",
+                    success: function (data) {
+                        var listDate = [];
+                        for (var i = 0; i < data.inverters.length; i++) {
+                            listDate.push(DateFormat(data.inverters[i].Tarih));
+                        }
+                        var seriesList = [];
+                        var invId = [];
+                        var dataList = [];
+                        var listDateFiltered = [];
+                        var inv;
+                        var legendData = [];
+                        $.each(listDate, function (i, el) {
+                            if ($.inArray(el, listDateFiltered) === -1) listDateFiltered.push(el);
+                        });
+
+                        for (var i = 0; i <= invData.length - 1; i++) {
+
+                            inv = invData.map(function (a) { return a.NAME; });
+
+                            legendData = data.inverters.filter(
+                                        function (d) {
+                                            return (parseInt(d.Inv_Id) == parseInt(invData[i].ID));
+                                        }
+                                    );
+
+                            if (secTag == 1) {
+                                legendData = legendData.map(function (d) {
+                                    if (d.Inv_Id == parseInt(invData[i].ID)) {
+                                        return d.Guc_AC.toFixed(1);
+                                    }
+
+                                });
+                            }
+                            else if (secTag == 2) {
+                                legendData = legendData.map(function (d) {
+                                    if (d.Inv_Id == parseInt(invData[i].ID)) {
+                                        return d.Guc_DC.toFixed(1);
+                                   }
+
+                              });
+                            }
+                            else if (secTag == 3) {
+                                legendData = legendData.map(function (d) {
+                                    if (d.Inv_Id == parseInt(invData[i].ID)) {
+                                        return d.Akim_AC.toFixed(1);
+                                    }
+
+                                });
+                            }
+                            else if (secTag == 4) {
+                                legendData = legendData.map(function (d) {
+                                    if (d.Inv_Id == parseInt(invData[i].ID)) {
+                                        return d.Akim_DC.toFixed(1);
+                                    }
+
+                                });
+                            }
+                            else if (secTag == 5) {
+                                legendData = legendData.map(function (d) {
+                                    if (d.Inv_Id == parseInt(invData[i].ID)) {
+                                        return d.Gerilim_AC.toFixed(1);
+                                    }
+
+                                });
+                            }
+                            else if (secTag == 6) {
+                                legendData = legendData.map(function (d) {
+                                    if (d.Inv_Id == parseInt(invData[i].ID)) {
+                                        return d.Gerilim_DC.toFixed(1);
+                                    }
+
+                                });
+                            }
+
+                            seriesList.push(
+                            {
+                                name: inv[i],
+                                type: 'line',
+                                smooth: true,
+                                itemStyle: {
+                                    normal: {
+
+                                    }
+                                },
+
+                                data:legendData
+                            });
+                        }
+
+                        var echartLine = echarts.init(document.getElementById('echart_line'), theme);
+
+                        echartLine.setOption({
+
+                            tooltip: {
+                                trigger: 'axis'
+                            },
+                            legend: {
+
+                                x: 90,
+                                y: 0,
+                                data: inv
+                            },
+                            toolbox: {
+                                show: true,
+                                feature: {
+                                    mark: { show: false },
+                                    dataZoom: { show: false },
+                                    dataView: {
+                                        show: false,
+                                        title: "Döküman"
+                                    },
+                                    magicType: {
+                                        show: false,
+                                        title: {
+                                            line: 'Line',
+                                            bar: 'Bar',
+                                            stack: 'Stack',
+                                            tiled: 'Tiled'
+                                        },
+                                        type: ['line', 'bar', 'stack', 'tiled']
+                                    },
+                                    restore: {
+                                        show: true,
+                                        title: "Yenile"
+                                    },
+                                    saveAsImage: {
+                                        show: true,
+                                        title: "Resim Kaydet"
+                                    }
+                                }
+                            },
+                            calculable: true,
+                            dataZoom: {
+                                show: true,
+                                realtime: true,
+                                start: 0,
+                                end: 100,
+                                dataBackgroundColor: '#30aae1',
+                                fillerColor: 'rgba(197,197,197,0.3)',
+                                handleColor: '#868686'
+                            },
+
+                            xAxis: [{
+                                type: 'category',
+                                boundaryGap: false,
+                                data: listDateFiltered
+                            }],
+                            yAxis: [
+            {
+                type: 'value',
+                yAxisIndex: 2,
+                axisLabel: {
+                    formatter: '{value} '
+                }
+            }
+
+                            ],
+                            series: seriesList
+
+                        });
+                        $("#LoadingImage").hide();
+                    }
+                });
+            }
+
+        }
+        //Inverter Grafiği bit.
+
+        //Datetime bas.
+        $('#single_cal4').daterangepicker({
+            singleDatePicker: true, locale: {
+                format: 'DD/MM/YYYY'
+            },
+            singleClasses: "picker_4"
+        }, function (start, end, label) {
+            console.log(start.toISOString(), end.toISOString(), label);
+        });
+
+        $('#inpHour').daterangepicker({
+            singleDatePicker: true, locale: {
+                format: 'DD/MM/YYYY'
+            },
+            singleClasses: "picker_4"
+        }, function (start, end, label) {
+            console.log(start.toISOString(), end.toISOString(), label);
+        });
+
+        $('#inpAkim').daterangepicker({
+            singleDatePicker: true, locale: {
+                format: 'DD/MM/YYYY'
+            },
+            singleClasses: "picker_4"
+        }, function (start, end, label) {
+            console.log(start.toISOString(), end.toISOString(), label);
+        });
+
+        $('#inpHour').daterangepicker({
+            singleDatePicker: true, locale: {
+                format: 'DD/MM/YYYY'
+            },
+            singleClasses: "picker_4"
+        }, function (start, end, label) {
+            console.log(start.toISOString(), end.toISOString(), label);
+        });
+        //Datetime bit.
+
+    })
+
+</script>
+<script>
+
+
+
+    function Annex3(a) {
+        var state;
+        if (a == 0) {
+            state = "Initializing (configuring power control)";
+        }
+        else if (a == 1) {
+            state = "Waiting sun or grid";
+        }
+        else if (a == 2) {
+            state = "Connecting to grid (checking grid)";
+        }
+        else if (a == 3) {
+            state = "Initializing (system startup)";
+        }
+        else if (a == 4) {
+            state = "Connecting to grid (switching-on DC/DC)";
+        }
+        else if (a == 5) {
+            state = "Connecting to grid (switching-on DC/AC)";
+        }
+        else if (a == 6) {
+            state = "Connected to Grid";
+        }
+        else if (a == 7) {
+            state = "Post-alarm actions (recovery)";
+        }
+        else if (a == 8) {
+            state = "Post-alarm actions (pause)";
+        }
+        else if (a == 9) {
+            state = "Ground fault";
+        }
+        else if (a == 10) {
+            state = "Over-temperature fault";
+        }
+        else if (a == 12) {
+            state = "Connecting to grid (grid protection interface self-test)";
+        }
+        else if (a == 13) {
+            state = "Grid protection interface self-test fault";
+        }
+        else if (a == 14) {
+            state = "Connecting to grid (safety checks)";
+        }
+        else if (a == 15) {
+            state = "Leakage fault";
+        }
+        else if (a == 24) {
+            state = "Under-temperature fault";
+        }
+        else if (a == 125) {
+            state = "Interlock (remote off)";
+        }
+        else if (a == 26) {
+            state = "Interlock (Emergency stop)";
+        }
+        else if (a == 27) {
+            state = "Executing auto-test";
+        }
+        else if (a == 29) {
+            state = "Grounding-kit fault";
+        }
+        else if (a == 30) {
+            state = "SW bundle not valid fault";
+        }
+        else if (a == 41) {
+            state = "Temperature sensors fault";
+        }
+        else if (a == 42) {
+            state = "Grid sequence fault";
+        }
+        else if (a == 51) {
+            state = "Arc fault";
+        }
+        else if (a == 53) {
+            state = "Arc detector self-test fault";
+        }
+        else if (a == 116) {
+            state = "Power stage off-line";
+        }
+        else if (a == 118) {
+            state = "Arc detector wrong configuration fault";
+        }
+        else if (a == 119) {
+            state = "Arc detector self-test";
+        }
+        else if (a == 120) {
+            state = "Configuration fault (bad model)";
+        }
+        else if (a == 124) {
+            state = "Latch with “Reset by hand”";
+        }
+        else if (a == 150) {
+            state = "Power stage communication fault";
+        }
+        else if (a == 151) {
+            state = "Configuration fault (bad global-settings)";
+        }
+        else if (a == 200) {
+            state = "Programming power stage";
+        }
+        else {
+            state = "Not Found";
+        }
+
+        return state;
+    }
+    function Annex4(a) {
+        var state;
+        if (a == 0) {
+            state = "No alarm";
+        }
+        else if (a == 1) {
+            state = "Sun Low";
+        }
+        else if (a == 2) {
+            state = "Input OC";
+        }
+        else if (a == 3) {
+            state = "Input UV";
+        }
+        else if (a == 4) {
+            state = "Input OV";
+        }
+        else if (a == 5) {
+            state = "Sun Low";
+        }
+        else if (a == 6) {
+            state = "No pars (DSP)";
+        }
+        else if (a == 7) {
+            state = "Bulk OV";
+        }
+        else if (a == 8) {
+            state = "Internal error";
+        }
+        else if (a == 9) {
+            state = "Output OC";
+        }
+        else if (a == 10) {
+            state = "IGBT sat.";
+        }
+        else if (a == 11) {
+            state = "Bulk UV";
+        }
+        else if (a == 12) {
+            state = "Internal error";
+        }
+        else if (a == 14) {
+            state = "Bulk UV";
+        }
+        else if (a == 15) {
+            state = "Ramp Fault";
+        }
+        else if (a == 16) {
+            state = "Internal error";
+        }
+        else if (a == 19) {
+            state = "Bulk UV";
+        }
+        else if (a == 20) {
+            state = "Internal error";
+        }
+        else if (a == 21) {
+            state = "Grid fault";
+        }
+        else if (a == 22) {
+            state = "Bulk UV";
+        }
+        else if (a == 23) {
+            state = "Ramp Fault";
+        }
+        else if (a == 24) {
+            state = "Internal error";
+        }
+        else if (a == 26) {
+            state = "Internal error";
+        }
+        else if (a == 27) {
+            state = "Internal error";
+        }
+        else if (a == 28) {
+            state = "Internal error";
+        }
+        else if (a == 29) {
+            state = "Internal error";
+        }
+        else if (a == 30) {
+            state = "Internal error";
+        }
+        else if (a == 31) {
+            state = "DC injection";
+        }
+        else if (a == 32) {
+            state = "Grid OV";
+        }
+        else if (a == 33) {
+            state = "Grid UV";
+        }
+        else if (a == 34) {
+            state = "Grid OF";
+        }
+        else if (a == 35) {
+            state = "Grid UF";
+        }
+        else if (a == 38) {
+            state = "Riso low";
+        }
+        else if (a == 42) {
+            state = "Mid bulk OV";
+        }
+        else if (a == 44) {
+            state = "Internal error";
+        }
+        else if (a == 45) {
+            state = "Internal error";
+        }
+        else if (a == 47) {
+            state = "Fan fault";
+        }
+        else if (a == 48) {
+            state = "Under temperature";
+        }
+        else if (a == 49) {
+            state = "IGBT not ready";
+        }
+        else if (a == 50) {
+            state = "Remote off";
+        }
+        else if (a == 51) {
+            state = "Internal error";
+        }
+        else if (a == 52) {
+            state = "Battery low";
+        }
+        else if (a == 53) {
+            state = "Clock fault";
+        }
+        else if (a == 54) {
+            state = "Riso low";
+        }
+        else if (a == 62) {
+            state = "Island. Detected";
+        }
+        else if (a == 64) {
+            state = "Jbox fault";
+        }
+        else if (a == 70) {
+            state = "DC SPD tripped";
+        }
+        else if (a == 71) {
+            state = "AC SPD tripped";
+        }
+        else if (a == 75) {
+            state = "Q-modeChange";
+        }
+        else if (a == 76) {
+            state = "Date/time mod.";
+        }
+        else if (a == 77) {
+            state = "Energy data rst";
+        }
+        else if (a == 78) {
+            state = "Riso Test Fail";
+        }
+        else if (a == 79) {
+            state = "AFDD activated";
+        }
+        else if (a == 82) {
+            state = "AFDD fault";
+        }
+        else if (a == 84) {
+            state = "AFDD user reset";
+        }
+        else if (a == 85) {
+            state = "AFDD wrong conf.";
+        }
+        else if (a == 89) {
+            state = "Latch-Manual rst";
+        }
+        else if (a == 90) {
+            state = "Periodic Grid Off";
+        }
+        else if (a == 91) {
+            state = "Internal error";
+        }
+        else if (a == 95) {
+            state = "Grid conn. fault";
+        }
+        else if (a == 96) {
+            state = "Latch-Manual ent";
+        }
+        else if (a == 102) {
+            state = "T Sensor Warning";
+        }
+        else if (a == 103) {
+            state = "T Sensor Fault";
+        }
+        else if (a == 144) {
+            state = "HW Module Swap";
+        }
+        else if (a == 150) {
+            state = "Update Incomplete";
+        }
+        else if (a == 151) {
+            state = "Global-Settings Event";
+        }
+        else if (a == 152) {
+            state = "Wrong Sequence";
+        }
+        else if (a == 156) {
+            state = "BackFeed OC";
+        }
+        else if (a == 160) {
+            state = "ID Data Was Set";
+        }
+        else {
+            state = "Not Found";
+        }
+
+        return state;
+    }
+    function Annex5(a) {
+        var state;
+        if (a == 1) {
+            state = "Ramp";
+        }
+        else if (a == 2) {
+            state = "MPPT";
+        }
+        else if (a == 4) {
+            state = "Input over-current";
+        }
+        else if (a == 5) {
+            state = "Input under-voltage";
+        }
+        else if (a == 6) {
+            state = "Input over-voltage";
+        }
+        else if (a == 7) {
+            state = "Low input";
+        }
+        else if (a == 8) {
+            state = "No configuration";
+        }
+        else if (a == 9) {
+            state = "Bulk under-voltage";
+        }
+        else if (a == 10) {
+            state = "Communication error";
+        }
+        else if (a == 11) {
+            state = "Ramp fault";
+        }
+        else if (a == 12) {
+            state = "Pending redundancy fault";
+        }
+        else if (a == 13) {
+            state = "Wrong input mode";
+        }
+        else if (a == 14) {
+            state = "Ground fault";
+        }
+        else if (a == 15) {
+            state = "Pending redundancy fault";
+        }
+        else if (a == 16) {
+            state = "IGBT error";
+        }
+        else if (a == 17) {
+            state = "Leakage sensor self-test fault";
+        }
+        else if (a == 18) {
+            state = "Grid fault";
+        }
+        else if (a == 19) {
+            state = "Communication error";
+        }
+        else if (a == 20) {
+            state = "Charging bulk";
+        }
+        else if (a == 21) {
+            state = "IGBT not ready";
+        }
+        else if (a == 255) {
+            state = "Not programmed";
+        }
+        else {
+            state = "Not Found";
+        }
+
+        return state;
+    }
+    function Annex6(a) {
+        var state;
+        if (a == 0) {
+            state = "Initializing";
+        }
+        else if (a == 1) {
+            state = "Connecting to grid";
+        }
+        else if (a == 2) {
+            state = "Connected to grid";
+        }
+        else if (a == 3) {
+            state = "Bulk over-voltage";
+        }
+        else if (a == 4) {
+            state = "Output over-current";
+        }
+        else if (a == 5) {
+            state = "IGBT fault";
+        }
+        else if (a == 6) {
+            state = "Bulk under-voltage";
+        }
+        else if (a == 7) {
+            state = "Leakage sensor degaussing error";
+        }
+        else if (a == 8) {
+            state = "No configuration";
+        }
+        else if (a == 9) {
+            state = "Low bulk voltage";
+        }
+        else if (a == 10) {
+            state = "Grid fault";
+        }
+        else if (a == 11) {
+            state = "Communication error";
+        }
+        else if (a == 12) {
+            state = "Leakage sensor degaussing error";
+        }
+        else if (a == 13) {
+            state = "Connecting to grid";
+        }
+        else if (a == 14) {
+            state = "Bulk capacitor fault";
+        }
+        else if (a == 15) {
+            state = "Leakage fault";
+        }
+        else if (a == 16) {
+            state = "Pending redundancy fault";
+        }
+        else if (a == 17) {
+            state = "Leakage sensor self-test fault";
+        }
+        else if (a == 18) {
+            state = "Grid protection self-test";
+        }
+        else if (a == 19) {
+            state = "Leakage sensor self-test";
+        }
+        else if (a == 20) {
+            state = "Grid protection self-test";
+        }
+        else if (a == 21) {
+            state = "Grid protection self-test";
+        }
+        else if (a == 22) {
+            state = "Grid protection self-test timeout";
+        }
+        else if (a == 23) {
+            state = "Grid protection self-test fault";
+        }
+        else if (a == 24) {
+            state = "Grid protection self-test fault";
+        }
+        else if (a == 25) {
+            state = "Auto-test";
+        }
+        else if (a == 30) {
+            state = "Grid voltage read error";
+        }
+        else if (a == 31) {
+            state = "Grid current read error";
+        }
+        else if (a == 33) {
+            state = "IGBT not ready";
+        }
+        else if (a == 35) {
+            state = "Communication error";
+        }
+        else if (a == 36) {
+            state = "Mid-bulk over-voltage";
+        }
+        else if (a == 255) {
+            state = "Not programmed";
+        }
+        else {
+            state = "Not Found";
+        }
+
+        return state;
+    }
+    function Annex7(a) {
+        var state;
+        if (a == 0) {
+            state = "Power curtailment from user setpoint";
+        }
+        else if (a == 1) {
+            state = "Grid over-frequency derating";
+        }
+        else if (a == 2) {
+            state = "Average grid over-voltage derating";
+        }
+        else if (a == 3) {
+            state = "Anti-islanding derating";
+        }
+        else if (a == 4) {
+            state = "Nameplate grid current limitation";
+        }
+        else if (a == 5) {
+            state = "Over-temperature derating";
+        }
+        else if (a == 6) {
+            state = "DC over-voltage derating";
+        }
+        else if (a == 7) {
+            state = "Energy storage system zero-Power injection";
+        }
+        else {
+            state = "Not Found";
+        }
+
+        return state;
+    }
+
+
+    function GetInverterState() {
+        $("#LoadingImage2").show();
+        var selectedInv = $('#selectedInverter').val();
+
+        $.ajax({
+            url: "/Home/GetInvState/",
+            type: "Post",
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            data: "{'invId':'" + selectedInv + "'}",
+            success: function (data) {
+                $("#StateTarih1").html(ConvertTicksToTime(data._tarih) + " / " + ConvertTicksToDate(data._tarih));
+                $("#StateTarih2").html(ConvertTicksToTime(data._tarih) + " / " + ConvertTicksToDate(data._tarih));
+                $("#StateTarih3").html(ConvertTicksToTime(data._tarih) + " / " + ConvertTicksToDate(data._tarih));
+                $("#StateTarih4").html(ConvertTicksToTime(data._tarih) + " / " + ConvertTicksToDate(data._tarih));
+                $("#StateTarih5").html(ConvertTicksToTime(data._tarih) + " / " + ConvertTicksToDate(data._tarih));
+                $("#BaslikGlobalState").html("Global State:");
+                $("#ValueGlobalState").html(Annex3(data._globalState));
+                $("#BaslikAlarmState").html("Alarm State:");
+                $("#ValueAlarmState").html(Annex4(data._alarmState));
+                $("#BaslikDcDcConverterState").html("DC/DC Converter State:");
+                $("#ValueDcDcConverterState").html(Annex5(data._DcDcConverterState));
+                $("#BaslikDcAcConverterState").html("DC/AC Converter State:");
+                $("#ValueDcAcConverterState").html(Annex6(data._DcAcConverterState));
+                $("#BaslikDeratingState").html("Derating State:");
+                $("#ValueDeratingState").html(Annex7(data._deratingState));
+                $("#LoadingImage2").hide();
+            }
+
+        });
+    }
+
+    $(document).ready(function () {
+
+        //Inverter State bas.
+        //GetInverterState();
+        $('#btnState').click(function () {
+
+            GetInverterState();
+        });
+
+           //Inverter DropBox Bas.
+    $.ajax({
+        url: "/Home/GetInverterCount/",
+        type: "POST",
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+        data: "{'stationId':'" + @Model + "'}",
+                success: function (data) {
+                    var isSelected1 = false;
+                    $.each(data, function (i, x) {
+                        $('#selectedInverter').append("<option selected value=" + x.ID + ">" + x.NAME + "</option>");
+                        isSelected1 = true;
+                    });
+                    GetInverterState();
+                }
+            });
+         //Inverter DropBox Bit.
+
+        var timer, delay = 300000;
+        timer = setInterval(function () {
+            GetInverterState();
+        }, delay)
+        //Inverter State bit.
+
+        //Inverter Status Bas.
+        $('#btnInvTblDetail').click(function () {
+            InverterTable();
+        });
+        function InverterTable() {
+            var totalInv = 0;
+            $.ajax({
+                url: "/Home/GetInverterTable?stationId=@Model",
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+
+                    $("#invTotalPower").empty();
+                    $("#invIsinim").empty();
+                    $("#InvTblDetail").empty();
+                    $.each(data, function (i, item) {
+                        totalInv += item._acPower;
+                        $("#InvTblDetail").append("<tr><td>" + ConvertTicksToDate(item._date) + " / " + ConvertTicksToTime(item._date) + "</td><td>" + (item._invName) + "</td><td>" + (item._acPower).toFixed(1).replace('.', ',') + " W" + "</td><td>" + (item._dcPower).toFixed(1).replace('.', ',') + " W" + "</td><td>" + (item._dcVoltage).toFixed(1).replace('.', ',') + " V" + "</td><td>" + (item._gunlukUretim).toFixed(1).replace('.', ',') + " Wh" + "</td></tr>");
+                    });
+
+                    $("#invTotalPower").append("<b>Total Power:</b> " + totalInv.toFixed(1) + " W");
+                    $("#invIsinim").append("<b>Irradiation:</b> " + (data[0]._isinim / 10).toFixed(1) + " W/m²")
+                }
+            });
+        }
+        //Inverter Status Bit.
+
+        InverterBar();
+
+        function InverterBar() {
+
+            $.ajax({
+                url: "/Home/GetInvProduction?stationId=@Model",
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+                    var listInv = [];
+                    var invNum = 1;
+                    for (var i = 0; i < data.length; i++) {
+                        listInv.push({ device: "" + "Inverter " + invNum + "", geekbench: data[i]._dailyProduction });
+                        invNum++;
+                    }
+                    $('#InvCount').html("Inverter Count: " + (invNum-1));
+                    Morris.Bar({
+                        element: 'graph_bar',
+                        data: listInv,
+                        xkey: 'device',
+                        ykeys: ['geekbench'],
+
+                        labels: ['Daily Production (kWh)'],
+                        barRatio: 0.4,
+                        barColors: ['#26B99A', '#34495E', '#ACADAC', '#3498DB'],
+                        xLabelAngle: 50,
+                        hideHover: 'auto',
+                        resize: true
+                    });
+                }
+
+            });
+        }
+
+        $MENU_TOGGLE.on('click', function () {
+            $(window).resize();
+        });
+
+
+    });
+
+</script>
+
+

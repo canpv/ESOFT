@@ -1,0 +1,101 @@
+﻿
+@{
+    ViewBag.Title = "Search";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Search</h2>
+
+<!-- page content -->
+
+    <div class="">
+        <div class="page-title">
+            <div class="title_left">
+                <h3>STATIONS</h3>
+            </div>
+            <div class="title_right">
+                <div class="col-md-5 col-sm-5 col-xs-12 form-group pull-right top_search">
+                    <div class="input-group">
+                        <input type="text" class="search form-control" placeholder="Search for...">
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="button">Go!</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        @**@<div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <h2>Default Example <small>Users</small></h2>
+                        <ul class="nav navbar-right panel_toolbox">
+                            <li>
+                                <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                            </li>
+                            <li>
+                                <a class="close-link"><i class="fa fa-close"></i></a>
+                            </li>
+                        </ul>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                        <div class="form-group pull-right">
+                            <input type="text" class="search form-control" placeholder="What you looking for?">
+                        </div>
+                        <table class="table table-striped" id="userTbl">
+                            <tbody>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- /page content -->
+
+@*<script>
+    $.ajax({
+        url: "/Home/GetStation",
+        type: "POST",
+        dataType: "json",
+        success: function (data) {
+
+            $.each(data, function (i, item) {
+                $('#userTbl tbody').append("<tr><td>" + item.NAME + "</td><td><a href='/Home/Detail?stationId=" + item.ID + "'>Detail</a></td></tr>")
+            });
+
+        }
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        $('#userTbl tbody').hide();
+        $('.search').on('keyup', function () {
+            debugger;
+            $('#userTbl tbody').show();
+            var searchTerm = $(this).val().toLowerCase();
+            if (searchTerm=="") {
+                $('#userTbl tbody').hide();
+            }
+            $('#userTbl tbody tr').each(function () {
+                var lineStr = $(this).text().toLowerCase();
+                if (lineStr.indexOf(searchTerm) === -1) {
+                    $(this).hide();
+                } else {
+                    $(this).show();
+                }
+            });
+        });
+    });
+</script>*@
+
+
+
+<script src="~/js/jquery.dataTables.min.js"></script>
+<script src="~/js/custom.min.js"></script>
+
+

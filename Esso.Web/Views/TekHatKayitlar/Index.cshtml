@@ -1,0 +1,267 @@
+﻿@using language
+@{
+    ViewBag.Title = " Tek Hat Kayıt Listesi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Partial("MenuPartial")
+<style>
+    table.dataTable tbody tr.myeven {
+        color: #ff0000;
+    }
+
+    table.dataTable tbody tr.myodd {
+        color: #ffd800;
+    }
+</style>
+@section scripts{
+
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+    <script src="~/Scripts/bootstrap-datepicker.min.js"></script>
+    <script src="~/Scripts/jquery.inputmask.min.js"></script>
+
+
+    <link href="  https://cdn.datatables.net/select/1.2.7/css/select.dataTables.min.css" rel="stylesheet" />
+    <link href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" rel="stylesheet" />
+    <link href="https://editor.datatables.net/extensions/Editor/css/editor.dataTables.min.css" rel="stylesheet" />
+
+    <script src="https://cdn.datatables.net/select/1.2.7/js/dataTables.select.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.10/jquery.mask.js"></script>
+    <script src="https://cdn.datatables.net/select/1.2.7/js/dataTables.select.min.js"></script>
+    <link href="~/css/bootstrap-datepicker.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker.css" rel="stylesheet" />
+
+}
+<h2>Tek Hat Kayıt Listesi</h2>
+
+<table id="TekHatKayitTable" class="table table-striped table-bordered" width="100%">
+    <thead style="background-color:#337ab7;color:#E7E7E7">
+        <tr>
+            <th>ID</th>
+            <th>STATION_ID</th>
+            <th>KULLANICI ADI</th>
+            <th>ADRES</th>
+            <th>YENİ DEĞER</th>
+            <th>TARİH</th>
+       
+        </tr>
+    </thead>
+</table>
+
+
+    <script>
+
+        $(document).ready(function () {
+            $('#TekHatKayitTable').hide();
+            $('#TekHatKayitTable').fadeIn(1000);
+        });
+
+        var url_string = document.URL;
+        var url = new URL(url_string);
+        var stationId = url.searchParams.get("stationId");
+
+        var Popup;
+
+        var dataTable = $(document).ready(function () {
+            $("#TekHatKayitTable").DataTable({
+                "processing": true,
+                "serverSide": true,
+                "order": [5, "desc"],
+                "ajax": {
+                    "url": "/TekHatKayitlar/GetData",
+                    "type": "POST",
+                    "data": {
+                        "stationId": stationId
+                    },
+                    "datatype": "json"
+                },
+                "columns": [
+                    { "data": "ID" },
+                    { "data": "STATION_ID" },
+                    { "data": "UserName" },
+                    { "data": "ADDRESS" },
+                    { "data": "VALUE" },
+                    { "data": "INSERT_DATE" },
+
+
+
+                ],
+                "columnDefs": [
+                    { "visible": false, "targets": 0 },
+                    { "visible": false, "targets": 1 }
+                ],
+                "language": {
+
+                    "emptyTable": "@Resources.emptyTable",
+                        "decimal": "",
+                        "info": "@Resources.Showing_START_to_END_of_TOTAL_entries",
+                        "infoEmpty": "@Resources.Showing_0_to_0_of_0_entries",
+                        "infoFiltered": "@Resources.filtered_from_MAX_total_entries",
+                        "infoPostFix": "",
+                        "thousands": ",",
+                        "lengthMenu": "@Resources.Show_MENU_entries",
+                        "loadingRecords": "@Resources.loadingRecords",
+                        "processing": "@Resources.processing",
+                        "search": "@Resources.Search",
+                        "zeroRecords": "@Resources.No_matching_records_found",
+                        "paginate": {
+                            "first": "@Resources.First",
+                            "last": "@Resources.Last",
+                            "next": "@Resources.Next",
+                            "previous": "@Resources.Previous"
+                        },
+                        "aria": {
+                            "sortAscending": "@Resources.activate_to_sort_column_ascending",
+                            "sortDescending": "@Resources.activate_to_sort_column_descending"
+                        }
+                }
+
+            });
+
+        });
+
+
+        function PopupForm(newurl) {
+
+            location.href = newurl;
+
+
+        };
+        function PaketDersEkle(newurl) {
+
+            location.href = newurl;
+
+
+        };
+        function RaporAl(newurl) {
+            debugger;
+            location.href = newurl;
+
+
+        };
+        function PaketDersListele(newurl) {
+
+            location.href = newurl;
+
+
+        };
+
+        function SubmitForm(form) {
+
+            $.validator.unobtrusive.parse(form);
+
+            if ($(form).valid()) {
+                $.ajax({
+                    type: "POST",
+                    url: form.action,
+                    data: $(form).serialize(),
+                    success: function (data) {
+                        if (data.success) {
+                            Popup.dialog('close');
+                            debugger;
+                            $('#TekHatKayitTable').DataTable().ajax.reload();
+                            $.notify(data.message, {
+                                globalPosition: "Top center",
+                                className:"success"
+                            });
+                        }
+                    }
+
+
+                });
+            }
+            return false;
+        }
+
+            function PopupForm2(url) {
+            debugger;
+            var formDiv = $('<div/>');
+            $.get(url).done(function (response) {
+                formDiv.html(response);
+                Popup = formDiv.dialog({
+                    autoOpen: true,
+                    resizable: false,
+                    title: "Personel bilgilerini giriniz",
+                    height: 500,
+                    width: 700,
+                    close: function () {
+                        Popup.dialog('destroy').remove();
+                    }
+
+                });
+            });
+        }
+
+        function Delete(id) {
+
+            $.confirm({
+                title: 'SİLME ONAYI!',
+                content: 'Müşteriyi silmek istediğinize eminmisiniz!',
+                buttons: {
+                    Evet: function () {
+                        //$.alert('Confirmed!');
+
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("Delete","Musteri")/' + id,
+                    success: function (data) {
+                        if (data.success) {
+
+                            $('#TekHatKayitTable').DataTable().ajax.reload();
+                            $.notify(data.message, {
+                                globalPosition: "Top center",
+                                className: "success"
+                            })
+                        }
+                    }
+
+
+                        });
+                    },
+                    İptal: function () {
+                        //$.alert('Canceled!');
+                    }
+
+                }
+                });
+
+
+            }
+
+            function Sorgula() {
+
+
+                
+
+                $.confirm({
+                    title: 'Mail ONAYI!',
+                    content: 'Mail olarak gönderilsin mi?',
+                    buttons: {
+                        "Mail ve Rapor": function () {
+                            window.location.href = '/Musteri/ExportExcel_Toplu?mail_durumu=1';
+
+
+                        },
+                        Rapor: function () {
+
+                            window.location.href = '/Musteri/ExportExcel_Toplu?mail_durumu=0';
+                        },
+                        İptal: function () {
+
+                        }
+                    }
+                });
+
+
+
+
+
+
+            };
+    </script>
+
+
+
+
+

@@ -1,0 +1,1808 @@
+﻿@model int
+@using Esso.Data;
+@using Esso.Models;
+@using Microsoft.AspNet.Identity
+@using language
+@{
+    ViewBag.Title = "MeteorolojiDetail";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@{
+    EssoEntities DB = new EssoEntities();
+
+    #region User yetkileri kontrol
+    TBL_STATION stat = new TBL_STATION();
+    stat = null;
+
+    var userId = User.Identity.GetUserId();
+
+    //User yetkileri kontrol ediliyor
+    try
+    {
+        if (User.IsInRole("M_ADMIN"))
+        {
+            stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+        }
+        else if (User.IsInRole("COMP_ADMIN"))
+        {
+            int cmpId = DB.Stations.Where(a => a.ID == Model && a.IS_DELETED == false).FirstOrDefault().COMPANY_ID;
+
+            if (DB.CompanyUsers.Any(a => a.COMPANY_ID == cmpId && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+        else if (User.IsInRole("COMP_USER"))
+        {
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+        else if (User.IsInRole("DEMO"))
+        {
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+    }
+    catch (Exception)
+    {
+
+    }
+    #endregion
+}
+
+@{
+    if (stat == null)
+    {
+        @Html.Partial("_ErrorPagePartial")
+    }
+    else
+    {
+        var stationCount = DB.Inverters.Where(x => x.STATION_ID == Model).Count();
+        var _stationDetail = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+
+        <div class="page-title">
+            <div class="title_left">
+                @if (User.IsInRole("DEMO"))
+                {
+                    <h3>@_stationDetail.DEMO_NAME</h3>
+                }
+                else
+                {
+                    <h3>@_stationDetail.NAME</h3>
+                }
+            </div>
+        </div>
+        @Html.Partial("MenuPartial")
+        <div class="clearfix"></div>
+        <input type="hidden" value="Master @Resources.Irradiation" id="hdn_irradiation" />
+        <input type="hidden" value="Master @Resources.Pyranometer" id="hdn_pyranometer" />
+        <input type="hidden" value="Master @Resources.External_Temp" id="hdn_externalTemp" />
+        <input type="hidden" value="Master @Resources.Cell_Temp" id="hdn_cellTemp" />
+        <input type="hidden" value="Master @Resources.Wind_Speed" id="hdn_wind" />
+        <input type="hidden" value="Master @Resources.Temperature" id="hdn_temperature" />
+
+        <input type="hidden" value="Slave @Resources.Irradiation" id="hdn_irradiation2" />
+        <input type="hidden" value="Slave @Resources.Pyranometer" id="hdn_pyranometer2" />
+        <input type="hidden" value="Slave @Resources.External_Temp" id="hdn_externalTemp2" />
+        <input type="hidden" value="Slave @Resources.Cell_Temp" id="hdn_cellTemp2" />
+        <input type="hidden" value="Slave @Resources.Wind_Speed" id="hdn_wind2" />
+        <input type="hidden" value="Slave @Resources.Temperature" id="hdn_temperature2" />
+
+        <input type="hidden" value="Master @Resources.Wind_direction" id="hdn_ruzgar_yonu" />
+        <input type="hidden" value="Master @Resources.Air_Temperature" id="hdn_hava_sicakligi" />
+        <input type="hidden" value="Master @Resources.Relative_Humidity" id="hdn_bagil_nem" />
+        <input type="hidden" value="Master @Resources.Absolute_Humidity" id="hdn_mutlak_nem" />
+        <input type="hidden" value="Master @Resources.Absolute_Air_Pressure" id="hdn_mutlak_hava_basinci" />
+
+        <input type="hidden" value="Slave @Resources.Wind_direction" id="hdn_ruzgar_yonu2" />
+        <input type="hidden" value="Slave @Resources.Air_Temperature" id="hdn_hava_sicakligi2" />
+        <input type="hidden" value="Slave @Resources.Relative_Humidity" id="hdn_bagil_nem2" />
+        <input type="hidden" value="Slave @Resources.Absolute_Humidity" id="hdn_mutlak_nem2" />
+        <input type="hidden" value="Slave @Resources.Absolute_Air_Pressure" id="hdn_mutlak_hava_basinci2" />
+
+        <input type="hidden" value="@Resources.External_Temp" id="hdn_externalTemp3" />
+
+        <input type="hidden" value="Yağış Miktarı" id="hdn_yagis_miktari" />
+        <style>
+
+            .col-lg-2 {
+                width: 19.66666667%;
+            }
+        </style>
+
+
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_content">
+                        <div class="" role="tabpanel" data-example-id="togglable-tabs">
+                            <ul id="myTab1" class="nav nav-tabs bar_tabs" role="tablist">
+                                <li role="presentation" class="active">
+                                    <a href="#tab_contentA" id="profile-tabA" role="tab" data-toggle="tab" aria-controls="home" aria-expanded="true">@Resources.Meteorology_Chart</a>
+                                </li>
+                                <li role="presentation" id="profile-tabB" class="">
+                                    <a href="#tab_contentB" role="tab" id="profile-tab3" onclick='GetContent()' data-toggle="tab" aria-expanded="false">@Resources.Climate_Chart</a>
+                                </li>
+                                <li role="presentation" id="profile-tabC" class="">
+                                    <a href="#tab_contentC" role="tab" id="profile-tabb" data-toggle="tab" aria-controls="profile" aria-expanded="false">@Resources.Values</a>
+                                </li>
+                                <li role="presentation" id="profile-tabD" class="">
+                                    <a href="#tab_contentD" role="tab" id="profile-tabD" data-toggle="tab" aria-expanded="false">@Resources.Rain_Graph</a>
+                                </li>
+                            </ul>
+                            <div id="myTabContent" class="tab-content">
+                                <div role="tabpanel" class="tab-pane fade active in" id="tab_contentA" aria-labelledby="home-tab">
+                                    <div class="x_panel">
+                                        @*<img id="LoadingImage3" src="~/images/loader.gif" />*@
+                                        <div class="x_content">
+
+                                            <div class="well" style="overflow: auto">
+                                                <div class="col-md-12">
+
+                                                    <div class="row">
+
+                                                        <div class="col-md-12 col-sm-12 col-xs-12">
+                                                            <div class="x_panel">
+                                                                <div class="x_title">
+                                                                    <h2>@Resources.Daily_Meteorology_Chart</h2>
+
+
+                                                                    <div class="clearfix"></div>
+                                                                    <img id="LoadingImage" src="~/images/loader.gif" />
+
+                                                                </div>
+                                                                <div class="x_content">
+                                                                    <div id="echart_line" style="height:500px;"></div>
+                                                                    <div class="well" style="overflow: auto">
+
+
+                                                                        <div class="col-md-12">
+                                                                            <div class="btn-group">
+                                                                                <h4 id="bakisTarih"></h4>
+                                                                            </div>
+                                                                            <div class="btn-group">
+                                                                                <input name="beginDaily" id="single_cal4" class="form-control has-feedback-left" type="text" />
+                                                                            </div>
+                                                                            <div class="btn-group">
+                                                                                <input type="button" class="btn btn-info" id="btnListDaily" value="@Resources.Show" />
+                                                                            </div>
+                                                                        </div>
+
+                                                                    </div>
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+
+
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <div role="tabpanel" class="tab-pane fade" id="tab_contentB" aria-labelledby="home-tab">
+                                    <div class="x_panel">
+                                        @*<img id="LoadingImage3" src="~/images/loader.gif" />*@
+                                        <div class="x_content">
+
+                                            <div class="well" style="overflow: auto">
+                                                <div class="col-md-12">
+
+                                                    <div class="row">
+
+                                                        <div class="col-md-12 col-sm-12 col-xs-12">
+                                                            <div class="x_panel">
+                                                                <div class="x_title">
+                                                                    <h2>@Resources.Daily_Meteorology_Chart</h2>
+
+                                                                    <div class="clearfix"></div>
+                                                                    <img id="LoadingImage2" src="~/images/loader.gif" />
+
+                                                                </div>
+                                                                <div class="x_content">
+                                                                    <div id="echart_line2" style="height:500px;"></div>
+                                                                    <div class="well" style="overflow: auto">
+
+
+                                                                        <div class="col-md-12">
+                                                                            <div class="btn-group">
+                                                                                <h4 id="bakisTarih"></h4>
+                                                                            </div>
+                                                                            <div class="btn-group">
+                                                                                <input name="beginDaily2" id="single_cal8" class="form-control has-feedback-left" type="text" />
+                                                                            </div>
+                                                                            <div class="btn-group">
+                                                                                <input type="button" class="btn btn-info" id="btnListDaily2" value="@Resources.Show" />
+                                                                            </div>
+                                                                        </div>
+
+                                                                    </div>
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+
+
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+
+                                <div role="tabpanel" class="tab-pane fade" id="tab_contentC" aria-labelledby="profile-tab">
+                                    <div class="x_panel">
+                                        <div class="x_panel">
+                                            <div class="x_title">
+                                                <h1 align="center">@Resources.Instant_Values</h1>
+
+                                                <table>
+                                                    <tr><h3>Master</h3></tr>
+                                                    <tr>
+                                                        <div class="row">
+                                                            <div class="animated flipInY col-lg-2 col-md-3 col-sm-4 col-xs-12">
+                                                                <div class="tile-stats" style="background: #f7f7f7">
+                                                                    <div class="icon">
+                                                                        <i class="">
+                                                                            <img src="~/images/solarpanel.png" />
+                                                                        </i>
+                                                                    </div>
+                                                                    <div id="irradiation" class="count">-</div>
+                                                                    <h4 style="color: #07a1ff">@Resources.Irradiation W/m²</h4>
+                                                                </div>
+                                                            </div>
+                                                            <div class="animated flipInY col-lg-2 col-md-3 col-sm-4 col-xs-12">
+                                                                <div class="tile-stats" style="background: #f7f7f7">
+                                                                    <div class="icon">
+                                                                        <i class="">
+                                                                            <img src="~/images/wind.png" />
+                                                                        </i>
+                                                                    </div>
+                                                                    <div id="wind" class="count">-</div>
+                                                                    <h4 style="color: #07a1ff">@Resources.Wind_Speed m/s</h4>
+                                                                </div>
+                                                            </div>
+                                                            <div class="animated flipInY col-lg-2 col-md-3 col-sm-4 col-xs-12">
+                                                                <div class="tile-stats" style="background: #f7f7f7">
+                                                                    <div class="icon">
+                                                                        <i class="">
+                                                                            <img src="~/images/temp.png" />
+                                                                        </i>
+                                                                    </div>
+                                                                    <div id="cell" class="count">-</div>
+                                                                    <h4 style="color: #07a1ff">@Resources.Cell_Temp. °C</h4>
+                                                                </div>
+                                                            </div>
+                                                            <div class="animated flipInY col-lg-2 col-md-3 col-sm-4 col-xs-12">
+                                                                <div class="tile-stats" style="background: #f7f7f7">
+                                                                    <div class="icon">
+                                                                        <i class="">
+                                                                            <img src="~/images/outTemp.png" />
+                                                                        </i>
+                                                                    </div>
+                                                                    <div id="external" class="count">-</div>
+                                                                    <h4 style="color: #07a1ff">@Resources.External_Temp. °C</h4>
+                                                                </div>
+                                                            </div>
+                                                            <div class="animated flipInY col-lg-2 col-md-3 col-sm-4 col-xs-12">
+                                                                <div class="tile-stats" style="background: #f7f7f7">
+                                                                    <div class="icon">
+                                                                        <i class="">
+                                                                            <img src="~/images/solarpanel.png" />
+                                                                        </i>
+                                                                    </div>
+                                                                    <div id="radiation" class="count">-</div>
+                                                                    <h4 style="color: #07a1ff">@Resources.Pyranometer W/m2 </h4>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </tr>
+                                                    <tr>
+                                                        <div class="row">
+                                                            <div class="animated flipInY col-lg-2 col-md-3 col-sm-4 col-xs-12">
+                                                                <div class="tile-stats" style="background: #f7f7f7">
+                                                                    <div class="icon">
+                                                                        <i class="">
+                                                                            <img src="~/images/compass.png" />
+                                                                        </i>
+                                                                    </div>
+                                                                    <div id="ruzgar_yonu" class="count">-</div>
+                                                                    <h4 style="color: #07a1ff">@Resources.Wind_direction °</h4>
+                                                                </div>
+                                                            </div>
+                                                            <div class="animated flipInY col-lg-2 col-md-3 col-sm-4 col-xs-12">
+                                                                <div class="tile-stats" style="background: #f7f7f7">
+                                                                    <div class="icon">
+                                                                        <i class="">
+                                                                            <img src="~/images/temp.png" />
+                                                                        </i>
+                                                                    </div>
+                                                                    <div id="hava_sicakligi" class="count">-</div>
+                                                                    <h4 style="color: #07a1ff">@Resources.Air_Temperature °C</h4>
+                                                                </div>
+                                                            </div>
+                                                            <div class="animated flipInY col-lg-2 col-md-3 col-sm-4 col-xs-12">
+                                                                <div class="tile-stats" style="background: #f7f7f7">
+                                                                    <div class="icon">
+                                                                        <i class="">
+                                                                            <img src="~/images/humidity.png" />
+                                                                        </i>
+                                                                    </div>
+                                                                    <div id="bagil_nem" class="count">-</div>
+                                                                    <h4 style="color: #07a1ff">@Resources.Relative_Humidity %rh</h4>
+                                                                </div>
+                                                            </div>
+                                                            <div class="animated flipInY col-lg-2 col-md-3 col-sm-4 col-xs-12">
+                                                                <div class="tile-stats" style="background: #f7f7f7">
+                                                                    <div class="icon">
+                                                                        <i class="">
+                                                                            <img src="~/images/humidity.png" />
+                                                                        </i>
+                                                                    </div>
+                                                                    <div id="mutlak_nem" class="count">-</div>
+                                                                    <h4 style="color: #07a1ff">@Resources.Absolute_Humidity g/m³</h4>
+                                                                </div>
+                                                            </div>
+                                                            <div class="animated flipInY col-lg-2 col-md-3 col-sm-4 col-xs-12">
+                                                                <div class="tile-stats" style="background: #f7f7f7">
+                                                                    <div class="icon">
+                                                                        <i class="">
+                                                                            <img src="~/images/pressure.png" />
+                                                                        </i>
+                                                                    </div>
+                                                                    <div id="mutlak_hava_basinci" class="count">-</div>
+                                                                    <h4 style="color: #07a1ff">@Resources.Absolute_Air_Pressure hPa </h4>
+                                                                </div>
+                                                            </div>
+
+                                                        </div>
+                                                    </tr>
+                                                </table>
+
+
+
+
+
+                                                <br />
+                                                <br />
+
+
+                                                <table>
+                                                    <tr><h3>Slave</h3></tr>
+                                                    <tr>
+                                                        <div class="row">
+                                                            <div class="animated flipInY col-lg-2 col-md-3 col-sm-4 col-xs-12">
+                                                                <div class="tile-stats" style="background: #f7f7f7">
+                                                                    <div class="icon">
+                                                                        <i class="">
+                                                                            <img src="~/images/solarpanel.png" />
+                                                                        </i>
+                                                                    </div>
+                                                                    <div id="irradiation2" class="count">-</div>
+                                                                    <h4 style="color: #07a1ff">@Resources.Irradiation W/m²</h4>
+                                                                </div>
+                                                            </div>
+                                                            <div class="animated flipInY col-lg-2 col-md-3 col-sm-4 col-xs-12">
+                                                                <div class="tile-stats" style="background: #f7f7f7">
+                                                                    <div class="icon">
+                                                                        <i class="">
+                                                                            <img src="~/images/wind.png" />
+                                                                        </i>
+                                                                    </div>
+                                                                    <div id="wind2" class="count">-</div>
+                                                                    <h4 style="color: #07a1ff">@Resources.Wind_Speed m/s</h4>
+                                                                </div>
+                                                            </div>
+                                                            <div class="animated flipInY col-lg-2 col-md-3 col-sm-4 col-xs-12">
+                                                                <div class="tile-stats" style="background: #f7f7f7">
+                                                                    <div class="icon">
+                                                                        <i class="">
+                                                                            <img src="~/images/temp.png" />
+                                                                        </i>
+                                                                    </div>
+                                                                    <div id="cell2" class="count">-</div>
+                                                                    <h4 style="color: #07a1ff">@Resources.Cell_Temp. °C</h4>
+                                                                </div>
+                                                            </div>
+                                                            <div class="animated flipInY col-lg-2 col-md-3 col-sm-4 col-xs-12">
+                                                                <div class="tile-stats" style="background: #f7f7f7">
+                                                                    <div class="icon">
+                                                                        <i class="">
+                                                                            <img src="~/images/outTemp.png" />
+                                                                        </i>
+                                                                    </div>
+                                                                    <div id="external2" class="count">-</div>
+                                                                    <h4 style="color: #07a1ff">@Resources.External_Temp. °C</h4>
+                                                                </div>
+                                                            </div>
+                                                            <div class="animated flipInY col-lg-2 col-md-3 col-sm-4 col-xs-12">
+                                                                <div class="tile-stats" style="background: #f7f7f7">
+                                                                    <div class="icon">
+                                                                        <i class="">
+                                                                            <img src="~/images/solarpanel.png" />
+                                                                        </i>
+                                                                    </div>
+                                                                    <div id="radiation2" class="count">-</div>
+                                                                    <h4 style="color: #07a1ff">@Resources.Pyranometer W/m2 </h4>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </tr>
+                                                    <tr>
+                                                        <div class="row">
+                                                            <div class="animated flipInY col-lg-2 col-md-3 col-sm-4 col-xs-12">
+                                                                <div class="tile-stats" style="background: #f7f7f7">
+                                                                    <div class="icon">
+                                                                        <i class="">
+                                                                            <img src="~/images/compass.png" />
+                                                                        </i>
+                                                                    </div>
+                                                                    <div id="ruzgar_yonu2" class="count">-</div>
+                                                                    <h4 style="color: #07a1ff">@Resources.Wind_direction °</h4>
+                                                                </div>
+                                                            </div>
+                                                            <div class="animated flipInY col-lg-2 col-md-3 col-sm-4 col-xs-12">
+                                                                <div class="tile-stats" style="background: #f7f7f7">
+                                                                    <div class="icon">
+                                                                        <i class="">
+                                                                            <img src="~/images/temp.png" />
+                                                                        </i>
+                                                                    </div>
+                                                                    <div id="hava_sicakligi2" class="count">-</div>
+                                                                    <h4 style="color: #07a1ff">@Resources.Air_Temperature °C</h4>
+                                                                </div>
+                                                            </div>
+                                                            <div class="animated flipInY col-lg-2 col-md-3 col-sm-4 col-xs-12">
+                                                                <div class="tile-stats" style="background: #f7f7f7">
+                                                                    <div class="icon">
+                                                                        <i class="">
+                                                                            <img src="~/images/humidity.png" />
+                                                                        </i>
+                                                                    </div>
+                                                                    <div id="bagil_nem2" class="count">-</div>
+                                                                    <h4 style="color: #07a1ff">@Resources.Relative_Humidity %rh</h4>
+                                                                </div>
+                                                            </div>
+                                                            <div class="animated flipInY col-lg-2 col-md-3 col-sm-4 col-xs-12">
+                                                                <div class="tile-stats" style="background: #f7f7f7">
+                                                                    <div class="icon">
+                                                                        <i class="">
+                                                                            <img src="~/images/humidity.png" />
+                                                                        </i>
+                                                                    </div>
+                                                                    <div id="mutlak_nem2" class="count">-</div>
+                                                                    <h4 style="color: #07a1ff">@Resources.Absolute_Humidity g/m³</h4>
+                                                                </div>
+                                                            </div>
+                                                            <div class="animated flipInY col-lg-2 col-md-3 col-sm-4 col-xs-12">
+                                                                <div class="tile-stats" style="background: #f7f7f7">
+                                                                    <div class="icon">
+                                                                        <i class="">
+                                                                            <img src="~/images/pressure.png" />
+                                                                        </i>
+                                                                    </div>
+                                                                    <div id="mutlak_hava_basinci2" class="count">-</div>
+                                                                    <h4 style="color: #07a1ff">@Resources.Absolute_Air_Pressure hPa </h4>
+                                                                </div>
+                                                            </div>
+
+                                                        </div>
+                                                    </tr>
+                                                </table>
+
+
+                                            </div>
+                                            <br />
+                                            <br />
+
+
+                                            <table>
+                                                <tr><h3>@Resources.System_room_info</h3></tr>
+                                                <tr>
+                                                    <div class="row">
+                                                        <div class="animated flipInY col-lg-2 col-md-3 col-sm-4 col-xs-12">
+                                                            <div class="tile-stats" style="background: #f7f7f7">
+                                                                <div class="icon">
+                                                                    <i class="">
+                                                                        <img src="~/images/outTemp.png" />
+                                                                    </i>
+                                                                </div>
+                                                                <div id="external_temp3" class="count">-</div>
+                                                                <h4 style="color: #07a1ff">@Resources.External_Temp °C</h4>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+
+
+
+                                <div role="tabpanel" class="tab-pane fade" id="tab_contentD" aria-labelledby="home-tab">
+                                    <div class="x_panel">
+                                        @*<img id="LoadingImage3" src="~/images/loader.gif" />*@
+                                        <div class="x_content">
+
+                                            <div class="well" style="overflow: auto">
+                                                <div class="col-md-12">
+
+                                                    <div class="row">
+
+                                                        <div class="col-md-12 col-sm-12 col-xs-12">
+                                                            <div class="x_panel">
+                                                                <div class="x_title">
+                                                                    <h2>@Resources.Daily_Meteorology_Chart</h2>
+
+                                                                    <div class="clearfix"></div>
+                                                                    <img id="LoadingImage3" src="~/images/loader.gif" />
+
+                                                                </div>
+                                                                <div class="x_content">
+                                                                    <div id="echart_line3" style="height:500px;"></div>
+                                                                    <div class="well" style="overflow: auto">
+
+
+                                                                        <div class="col-md-12">
+                                                                            <div class="btn-group">
+                                                                                <h4 id="bakisTarih"></h4>
+                                                                            </div>
+                                                                            <div class="btn-group">
+                                                                                <input name="beginDaily3" id="single_cal9" class="form-control has-feedback-left" type="text" />
+                                                                            </div>
+                                                                            <div class="btn-group">
+                                                                                <input type="button" class="btn btn-info" id="btnListDaily3" value="@Resources.Show" />
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <script>
+                function NumberConvert(nStr) {
+                    if (nStr != null) {
+                        nStr = nStr.toFixed(1);
+                    }
+
+                    nStr += '';
+                    x = nStr.split('.');
+                    x1 = x[0];
+                    x2 = x.length > 1 ? ',' + x[1] : '';
+                    var rgx = /(\d+)(\d{3})/;
+                    while (rgx.test(x1)) {
+                        x1 = x1.replace(rgx, '$1' + '.' + '$2');
+                    }
+                    return x1 + x2;
+            }
+            function DateFormat(vl) {
+                var value = new Date
+                    (
+                    parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+                    );
+                var dat = value.getDate() +
+                    "/" +
+                    (value.getMonth() + 1) +
+                    "/" +
+                    value.getFullYear();
+
+                var time = value.getHours() +
+                    ":" +
+                    value.getMinutes()
+                return time.toString();
+            }
+            function ConvertTicksToDate(vl) {
+                vl = vl.replace("Date", "");
+                vl = vl.replace("/", "");
+                vl = vl.replace("(", "");
+                vl = vl.replace(")", "");
+                vl = vl.replace("/", "").trim();
+
+                var vlDate = new Date(parseInt(vl));
+                return vlDate.toLocaleDateString();
+            }
+                function EndData() {
+                    $.ajax({
+                        url: "/Licensed/EndProductionData?stationId=@Model",
+                        type: "POST",
+                        dataType: "json",
+                        success: function (data) {
+                            debugger;
+                            //Meteoroloji
+                            $("#irradiation").html((data.isinim).toFixed(1).replace(".", ","));
+                            $("#wind").html(data.ruzgarHizi.toFixed(1).replace(".", ","));
+                            $("#cell").html(data.hucreSicakligi.toFixed(1).replace(".", ","));
+                            $("#external").html(data.sicaklik.toFixed(1).replace(".", ","));
+                            $("#radiation").html(data.PYRANOMETER.toFixed(1).replace(".", ","));
+
+                            $("#ruzgar_yonu").html((data.MEAN_WIND_DIRECTION_1).toFixed(1).replace(".", ","));
+                            $("#hava_sicakligi").html(data.AIR_TEMPERATURE_1.toFixed(1).replace(".", ","));
+                            $("#bagil_nem").html(data.RELATIVE_HUMIDITY_1.toFixed(1).replace(".", ","));
+                            $("#mutlak_nem").html(data.ABSOLUTE_HUMIDITY_1.toFixed(1).replace(".", ","));
+                            $("#mutlak_hava_basinci").html(data.ABSOLUTE_AIR_PRESSURE_1.toFixed(1).replace(".", ","));
+
+                            $("#irradiation2").html((data.ISINIM_2).toFixed(1).replace(".", ","));
+                            $("#wind2").html(data.RUZGARHIZI_2.toFixed(1).replace(".", ","));
+                            $("#cell2").html(data.HUCRESICAKLIGI_2.toFixed(1).replace(".", ","));
+                            $("#external2").html(data.SICAKLIK_2.toFixed(1).replace(".", ","));
+                            $("#radiation2").html(data.PYRANOMETER_2.toFixed(1).replace(".", ","));
+
+                            $("#ruzgar_yonu2").html((data.MEAN_WIND_DIRECTION_2).toFixed(1).replace(".", ","));
+                            $("#hava_sicakligi2").html(data.AIR_TEMPERATURE_2.toFixed(1).replace(".", ","));
+                            $("#bagil_nem2").html(data.RELATIVE_HUMIDITY_2.toFixed(1).replace(".", ","));
+                            $("#mutlak_nem2").html(data.ABSOLUTE_HUMIDITY_2.toFixed(1).replace(".", ","));
+                            $("#mutlak_hava_basinci2").html(data.ABSOLUTE_AIR_PRESSURE_2.toFixed(1).replace(".", ","));
+
+
+                            $("#external_temp3").html(data.SISTEM_ODASI_SICAKLIGI.toFixed(1).replace(".", ","));
+
+                        }
+                    });
+                }
+                EndData();
+                var timer, delay = 300000;
+                timer = setInterval(function () {
+                    EndData();
+            }, delay)
+
+                    // Grafik Settings bas.
+                var theme2 = {
+                    color: [
+                        'rgba(52,152,219,0.5)', '#fea80c', '#e74c3c', '#179e17',
+                        '#9B59B6', '#8abb6f', '#759c6a', '#bfd3b7'
+                    ],
+
+
+                    title: {
+                        itemGap: 8,
+                        textStyle: {
+                            fontWeight: 'normal',
+                            color: '#408829'
+                        }
+                    },
+
+                    dataRange: {
+                        color: ['#1f610a', '#97b58d']
+                    },
+
+                    toolbox: {
+                        color: ['#408829', '#408829', '#408829', '#408829']
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            animation: true
+                        },
+                        formatter: function (params) {
+
+                            var colorSpan = color => '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background-color:' + color + '"></span>';
+                            return params[0].name + "<br/>" +
+                                colorSpan(params[0].color) + params[0].seriesName + " : " + NumberConvert(params[0].value) + " W/m²" + "<br/>"
+                                + colorSpan(params[1].color) + params[1].seriesName + " : " + NumberConvert(params[1].value) + " W/m²" + "<br/>"
+                                + colorSpan(params[2].color) + params[2].seriesName + " : " + NumberConvert(params[2].value) + " °C" + "<br/>"
+                                + colorSpan(params[3].color) + params[3].seriesName + " : " + NumberConvert(params[3].value) + " °C" + "<br/>"
+                                + colorSpan(params[4].color) + params[4].seriesName + " : " + NumberConvert(params[4].value) + " m/s";
+
+
+                        }
+                    },
+                    dataZoom: {
+                        dataBackgroundColor: '#eee',
+                        fillerColor: 'rgba(64,136,41,0.2)',
+                        handleColor: '#408829'
+                    },
+                    grid: {
+                        borderWidth: 0
+                    },
+
+                    categoryAxis: {
+                        axisLine: {
+                            lineStyle: {
+                                color: '#408829'
+                            }
+                        },
+                        splitLine: {
+                            lineStyle: {
+                                color: ['#eee']
+                            }
+                        }
+                    },
+
+                    valueAxis: {
+                        axisLine: {
+                            lineStyle: {
+                                color: '#408829'
+                            }
+                        },
+                        splitArea: {
+                            show: true,
+                            areaStyle: {
+                                color: ['rgba(250,250,250,0.1)', 'rgba(200,200,200,0.1)']
+                            }
+                        },
+                        splitLine: {
+                            lineStyle: {
+                                color: ['#eee']
+                            }
+                        }
+                    },
+                    timeline: {
+                        lineStyle: {
+                            color: '#408829'
+                        },
+                        controlStyle: {
+                            normal: { color: '#408829' },
+                            emphasis: { color: '#408829' }
+                        }
+                    },
+
+
+                    textStyle: {
+                        fontFamily: 'Arial, Verdana, sans-serif'
+                    }
+                };
+
+                    //Grafik Settings bit.
+
+
+
+
+                $('#btnListDaily2').click(function () {
+                    $(this).button('loading');
+                    MeteorolojiChart2();
+                });
+                $('#profile-tab3').click(function () {
+
+                    setTimeout(function () {
+                        MeteorolojiChart2();
+                    }, 250);
+                });
+                $('#btnListDaily2').button('loading');
+                //MeteorolojiChart();
+                function MeteorolojiChart2() {
+                    debugger;
+                    var beginDate = $('input[name="beginDaily2"]').val();
+                    if (!beginDate || beginDate.length == 0) {
+                        beginDate = new Date().toISOString();
+                    }
+                    $("#LoadingImage2").show();
+                    $.ajax({
+                        type: "get",
+                        url: "/Licensed/GetLineChartMeteoroloji2",
+                        dataType: "json",
+                        contentType: "application/json; charset=utf-8",
+                        data: { beginDate: beginDate, stationId: @Model },
+                        success: function (data) {
+                            var _ruzgar_yonu = $('#hdn_ruzgar_yonu').val();
+                            var _hava_sicakligi = $('#hdn_hava_sicakligi').val();
+                            var _bagil_nem = $('#hdn_bagil_nem').val();
+                            var _mutlak_nem = $('#hdn_mutlak_nem').val();
+                            var _mutlak_hava_basinci = $('#hdn_mutlak_hava_basinci').val();
+
+                            var _ruzgar_yonu2 = $('#hdn_ruzgar_yonu2').val();
+                            var _hava_sicakligi2 = $('#hdn_hava_sicakligi2').val();
+                            var _bagil_nem2 = $('#hdn_bagil_nem2').val();
+                            var _mutlak_nem2 = $('#hdn_mutlak_nem2').val();
+                            var _mutlak_hava_basinci2 = $('#hdn_mutlak_hava_basinci2').val();
+
+
+
+                            $("#LoadingImage2").hide();
+                            $('#btnListDaily2').button('reset');
+                            var echartLine2 = echarts.init(document.getElementById('echart_line2'), theme2);
+
+                            echartLine2.setOption({
+                                tooltip: {
+                                    trigger: 'axis',
+                                    axisPointer: {
+                                        animation: true
+                                    },
+                                    formatter: function (params) {
+                                        let ItemsArray = ['°', '°C', '%rh', 'g/m³', 'hPa', '°', '°C', '%rh', 'g/m³', 'hPa'];
+                                        var tooltipText = "";
+                                        var _unit;
+                                        tooltipText += params[0].name;
+                                        for (var i = 0; i < params.length; i++) {
+                                            _unit = ItemsArray[params[i].seriesIndex];
+                                            if (params[i].value == 0) {
+                                                tooltipText += "<br/>" + '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background-color:' + params[i].color + '"></span>' + params[i].seriesName + " : " + "-" + " " + _unit;
+                                            }
+                                            else {
+                                                tooltipText += "<br/>" + '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background-color:' + params[i].color + '"></span>' + params[i].seriesName + " : " + NumberConvert(params[i].value) + " " + _unit;
+                                            }
+
+                                        }
+                                        return tooltipText;
+                                    }
+                                },
+                                legend: {
+                                    x: 200,
+                                    y: 20,
+
+                                    data: [_ruzgar_yonu, _hava_sicakligi, _bagil_nem, _mutlak_nem, _mutlak_hava_basinci, _ruzgar_yonu2, _hava_sicakligi2, _bagil_nem2, _mutlak_nem2, _mutlak_hava_basinci2]
+
+                                },
+
+                                toolbox: {
+                                    show: true,
+                                    feature: {
+                                        mark: { show: false },
+                                        dataZoom: { show: false },
+                                        dataView: { show: false },
+                                        magicType: {
+                                            show: true,
+                                            title: {
+                                                line: 'Line',
+                                                bar: 'Bar',
+                                                stack: 'Stack',
+                                                tiled: 'Tiled'
+                                            },
+                                            type: ['line', 'bar', 'stack', 'tiled']
+                                        },
+                                        restore: {
+                                            show: true,
+                                            title: "Restore"
+                                        },
+                                        saveAsImage: {
+                                            show: true,
+                                            title: "Save Image"
+                                        }
+                                    }
+                                },
+                                calculable: true,
+                                dataZoom: {
+                                    show: true,
+                                    realtime: true,
+                                    start: 0,
+                                    end: 100
+                                },
+
+                                xAxis: [{
+                                    type: 'category',
+                                    boundaryGap: false,
+                                    data: data.map(function (a) { return DateFormat(a.date); })
+                                }],
+                                yAxis: [
+                                    {
+                                        type: 'value',
+                                        name: _bagil_nem,
+                                        axisLabel: {
+                                            formatter: '{value} %rh'
+                                        }
+                                    },
+                                    {
+                                        type: 'value',
+                                        name: '                   ' + _mutlak_nem + '        ' + _mutlak_hava_basinci+'',
+                                        axisLabel: {
+                                            formatter: '{value} g/m³'
+                                        }
+                                    },
+                                    {
+                                        type: 'value',
+                                        name: '',
+                                        axisLabel: {
+                                            formatter: '                 {value} hPa'
+                                        }
+                                    }
+                                ],
+                                series: [{
+                                    name: _ruzgar_yonu,
+                                    type: 'line',
+                                    smooth: true,
+                                    itemStyle: {
+                                        normal: {
+                                            areaStyle: {
+                                                type: 'default'
+                                            }
+                                        }
+                                    },
+                                    data: data.map(function (a) { return a.ruzgar_yonu; }),
+                                    markPoint: {
+                                        data: [
+                                            {
+                                            type: 'max',
+                                                name: 'Maximum Wind'
+
+                                        }]
+                                    }
+                                }, {
+                                        name: _hava_sicakligi,
+                                        type: 'line',
+                                        yAxisIndex: 0,
+                                        smooth: true,
+                                        itemStyle: {
+                                            normal: {
+
+                                            }
+                                        },
+                                        data: data.map(function (a) { return a.hava_sicakligi; })
+                                    },
+                                    {
+                                        name: _bagil_nem,
+                                    type: 'line',
+                                    yAxisIndex: 1,
+                                    smooth: true,
+                                    itemStyle: {
+                                        normal: {
+
+                                        }
+                                    },
+                                        data: data.map(function (a) { return a.bagil_nem; })
+                                }, {
+                                        name: _mutlak_nem,
+                                    type: 'line',
+                                    yAxisIndex: 1,
+
+                                    smooth: false,
+                                    itemStyle: {
+                                        normal: {
+
+                                        }
+                                    },
+                                        data: data.map(function (a) { return a.mutlak_nem; })
+                                }, {
+                                        name: _mutlak_hava_basinci,
+                                    type: 'line',
+                                    yAxisIndex: 2,
+
+                                    smooth: false,
+                                    itemStyle: {
+                                        normal: {
+
+                                        }
+                                    },
+                                        data: data.map(function (a) { return a.mutlak_hava_basinci; })
+                                    },
+                                    {
+                                        name: _ruzgar_yonu2,
+                                        type: 'line',
+                                        smooth: true,
+                                        itemStyle: {
+                                            normal: {
+                                                areaStyle: {
+                                                    type: 'default'
+                                                }
+                                            }
+                                        },
+                                        data: data.map(function (a) { return a.ruzgar_yonu2; }),
+                                        markPoint: {
+                                            data: [
+                                                {
+                                                    type: 'max',
+                                                    name: 'Maximum Wind'
+
+                                                }]
+                                        }
+                                    },
+                                    {
+                                        name: _hava_sicakligi2,
+                                        type: 'line',
+                                        yAxisIndex: 0,
+
+                                        smooth: false,
+                                        itemStyle: {
+                                            normal: {
+
+                                            }
+                                        },
+                                        data: data.map(function (a) { return a.hava_sicakligi2; })
+                                    },
+                                    {
+                                        name: _bagil_nem2,
+                                        type: 'line',
+                                        yAxisIndex: 1,
+
+                                        smooth: false,
+                                        itemStyle: {
+                                            normal: {
+
+                                            }
+                                        },
+                                        data: data.map(function (a) { return a.bagil_nem2; })
+                                    },
+                                    {
+                                        name: _mutlak_nem2,
+                                        type: 'line',
+                                        yAxisIndex: 1,
+
+                                        smooth: false,
+                                        itemStyle: {
+                                            normal: {
+
+                                            }
+                                        },
+                                        data: data.map(function (a) { return a.mutlak_nem2; })
+                                    },
+                                    {
+                                        name: _mutlak_hava_basinci2,
+                                        type: 'line',
+                                        yAxisIndex: 2,
+
+                                        smooth: false,
+                                        itemStyle: {
+                                            normal: {
+
+                                            }
+                                        },
+                                        data: data.map(function (a) { return a.mutlak_hava_basinci2; })
+                                    }
+                                ]
+                            });
+
+                        }
+                    });
+                }
+
+                    //Meteoroloji Grafigi bit.
+                       //Meteoroloji Grafigi bit.
+
+
+
+               $('#btnListDaily3').click(function () {
+                    $(this).button('loading');
+                   Rainfall();
+                });
+                $('#profile-tabD').click(function () {
+
+                    setTimeout(function () {
+                        Rainfall();
+                    }, 250);
+                });
+                $('#btnListDaily3').button('loading');
+                //MeteorolojiChart();
+
+
+
+
+
+
+                function Rainfall() {
+
+                    var beginDate = $('input[name="beginDaily3"]').val();
+                    if (!beginDate || beginDate.length == 0) {
+                        beginDate = new Date().toISOString();
+                    }
+                    $("#LoadingImage3").show();
+                    $.ajax({
+                        type: "get",
+                        url: "/Licensed/GetRainfall",
+                        dataType: "json",
+                        contentType: "application/json; charset=utf-8",
+                        data: { beginDate: beginDate, stationId: @Model },
+                        success: function (data) {
+
+
+
+                            var _yagis_miktari = $('#hdn_yagis_miktari').val();
+                            //var _bagil_nem = $('#hdn_bagil_nem').val();
+
+
+                            $("#LoadingImage3").hide();
+                            $('#btnListDaily3').button('reset');
+                            var echartLine3 = echarts.init(document.getElementById('echart_line3'), theme2);
+
+                            echartLine3.setOption({
+                                tooltip: {
+                                    trigger: 'axis',
+                                    axisPointer: {
+                                        animation: true
+                                    },
+                                    formatter: function (params) {
+                                        let ItemsArray = ['mm/m²'];
+                                        var tooltipText = "";
+                                        var _unit;
+                                        tooltipText += params[0].name;
+                                        for (var i = 0; i < params.length; i++) {
+                                            _unit = ItemsArray[params[i].seriesIndex];
+                                            if (params[i].value == 0) {
+                                                tooltipText += "<br/>" + '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background-color:' + params[i].color + '"></span>' + params[i].seriesName + " : " + "-" + " " + _unit;
+                                            }
+
+                                            else {
+                                                tooltipText += "<br/>" + '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background-color:' + params[i].color + '"></span>' + params[i].seriesName + " : " + NumberConvert(params[i].value) + " " + _unit;
+                                            }
+
+                                        }
+                                        return tooltipText;
+                                    }
+                                },
+                                legend: {
+                                    x: 200,
+                                    y: 20,
+
+                                    data: [_yagis_miktari]
+
+                                },
+
+                                toolbox: {
+                                    show: true,
+                                    feature: {
+                                        mark: { show: false },
+                                        dataZoom: { show: false },
+                                        dataView: { show: false },
+                                        magicType: {
+                                            show: true,
+                                            title: {
+                                                line: 'Line',
+                                                bar: 'Bar',
+                                                stack: 'Stack',
+                                                tiled: 'Tiled'
+                                            },
+                                            type: ['line', 'bar', 'stack', 'tiled']
+                                        },
+                                        restore: {
+                                            show: true,
+                                            title: "Restore"
+                                        },
+                                        saveAsImage: {
+                                            show: true,
+                                            title: "Save Image"
+                                        }
+                                    }
+                                },
+                                calculable: true,
+                                dataZoom: {
+
+                                    show: true,
+                                    realtime: true,
+                                    start: 0,
+                                    end: 100
+                                },
+
+                                xAxis: [{
+                                    type: 'category',
+                                    boundaryGap: false,
+                                    data: data.map(function (a) { return DateFormat(a.date); })
+                                }],
+                                yAxis:
+                                    [
+                                    {
+                                        type: 'value',
+                                        name: _yagis_miktari,
+                                        axisLabel: {
+                                            formatter: '{value}  mm/m²'
+                                        }
+                                    }
+                                    ],
+
+                                series: [{
+                                    name: _yagis_miktari,
+                                    type: 'line',
+                                    smooth: true,
+                                    itemStyle: {
+                                        normal: {
+                                            areaStyle: {
+                                                type: 'default'
+                                            }
+                                        }
+                                    },
+                                    data: data.map(function (a) { return a.yagis_miktari; }),
+                                    markPoint: {
+                                        data: [
+                                            {
+                                            type: 'max',
+                                                name: 'Maximum Wind'
+
+                                        }]
+                                               }
+                                        }
+                                ]
+
+
+
+                            });
+
+                        }
+                    });
+                }
+        </script>
+        <br />
+        <script>
+
+            $(document).ready(function () {
+                function NumberConvert(nStr) {
+                    if (nStr != null) {
+                        nStr = nStr.toFixed(1);
+                    }
+
+                    nStr += '';
+                    x = nStr.split('.');
+                    x1 = x[0];
+                    x2 = x.length > 1 ? ',' + x[1] : '';
+                    var rgx = /(\d+)(\d{3})/;
+                    while (rgx.test(x1)) {
+                        x1 = x1.replace(rgx, '$1' + '.' + '$2');
+                    }
+                    return x1 + x2;
+                }
+                @*function EndData() {
+                    $.ajax({
+                        url: "/Licensed/EndProductionData?stationId=@Model",
+                        type: "POST",
+                        dataType: "json",
+                        success: function (data) {
+
+                            //Meteoroloji
+                            $("#irradiation").html((data[0]._isinim).toFixed(1).replace(".", ","));
+                            $("#wind").html(data[0]._ruzgar.toFixed(1).replace(".", ","));
+                            $("#cell").html(data[0]._hucreSicakligi.toFixed(1).replace(".", ","));
+                            $("#external").html(data[0]._ortamSicakligi.toFixed(1).replace(".", ","));
+                            $("#radiation").html(data[0]._pyranometer.toFixed(1).replace(".", ","));
+
+                            $("#ruzgar_yonu").html((data[0]._MEAN_WIND_DIRECTION_1).toFixed(1).replace(".", ","));
+                            $("#hava_sicakligi").html(data[0]._AIR_TEMPERATURE_1.toFixed(1).replace(".", ","));
+                            $("#bagil_nem").html(data[0]._RELATIVE_HUMIDITY_1.toFixed(1).replace(".", ","));
+                            $("#mutlak_nem").html(data[0]._ABSOLUTE_HUMIDITY_1.toFixed(1).replace(".", ","));
+                            $("#mutlak_hava_basinci").html(data[0]._ABSOLUTE_AIR_PRESSURE_1.toFixed(1).replace(".", ","));
+
+                            $("#irradiation2").html((data[0]._ISINIM_2).toFixed(1).replace(".", ","));
+                            $("#wind2").html(data[0]._RUZGARHIZI_2.toFixed(1).replace(".", ","));
+                            $("#cell2").html(data[0]._HUCRESICAKLIGI_2.toFixed(1).replace(".", ","));
+                            $("#external2").html(data[0]._SICAKLIK_2.toFixed(1).replace(".", ","));
+                            $("#radiation2").html(data[0]._PYRANOMETER_2.toFixed(1).replace(".", ","));
+
+                            $("#ruzgar_yonu2").html((data[0]._MEAN_WIND_DIRECTION_2).toFixed(1).replace(".", ","));
+                            $("#hava_sicakligi2").html(data[0]._AIR_TEMPERATURE_2.toFixed(1).replace(".", ","));
+                            $("#bagil_nem2").html(data[0]._RELATIVE_HUMIDITY_2.toFixed(1).replace(".", ","));
+                            $("#mutlak_nem2").html(data[0]._ABSOLUTE_HUMIDITY_2.toFixed(1).replace(".", ","));
+                            $("#mutlak_hava_basinci2").html(data[0]._ABSOLUTE_AIR_PRESSURE_2.toFixed(1).replace(".", ","));
+                        }
+                    });
+                }
+                $('#profile-tabb').click(function () {
+                    debugger;
+                    setTimeout(function () {
+                        EndData();
+                    }, 250);
+                });*@
+
+                var timer, delay = 300000;
+                timer = setInterval(function () {
+                    EndData();
+                }, delay)
+                  //   Grafik Settings bas.
+                var theme = {
+                    color: [
+                        'rgba(52,152,219,0.5)', '#fea80c', '#e74c3c', '#179e17',
+                        '#9B59B6', '#8abb6f', '#759c6a', '#bfd3b7'
+                    ],
+
+
+                    title: {
+                        itemGap: 8,
+                        textStyle: {
+                            fontWeight: 'normal',
+                            color: '#408829'
+                        }
+                    },
+
+                    dataRange: {
+                        color: ['#1f610a', '#97b58d']
+                    },
+
+                    toolbox: {
+                        color: ['#408829', '#408829', '#408829', '#408829']
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            animation: true
+                        },
+                        formatter: function (params) {
+                            var colorSpan = color => '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background-color:' + color + '"></span>';
+                            return params[0].name + "<br/>" +
+                                colorSpan(params[0].color) + params[0].seriesName + " : " + NumberConvert(params[0].value) + " W/m²" + "<br/>"
+                                + colorSpan(params[1].color) + params[1].seriesName + " : " + NumberConvert(params[1].value) + " W/m²" + "<br/>"
+                                + colorSpan(params[2].color) + params[2].seriesName + " : " + NumberConvert(params[2].value) + " °C" + "<br/>"
+                                + colorSpan(params[3].color) + params[3].seriesName + " : " + NumberConvert(params[3].value) + " °C" + "<br/>"
+                                + colorSpan(params[4].color) + params[4].seriesName + " : " + NumberConvert(params[4].value) + " m/s";
+                        }
+                    },
+                    dataZoom: {
+                        dataBackgroundColor: '#eee',
+                        fillerColor: 'rgba(64,136,41,0.2)',
+                        handleColor: '#408829'
+                    },
+                    grid: {
+                        borderWidth: 0
+                    },
+
+                    categoryAxis: {
+                        axisLine: {
+                            lineStyle: {
+                                color: '#408829'
+                            }
+                        },
+                        splitLine: {
+                            lineStyle: {
+                                color: ['#eee']
+                            }
+                        }
+                    },
+
+                    valueAxis: {
+                        axisLine: {
+                            lineStyle: {
+                                color: '#408829'
+                            }
+                        },
+                        splitArea: {
+                            show: true,
+                            areaStyle: {
+                                color: ['rgba(250,250,250,0.1)', 'rgba(200,200,200,0.1)']
+                            }
+                        },
+                        splitLine: {
+                            lineStyle: {
+                                color: ['#eee']
+                            }
+                        }
+                    },
+                    timeline: {
+                        lineStyle: {
+                            color: '#408829'
+                        },
+                        controlStyle: {
+                            normal: { color: '#408829' },
+                            emphasis: { color: '#408829' }
+                        }
+                    },
+
+
+                    textStyle: {
+                        fontFamily: 'Arial, Verdana, sans-serif'
+                    }
+                };
+
+                    //Grafik Settings bit.
+
+
+                function DateFormat(vl) {
+                    var value = new Date
+                        (
+                        parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+                        );
+                    var dat = value.getDate() +
+                        "/" +
+                        (value.getMonth() + 1) +
+                        "/" +
+                        value.getFullYear();
+
+                    var time = value.getHours() +
+                        ":" +
+                        value.getMinutes()
+                    return time.toString();
+                }
+                function ConvertTicksToDate(vl) {
+
+                    vl = vl.replace("Date", "");
+                    vl = vl.replace("/", "");
+                    vl = vl.replace("(", "");
+                    vl = vl.replace(")", "");
+                    vl = vl.replace("/", "").trim();
+
+                    var vlDate = new Date(parseInt(vl));
+                    return vlDate.toLocaleDateString();
+                }
+
+                $('#btnListDaily').click(function () {
+                    $(this).button('loading');
+                    MeteorolojiChart();
+                });
+                $('#btnListDaily').button('loading');
+                MeteorolojiChart();
+                function MeteorolojiChart() {
+
+                    var beginDate = $('input[name="beginDaily"]').val();
+
+
+                    if (!beginDate || beginDate.length == 0) {
+                        beginDate = new Date().toISOString();
+                    }
+
+                    $("#LoadingImage").show();
+                    $.ajax({
+                        type: "get",
+                        url: "/Licensed/GetLineChartMeteoroloji",
+                        dataType: "json",
+                        contentType: "application/json; charset=utf-8",
+                        data: { beginDate: beginDate, stationId: @Model },
+                        success: function (data) {
+                            var _irradiation = $('#hdn_irradiation').val();
+                            var _pyranometer = $('#hdn_pyranometer').val();
+                            var _externalTemp = $('#hdn_externalTemp').val();
+                            var _cellTemp = $('#hdn_cellTemp').val();
+                            var _wind = $('#hdn_wind').val();
+                            var _temperature = $('#hdn_temperature').val();
+
+                            var _irradiation2 = $('#hdn_irradiation2').val();
+                            var _pyranometer2 = $('#hdn_pyranometer2').val();
+                            var _externalTemp2 = $('#hdn_externalTemp2').val();
+                            var _cellTemp2 = $('#hdn_cellTemp2').val();
+                            var _wind2 = $('#hdn_wind2').val();
+                            var _temperature2 = $('#hdn_temperature2').val();
+
+                            $("#LoadingImage").hide();
+                            $('#btnListDaily').button('reset');
+                            var echartLine = echarts.init(document.getElementById('echart_line'), theme);
+
+                            echartLine.setOption({
+                                tooltip: {
+                                    trigger: 'axis',
+                                    axisPointer: {
+                                        animation: true
+                                    },
+                                    formatter: function (params) {
+
+                                        let ItemsArray = ['W/m²', 'W/m²', '°C', '°C', 'm/s', 'W/m²', 'W/m²', '°C', '°C', 'm/s'];
+
+                                        var tooltipText = "";
+                                        var _unit;
+                                        tooltipText += params[0].name;
+                                        for (var i = 0; i < params.length; i++) {
+                                            _unit = ItemsArray[params[i].seriesIndex];
+                                            if (params[i].value == 0) {
+                                                tooltipText += "<br/>" + '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background-color:' + params[i].color + '"></span>' + params[i].seriesName + " : " + "-" + " " + _unit;
+                                            }
+                                            else {
+                                                tooltipText += "<br/>" + '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background-color:' + params[i].color + '"></span>' + params[i].seriesName + " : " + NumberConvert(params[i].value) + " " + _unit;
+                                            }
+                                        }
+                                        return tooltipText;
+                                    }
+                                },
+                                legend: {
+                                    x: 200,
+                                    y: 20,
+                                    data: [_irradiation, _pyranometer, _externalTemp, _cellTemp, _wind, _irradiation2, _pyranometer2, _externalTemp2, _cellTemp2, _wind2]
+                                },
+                                toolbox: {
+                                    show: true,
+                                    feature: {
+                                        mark: { show: false },
+                                        dataZoom: { show: false },
+                                        dataView: { show: false },
+                                        magicType: {
+                                            show: true,
+                                            title: {
+                                                line: 'Line',
+                                                bar: 'Bar',
+                                                stack: 'Stack',
+                                                tiled: 'Tiled'
+                                            },
+                                            type: ['line', 'bar', 'stack', 'tiled']
+                                        },
+                                        restore: {
+                                            show: true,
+                                            title: "Restore"
+                                        },
+                                        saveAsImage: {
+                                            show: true,
+                                            title: "Save Image"
+                                        }
+                                    }
+                                },
+                                calculable: true,
+                                dataZoom: {
+                                    show: true,
+                                    realtime: true,
+                                    start: 0,
+                                    end: 100
+                                },
+
+                                xAxis: [{
+                                    type: 'category',
+                                    boundaryGap: false,
+                                    data: data.map(function (a) { return DateFormat(a.date); })
+                                }],
+                                yAxis: [
+                                    {
+                                        type: 'value',
+                                        name: _irradiation,
+                                        axisLabel: {
+                                            formatter: '{value} W/m²'
+                                        }
+                                    },
+                                    {
+                                        type: 'value',
+                                        name: '                   ' + _temperature + '        '+_wind+'',
+                                        axisLabel: {
+                                            formatter: '{value} °C'
+                                        }
+                                    },
+                                    {
+                                        type: 'value',
+                                        name: '',
+                                        axisLabel: {
+                                            formatter: '                 {value} m/s'
+                                        }
+                                    }
+                                ],
+                                series: [{
+                                    name: _irradiation,
+                                    type: 'line',
+                                    smooth: true,
+                                    itemStyle: {
+                                        normal: {
+                                            areaStyle: {
+                                                type: 'default'
+                                            }
+                                        }
+                                    },
+                                    data: data.map(function (a) { return a.irradiation; }),
+                                    markPoint: {
+                                        data: [
+                                            {
+                                            type: 'max',
+                                            name: 'Maximum Irradiation (kW)'
+                                        }]
+                                    }
+                                }, {
+                                        name: _pyranometer,
+                                        type: 'line',
+                                        yAxisIndex: 0,
+                                        smooth: true,
+                                        itemStyle: {
+                                            normal: {
+
+                                            }
+                                        },
+                                        data: data.map(function (a) { return a.pyranometer; })
+                                    },
+                                    {
+                                    name: _externalTemp,
+                                    type: 'line',
+                                    yAxisIndex: 1,
+                                    smooth: true,
+                                    itemStyle: {
+                                        normal: {
+
+                                        }
+                                    },
+                                    data: data.map(function (a) { return a.external_temp; })
+                                }, {
+                                    name: _cellTemp,
+                                    type: 'line',
+                                    yAxisIndex: 1,
+
+                                    smooth: false,
+                                    itemStyle: {
+                                        normal: {
+
+                                        }
+                                    },
+                                    data: data.map(function (a) { return a.cell_temp; })
+                                }, {
+                                    name: _wind,
+                                    type: 'line',
+                                    yAxisIndex: 2,
+
+                                    smooth: false,
+                                    itemStyle: {
+                                        normal: {
+
+                                        }
+                                    },
+                                    data: data.map(function (a) { return a.wind; })
+                                    },
+
+                                    {
+                                        name: _irradiation2,
+                                        type: 'line',
+                                        smooth: true,
+                                        itemStyle: {
+                                            normal: {
+                                                areaStyle: {
+                                                    type: 'default'
+                                                }
+                                            }
+                                        },
+                                        data: data.map(function (a) { return a.irradiation2; }),
+                                        markPoint: {
+                                            data: [
+                                                {
+                                                    type: 'max',
+                                                    name: 'Maximum Irradiation (kW)'
+                                                }]
+                                        }
+                                    },
+                                   {
+                                        name: _pyranometer2,
+                                        type: 'line',
+                                        yAxisIndex: 0,
+                                        smooth: true,
+                                        itemStyle: {
+                                            normal: {
+
+                                            }
+                                        },
+                                        data: data.map(function (a) { return a.pyranometer2; })
+                                    },
+                                    {
+                                        name: _externalTemp2,
+                                        type: 'line',
+                                        yAxisIndex: 1,
+
+                                        smooth: false,
+                                        itemStyle: {
+                                            normal: {
+
+                                            }
+                                        },
+                                        data: data.map(function (a) { return a.external_temp2; })
+                                    }
+                                    ,
+                                    {
+                                        name: _cellTemp2,
+                                        type: 'line',
+                                        yAxisIndex: 1,
+
+                                        smooth: false,
+                                        itemStyle: {
+                                            normal: {
+
+                                            }
+                                        },
+                                        data: data.map(function (a) { return a.cell_temp2; })
+                                    },
+                                    {
+                                        name: _wind2,
+                                        type: 'line',
+                                        yAxisIndex: 2,
+
+                                        smooth: false,
+                                        itemStyle: {
+                                            normal: {
+
+                                            }
+                                        },
+                                        data: data.map(function (a) { return a.wind2; })
+                                    }
+
+                                ]
+                            });
+
+
+                        }
+                    });
+                }
+
+                    //Meteoroloji Grafigi bit.
+
+
+
+                    //Datetime bas.
+                $('#single_cal4').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                    });
+                $('#single_cal9').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+                $('#single_cal5').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+
+                $('#inpHour').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+
+                $('#inpAkim').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+
+                $('#inpHour').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+                    //Datetime bit.
+                $('#single_cal8').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+                $('#single_cal5').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+
+                $('#inpHour').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+
+                $('#inpAkim').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+
+                $('#inpHour').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+            });
+
+
+
+        </script>
+
+
+    }
+}

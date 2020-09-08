@@ -1,0 +1,47 @@
+﻿.eu-wrapper {
+	width:100%;
+}
+.eu-wrapper:after{content:" ";display:block;clear:both;}
+
+.eu-wrapper .eu-left {
+	width: 300px;
+	display:block;
+	float:left;
+}
+
+.eu-wrapper .eu-right {
+	width: calc(100% - 300px);
+	display: block;
+	float: left;
+}
+
+.eu-treeview {
+	width: 100%;
+}
+
+.eu-treeview .eu-treeview-item {
+	
+}
+
+.eu-treeview .eu-treeview-item .eu-treeview-header {
+	color: #00629E;
+}
+.eu-treeview .eu-treeview-item .eu-treeview-header:hover {
+	cursor: pointer;
+}
+
+.eu-treeview .eu-treeview-item .eu-treeview-header i {
+	padding-right:2px;
+	font-size:10.5pt;
+}
+
+.eu-treeview .eu-treeview-item .eu-treeview-header span {
+	line-height: 20px;
+	font-weight: bold;
+	font-family: "Helvetica Neue", Roboto, Arial, "Droid Sans", sans-serif;
+}
+
+.eu-treeview .eu-treeview-item .eu-treeview-child {
+	padding-left: 14px;
+	padding-bottom: 4px;
+}

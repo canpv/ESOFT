@@ -1,0 +1,1182 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Active_Alerts" xml:space="preserve">
+    <value>Aktif Alarmlar</value>
+  </data>
+  <data name="Active_Inverters" xml:space="preserve">
+    <value>Aktif Inverterler</value>
+  </data>
+  <data name="Active_Power_Sum" xml:space="preserve">
+    <value>Aktif Güç Toplamı</value>
+  </data>
+  <data name="Actual_Value" xml:space="preserve">
+    <value>Gerçek Değer</value>
+  </data>
+  <data name="Alarm_Settings" xml:space="preserve">
+    <value>Alarm Ayarları</value>
+  </data>
+  <data name="Alarm_State" xml:space="preserve">
+    <value>Alarm Durumu</value>
+  </data>
+  <data name="Alerts" xml:space="preserve">
+    <value>Alarmlar</value>
+  </data>
+  <data name="All_Rights_Reserved" xml:space="preserve">
+    <value>Tüm Hakları Saklıdır</value>
+  </data>
+  <data name="All_Stations_Map" xml:space="preserve">
+    <value>Tüm İstasyonların Haritası</value>
+  </data>
+  <data name="Annual" xml:space="preserve">
+    <value>Yıllık</value>
+  </data>
+  <data name="Annual_Financial_Income" xml:space="preserve">
+    <value>Yıllık Finansal Gelir</value>
+  </data>
+  <data name="Annual_Production" xml:space="preserve">
+    <value>Yıllık Üretim </value>
+  </data>
+  <data name="Annual_Tax" xml:space="preserve">
+    <value>Yıllık Vergi</value>
+  </data>
+  <data name="April" xml:space="preserve">
+    <value>Nisan</value>
+  </data>
+  <data name="August" xml:space="preserve">
+    <value>Ağustos</value>
+  </data>
+  <data name="Average" xml:space="preserve">
+    <value>Ortalama</value>
+  </data>
+  <data name="Cell_Temp" xml:space="preserve">
+    <value>Hücre Sıcaklığı</value>
+  </data>
+  <data name="Chart" xml:space="preserve">
+    <value>Grafik</value>
+  </data>
+  <data name="Chart_List" xml:space="preserve">
+    <value>Grafik Listesi</value>
+  </data>
+  <data name="Chart_Name" xml:space="preserve">
+    <value>Grafik Adı</value>
+  </data>
+  <data name="ChooseYourLanguage" xml:space="preserve">
+    <value>Dilinizi Seçin</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Kapat</value>
+  </data>
+  <data name="Coal" xml:space="preserve">
+    <value>Kömür</value>
+  </data>
+  <data name="Companies" xml:space="preserve">
+    <value>Şirketler</value>
+  </data>
+  <data name="Connected" xml:space="preserve">
+    <value>Bağlantı var</value>
+  </data>
+  <data name="Connection_Fail" xml:space="preserve">
+    <value>Bağlantı Hatası</value>
+  </data>
+  <data name="Consumed_Energy" xml:space="preserve">
+    <value>Tüketilen Enerji</value>
+  </data>
+  <data name="Contact" xml:space="preserve">
+    <value>İletişim</value>
+  </data>
+  <data name="Converter_State" xml:space="preserve">
+    <value>Dönüştürücü Durumu</value>
+  </data>
+  <data name="Coordinate" xml:space="preserve">
+    <value>Koordinat</value>
+  </data>
+  <data name="Count" xml:space="preserve">
+    <value>Sayı</value>
+  </data>
+  <data name="Create_Your_Chart" xml:space="preserve">
+    <value>Grafiğinizi Oluşturun</value>
+  </data>
+  <data name="Current" xml:space="preserve">
+    <value>Akım</value>
+  </data>
+  <data name="Daily" xml:space="preserve">
+    <value>Günlük</value>
+  </data>
+  <data name="Daily_Financial_Income" xml:space="preserve">
+    <value>Günlük Finansal Gelir</value>
+  </data>
+  <data name="Daily_Production" xml:space="preserve">
+    <value>Günlük Üretim</value>
+  </data>
+  <data name="Daily_Tax" xml:space="preserve">
+    <value>Günlük Vergi</value>
+  </data>
+  <data name="Date" xml:space="preserve">
+    <value>Tarih</value>
+  </data>
+  <data name="Day" xml:space="preserve">
+    <value>Gün</value>
+  </data>
+  <data name="December" xml:space="preserve">
+    <value>Aralık</value>
+  </data>
+  <data name="Definitions" xml:space="preserve">
+    <value>Definitions</value>
+  </data>
+  <data name="Derating_State" xml:space="preserve">
+    <value>Derating State</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Açıklama</value>
+  </data>
+  <data name="Download_As_Excel" xml:space="preserve">
+    <value>Excel Olarak İndir</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>E-posta</value>
+  </data>
+  <data name="emissions_avoided_in_total" xml:space="preserve">
+    <value>Toplam Salınmayan Emisyon</value>
+  </data>
+  <data name="Energy_Produced" xml:space="preserve">
+    <value>Enerji Üretimi</value>
+  </data>
+  <data name="Energy_Quality_Recorder" xml:space="preserve">
+    <value>Enerji Kalite Kaydedici</value>
+  </data>
+  <data name="English" xml:space="preserve">
+    <value>İngilizce</value>
+  </data>
+  <data name="External_Temp" xml:space="preserve">
+    <value>Ortam Sıcaklıklığı</value>
+  </data>
+  <data name="February" xml:space="preserve">
+    <value>Şubat</value>
+  </data>
+  <data name="Feed_in_Power" xml:space="preserve">
+    <value>AC Güç Toplamı</value>
+  </data>
+  <data name="Financial_Income" xml:space="preserve">
+    <value>Finansal Gelir</value>
+  </data>
+  <data name="French" xml:space="preserve">
+    <value>Fransızca</value>
+  </data>
+  <data name="Frequency" xml:space="preserve">
+    <value>Frekans</value>
+  </data>
+  <data name="Full_Screen" xml:space="preserve">
+    <value>Tam Ekran</value>
+  </data>
+  <data name="Generator_Power" xml:space="preserve">
+    <value>DC Güç Toplamı</value>
+  </data>
+  <data name="German" xml:space="preserve">
+    <value>Almanca</value>
+  </data>
+  <data name="Get_Chart" xml:space="preserve">
+    <value>Grafik Oluştur</value>
+  </data>
+  <data name="Get_Charts_Reports" xml:space="preserve">
+    <value>Grafik Raporları Oluştur</value>
+  </data>
+  <data name="Get_Table_Report" xml:space="preserve">
+    <value>Tablo Raporu Oluştur</value>
+  </data>
+  <data name="Global_State" xml:space="preserve">
+    <value>Genel Durum</value>
+  </data>
+  <data name="Graphic" xml:space="preserve">
+    <value>Grafik</value>
+  </data>
+  <data name="Groups" xml:space="preserve">
+    <value>Gruplar</value>
+  </data>
+  <data name="Help" xml:space="preserve">
+    <value>Yardım</value>
+  </data>
+  <data name="Hour" xml:space="preserve">
+    <value>Saat</value>
+  </data>
+  <data name="Hourly_Production" xml:space="preserve">
+    <value>Saatlik Üretim</value>
+  </data>
+  <data name="Hourly_Production_Average" xml:space="preserve">
+    <value>Saatlik Üretim Ortalaması</value>
+  </data>
+  <data name="Incomming_MV_Cubicle_Earth_Switch_Position" xml:space="preserve">
+    <value>Giriş Hücresi Toprak Ayırıcı Konum Bilgisi</value>
+  </data>
+  <data name="Incomming_MV_Cubicle_Load_Switch_Position" xml:space="preserve">
+    <value>Giriş Hücresi Yük Ayırıcı Konum Bilgisi</value>
+  </data>
+  <data name="Installed_Power" xml:space="preserve">
+    <value>Kurulu Güç</value>
+  </data>
+  <data name="Instant" xml:space="preserve">
+    <value>Anlık</value>
+  </data>
+  <data name="Inverter_Detail" xml:space="preserve">
+    <value>Inverter Detayı</value>
+  </data>
+  <data name="Inverter_Detail_Report" xml:space="preserve">
+    <value>Inverter Detay Raporu</value>
+  </data>
+  <data name="Inverter_Efficiency" xml:space="preserve">
+    <value>Inverter Verimliliği</value>
+  </data>
+  <data name="Inverter_Performance_Chart" xml:space="preserve">
+    <value>Inverter Performans Grafiği</value>
+  </data>
+  <data name="Inverter_States" xml:space="preserve">
+    <value>Inverter Durumları</value>
+  </data>
+  <data name="Inverter_Values_Comparison" xml:space="preserve">
+    <value>Inverter Değerleri Karşılaştırma</value>
+  </data>
+  <data name="Irradiation" xml:space="preserve">
+    <value>Işınım</value>
+  </data>
+  <data name="January" xml:space="preserve">
+    <value>Ocak</value>
+  </data>
+  <data name="July" xml:space="preserve">
+    <value>Temmuz</value>
+  </data>
+  <data name="June" xml:space="preserve">
+    <value>Haziran</value>
+  </data>
+  <data name="lignite" xml:space="preserve">
+    <value>Linyit</value>
+  </data>
+  <data name="List" xml:space="preserve">
+    <value>Listele</value>
+  </data>
+  <data name="Location" xml:space="preserve">
+    <value>Konum</value>
+  </data>
+  <data name="Lock" xml:space="preserve">
+    <value>Kilit</value>
+  </data>
+  <data name="Login" xml:space="preserve">
+    <value>Oturum Aç</value>
+  </data>
+  <data name="Log_out" xml:space="preserve">
+    <value>Çıkış Yap</value>
+  </data>
+  <data name="Maps" xml:space="preserve">
+    <value>Haritalar</value>
+  </data>
+  <data name="March" xml:space="preserve">
+    <value>Mart</value>
+  </data>
+  <data name="May" xml:space="preserve">
+    <value>Mayıs</value>
+  </data>
+  <data name="Measuring_MV_Cubicle_Earth_Switch_Position" xml:space="preserve">
+    <value>Ölçü Hücresi Toprak Ayırıcı Konum Bilgisi</value>
+  </data>
+  <data name="Measuring_MV_Cubicle_Load_Switch_Position" xml:space="preserve">
+    <value>Ölçü Hücresi Yük Ayırıcı Konum Bilgisi</value>
+  </data>
+  <data name="Medium_Voltage_Switchgear" xml:space="preserve">
+    <value>Orta Gerilim Hücresi</value>
+  </data>
+  <data name="Meteorology_Detail" xml:space="preserve">
+    <value>Meteoroloji Detayı</value>
+  </data>
+  <data name="Module_Manufacturer" xml:space="preserve">
+    <value>Modül Üreticisi</value>
+  </data>
+  <data name="Module_Type" xml:space="preserve">
+    <value>Modül Tipi</value>
+  </data>
+  <data name="Month" xml:space="preserve">
+    <value>Ay</value>
+  </data>
+  <data name="Monthly" xml:space="preserve">
+    <value>Aylık</value>
+  </data>
+  <data name="Monthly_Financial_Income" xml:space="preserve">
+    <value>Aylık Finansal Gelir</value>
+  </data>
+  <data name="Monthly_Production" xml:space="preserve">
+    <value>Aylık Üretim</value>
+  </data>
+  <data name="Monthly_Tax" xml:space="preserve">
+    <value>Aylık Vergi</value>
+  </data>
+  <data name="MV_Transformer_Cubicle_Earth_Switch_Position" xml:space="preserve">
+    <value>Trafo Hücresi Toprak Ayırıcı Konum Bilgisi</value>
+  </data>
+  <data name="MV_Transformer_Cubicle_Load_Switch_Position" xml:space="preserve">
+    <value>Trafo Hücresi Yük Ayırıcı Konum Bilgisi</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>İsim</value>
+  </data>
+  <data name="Natural_Gas" xml:space="preserve">
+    <value>Doğal Gaz</value>
+  </data>
+  <data name="Neutral_Current" xml:space="preserve">
+    <value>Nötr Akımı</value>
+  </data>
+  <data name="November" xml:space="preserve">
+    <value>Kasım</value>
+  </data>
+  <data name="October" xml:space="preserve">
+    <value>Ekim</value>
+  </data>
+  <data name="Orientation" xml:space="preserve">
+    <value>Orientation</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>Şifre</value>
+  </data>
+  <data name="Performance_Ratio" xml:space="preserve">
+    <value>Performance Oranı</value>
+  </data>
+  <data name="Pitch_Detail" xml:space="preserve">
+    <value>Pitch/Detail</value>
+  </data>
+  <data name="Power" xml:space="preserve">
+    <value>Güç</value>
+  </data>
+  <data name="Power_Factor" xml:space="preserve">
+    <value>Güç Faktörü</value>
+  </data>
+  <data name="Produced_Energy" xml:space="preserve">
+    <value>Üretilen Enerji</value>
+  </data>
+  <data name="Production" xml:space="preserve">
+    <value>Üretim</value>
+  </data>
+  <data name="Production_Detail" xml:space="preserve">
+    <value>Üretim Detayı</value>
+  </data>
+  <data name="Pyranometer" xml:space="preserve">
+    <value>Piranometre</value>
+  </data>
+  <data name="Reactive_Power_Sum" xml:space="preserve">
+    <value>Reaktif Güç Toplamı</value>
+  </data>
+  <data name="Registers" xml:space="preserve">
+    <value>Kayıtlar</value>
+  </data>
+  <data name="Remember_me" xml:space="preserve">
+    <value>Beni Hatırla</value>
+  </data>
+  <data name="Reports" xml:space="preserve">
+    <value>Raporlar</value>
+  </data>
+  <data name="Resim_Kaydet" xml:space="preserve">
+    <value>Resim Kaydet</value>
+  </data>
+  <data name="Save_Chart" xml:space="preserve">
+    <value>Grafiği Kaydet</value>
+  </data>
+  <data name="Search_Station" xml:space="preserve">
+    <value>İstasyon Ara</value>
+  </data>
+  <data name="Send" xml:space="preserve">
+    <value>Gönder</value>
+  </data>
+  <data name="September" xml:space="preserve">
+    <value>Eylül</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Ayarlar</value>
+  </data>
+  <data name="Show" xml:space="preserve">
+    <value>Görüntüle</value>
+  </data>
+  <data name="Single_Inverter_Comparison" xml:space="preserve">
+    <value>Tek Inverter Karşılaştırması</value>
+  </data>
+  <data name="Spanish" xml:space="preserve">
+    <value>İspanyolca</value>
+  </data>
+  <data name="Specific_Yield" xml:space="preserve">
+    <value>Spesifik Verim</value>
+  </data>
+  <data name="Start_Date" xml:space="preserve">
+    <value>Başlama Tarihi</value>
+  </data>
+  <data name="State" xml:space="preserve">
+    <value>Durum</value>
+  </data>
+  <data name="Station" xml:space="preserve">
+    <value>İstasyon</value>
+  </data>
+  <data name="Station_Detail" xml:space="preserve">
+    <value>İstasyon Detayı</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>Durum</value>
+  </data>
+  <data name="String_DC_Monitoring" xml:space="preserve">
+    <value>String DC İzleme</value>
+  </data>
+  <data name="String_Monitoring" xml:space="preserve">
+    <value>String İzleme</value>
+  </data>
+  <data name="Support" xml:space="preserve">
+    <value>Destek</value>
+  </data>
+  <data name="Switchgear" xml:space="preserve">
+    <value>Pano</value>
+  </data>
+  <data name="Table_Report_List" xml:space="preserve">
+    <value>Tablo Rapor Listesi</value>
+  </data>
+  <data name="Tags" xml:space="preserve">
+    <value>Taglar</value>
+  </data>
+  <data name="Tag_Templates" xml:space="preserve">
+    <value>Tag Şablonları</value>
+  </data>
+  <data name="Target" xml:space="preserve">
+    <value>Hedef</value>
+  </data>
+  <data name="Telephone" xml:space="preserve">
+    <value>Telefon</value>
+  </data>
+  <data name="Total" xml:space="preserve">
+    <value>Toplam</value>
+  </data>
+  <data name="Total_Financial_Income" xml:space="preserve">
+    <value>Toplam Finansal Gelir</value>
+  </data>
+  <data name="total_Panel_Power" xml:space="preserve">
+    <value>Toplam Panel Gücü</value>
+  </data>
+  <data name="Total_Production" xml:space="preserve">
+    <value>Toplam Üretim</value>
+  </data>
+  <data name="Total_Tax" xml:space="preserve">
+    <value>Toplam Vergi</value>
+  </data>
+  <data name="Transformer" xml:space="preserve">
+    <value>Orta Gerilim Hücresi</value>
+  </data>
+  <data name="Transformer_Cell_Cutter_Position" xml:space="preserve">
+    <value>Trafo Hücresi Kesici Konum Bilgisi</value>
+  </data>
+  <data name="Turkish" xml:space="preserve">
+    <value>Türkçe</value>
+  </data>
+  <data name="Users" xml:space="preserve">
+    <value>Kullanıcılar</value>
+  </data>
+  <data name="User_Roles" xml:space="preserve">
+    <value>Kullanıcı Rolleri</value>
+  </data>
+  <data name="Visible_Power_Sum" xml:space="preserve">
+    <value>Görülebilir Güç Toplamı</value>
+  </data>
+  <data name="Voltage" xml:space="preserve">
+    <value>Gerilim</value>
+  </data>
+  <data name="Warnings" xml:space="preserve">
+    <value>Uyarılar</value>
+  </data>
+  <data name="Weather" xml:space="preserve">
+    <value>Hava Durumu</value>
+  </data>
+  <data name="Weekly" xml:space="preserve">
+    <value>Haftalık</value>
+  </data>
+  <data name="Weekly_Production" xml:space="preserve">
+    <value>Haftalık Üretim</value>
+  </data>
+  <data name="Welcome" xml:space="preserve">
+    <value>Hoşgeldiniz</value>
+  </data>
+  <data name="Wind_Speed" xml:space="preserve">
+    <value>Rüzgar Hızı</value>
+  </data>
+  <data name="Yearly_Target_Production" xml:space="preserve">
+    <value>Yıllık Hedef Üretim</value>
+  </data>
+  <data name="Create_Your_Report" xml:space="preserve">
+    <value>Raporunuzu Oluşturun</value>
+  </data>
+  <data name="Yield_Data_Table" xml:space="preserve">
+    <value>Kazanç Verisi/Tablosu</value>
+  </data>
+  <data name="Daily_Meteorology_Chart" xml:space="preserve">
+    <value>Günlük Meteoroloji Grafiği</value>
+  </data>
+  <data name="Detail" xml:space="preserve">
+    <value>Detay</value>
+  </data>
+  <data name="Energy" xml:space="preserve">
+    <value>Enerji</value>
+  </data>
+  <data name="Get_Report" xml:space="preserve">
+    <value>Rapor Getir</value>
+  </data>
+  <data name="Loading" xml:space="preserve">
+    <value>Yükleniyor</value>
+  </data>
+  <data name="Maximum" xml:space="preserve">
+    <value>Maksimum</value>
+  </data>
+  <data name="Meteorology" xml:space="preserve">
+    <value>Meteoroloji</value>
+  </data>
+  <data name="Monitoring" xml:space="preserve">
+    <value>İzleme</value>
+  </data>
+  <data name="New_Chart" xml:space="preserve">
+    <value>Yeni Grafik</value>
+  </data>
+  <data name="New_Report" xml:space="preserve">
+    <value>Yeni Rapor</value>
+  </data>
+  <data name="Please_select_chart_name_in_list" xml:space="preserve">
+    <value>Lütfen listede grafik adını seçin</value>
+  </data>
+  <data name="Please_select_report_name_in_list" xml:space="preserve">
+    <value>Lütfen listede rapor adı seçin</value>
+  </data>
+  <data name="Report_List" xml:space="preserve">
+    <value>Rapor Listesi</value>
+  </data>
+  <data name="Report_Name" xml:space="preserve">
+    <value>Rapor Adı</value>
+  </data>
+  <data name="Select" xml:space="preserve">
+    <value>Seç</value>
+  </data>
+  <data name="Warning" xml:space="preserve">
+    <value>Uyarı</value>
+  </data>
+  <data name="Friday" xml:space="preserve">
+    <value>Cuma</value>
+  </data>
+  <data name="Saturday" xml:space="preserve">
+    <value>Cumartesi</value>
+  </data>
+  <data name="Sunday" xml:space="preserve">
+    <value>Pazar</value>
+  </data>
+  <data name="Thursday" xml:space="preserve">
+    <value>Perşembe</value>
+  </data>
+  <data name="Wednesday" xml:space="preserve">
+    <value>Çarşamba</value>
+  </data>
+  <data name="Data_Table" xml:space="preserve">
+    <value>Veri Tablosu</value>
+  </data>
+  <data name="Protection_Relay" xml:space="preserve">
+    <value>Koruma Rölesi</value>
+  </data>
+  <data name="Address" xml:space="preserve">
+    <value>Adres</value>
+  </data>
+  <data name="Value" xml:space="preserve">
+    <value>Değer</value>
+  </data>
+  <data name="Apply" xml:space="preserve">
+    <value>Uygula</value>
+  </data>
+  <data name="OFF" xml:space="preserve">
+    <value>KAPALI</value>
+  </data>
+  <data name="ON" xml:space="preserve">
+    <value>AÇIK</value>
+  </data>
+  <data name="Temperature" xml:space="preserve">
+    <value>Sıcaklık</value>
+  </data>
+  <data name="From" xml:space="preserve">
+    <value>Başlangıç</value>
+  </data>
+  <data name="To" xml:space="preserve">
+    <value>Bitiş</value>
+  </data>
+  <data name="Company_Alerts" xml:space="preserve">
+    <value>Şirket Alarmları</value>
+  </data>
+  <data name="Enter" xml:space="preserve">
+    <value>Giriniz</value>
+  </data>
+  <data name="Please_enter_chart_name" xml:space="preserve">
+    <value>Lütfen grafik ismini giriniz</value>
+  </data>
+  <data name="Please_select_item" xml:space="preserve">
+    <value>Lütfen seçiniz</value>
+  </data>
+  <data name="Please_select_item_and_enter_chart_name" xml:space="preserve">
+    <value>Lütfen öğeyi seçin ve grafik adını girin</value>
+  </data>
+  <data name="Save_Report" xml:space="preserve">
+    <value>Rapor Kaydet</value>
+  </data>
+  <data name="You_can_choose_items_from_same_station" xml:space="preserve">
+    <value>Aynı istasyondan öğeleri seçebilirsiniz</value>
+  </data>
+  <data name="You_can_choose_up_to_3" xml:space="preserve">
+    <value>En fazla 3 tane seçebilirsiniz</value>
+  </data>
+  <data name="Single_Line_Diagram" xml:space="preserve">
+    <value>Tek Hat Şeması</value>
+  </data>
+  <data name="Active" xml:space="preserve">
+    <value>Aktif</value>
+  </data>
+  <data name="Communication" xml:space="preserve">
+    <value>Haberleşme</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Sonraki</value>
+  </data>
+  <data name="No_records_to_display" xml:space="preserve">
+    <value>Gösterilecek kayıt yok</value>
+  </data>
+  <data name="Pasive" xml:space="preserve">
+    <value>Pasif</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Önceki</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Arama</value>
+  </data>
+  <data name="Today" xml:space="preserve">
+    <value>Bugün</value>
+  </data>
+  <data name="Yesterday" xml:space="preserve">
+    <value>Dün</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>Yenile</value>
+  </data>
+  <data name="Image" xml:space="preserve">
+    <value>Resim</value>
+  </data>
+  <data name="Forex_Buying" xml:space="preserve">
+    <value>Alış Kuru</value>
+  </data>
+  <data name="Last_7_days" xml:space="preserve">
+    <value>Son 7 gün</value>
+  </data>
+  <data name="or" xml:space="preserve">
+    <value>veya</value>
+  </data>
+  <data name="UserName" xml:space="preserve">
+    <value>Kullanıcı Adı</value>
+  </data>
+  <data name="LICENSED" xml:space="preserve">
+    <value>LİSANSLI</value>
+  </data>
+  <data name="Performance_Chart" xml:space="preserve">
+    <value>Performans Grafiği</value>
+  </data>
+  <data name="No_Data" xml:space="preserve">
+    <value>Veri Yok</value>
+  </data>
+  <data name="Add_New_User" xml:space="preserve">
+    <value>Yeni Kullanıcı Ekle</value>
+  </data>
+  <data name="Authority" xml:space="preserve">
+    <value>Yetki</value>
+  </data>
+  <data name="Authorized" xml:space="preserve">
+    <value>Yetkili</value>
+  </data>
+  <data name="Change_Password" xml:space="preserve">
+    <value>Parola Değiştir</value>
+  </data>
+  <data name="Not_Send" xml:space="preserve">
+    <value>Gönderme</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Kaydet</value>
+  </data>
+  <data name="Send_Alert" xml:space="preserve">
+    <value>Alarm Gönder</value>
+  </data>
+  <data name="Send_Report" xml:space="preserve">
+    <value>Rapor Gönder</value>
+  </data>
+  <data name="Unauthorized" xml:space="preserve">
+    <value>Yetkisiz</value>
+  </data>
+  <data name="User_Identification" xml:space="preserve">
+    <value>Kullanıcı Tanımlama</value>
+  </data>
+  <data name="Not_Show" xml:space="preserve">
+    <value>Gösterme</value>
+  </data>
+  <data name="Account" xml:space="preserve">
+    <value>Hesap</value>
+  </data>
+  <data name="Inverter_Values" xml:space="preserve">
+    <value>Inverter Değerleri</value>
+  </data>
+  <data name="Manufacturer" xml:space="preserve">
+    <value>Üreticisi</value>
+  </data>
+  <data name="Absolute_Air_Pressure" xml:space="preserve">
+    <value>Mutlak Hava Basıncı</value>
+  </data>
+  <data name="Absolute_Humidity" xml:space="preserve">
+    <value>Mutlak Nem</value>
+  </data>
+  <data name="Air_Temperature" xml:space="preserve">
+    <value>Hava Sıcaklığı</value>
+  </data>
+  <data name="Current_Instant" xml:space="preserve">
+    <value>Anlık</value>
+  </data>
+  <data name="Enter_Report_Name" xml:space="preserve">
+    <value>Rapor Adı Giriniz</value>
+  </data>
+  <data name="Relative_Humidity" xml:space="preserve">
+    <value>Bağıl Nem</value>
+  </data>
+  <data name="Single_Line_Event_Recording" xml:space="preserve">
+    <value>Tek Hat Olay Kaydı</value>
+  </data>
+  <data name="Wind_direction" xml:space="preserve">
+    <value>Rüzgar Yönü</value>
+  </data>
+  <data name="Alarm_State_List" xml:space="preserve">
+    <value>Alarm Durum Listesi</value>
+  </data>
+  <data name="emptyTable" xml:space="preserve">
+    <value>Tabloda herhangi bir veri mevcut değil</value>
+  </data>
+  <data name="Seen" xml:space="preserve">
+    <value>Görüldü</value>
+  </data>
+  <data name="First" xml:space="preserve">
+    <value>İlk</value>
+  </data>
+  <data name="Showing_START_to_END_of_TOTAL_entries" xml:space="preserve">
+    <value>_TOTAL_ kayıttan _START_ - _END_ arasındaki kayıtlar gösteriliyor</value>
+  </data>
+  <data name="Showing_0_to_0_of_0_entries" xml:space="preserve">
+    <value>Kayıt yok</value>
+  </data>
+  <data name="filtered_from_MAX_total_entries" xml:space="preserve">
+    <value>(_MAX_ kayıt içerisinden bulunan)</value>
+  </data>
+  <data name="Last" xml:space="preserve">
+    <value>Son</value>
+  </data>
+  <data name="Show_MENU_entries" xml:space="preserve">
+    <value>Sayfada _MENU_ kayıt göster</value>
+  </data>
+  <data name="loadingRecords" xml:space="preserve">
+    <value>Yükleniyor...</value>
+  </data>
+  <data name="processing" xml:space="preserve">
+    <value>İşleniyor...</value>
+  </data>
+  <data name="Select_records_" xml:space="preserve">
+    <value>%d kayıt seçildi</value>
+  </data>
+  <data name="Select_records_0" xml:space="preserve">
+    <value>0 kayıt seçildi</value>
+  </data>
+  <data name="Select_records_1" xml:space="preserve">
+    <value>1 kayıt seçildi</value>
+  </data>
+  <data name="activate_to_sort_column_ascending" xml:space="preserve">
+    <value>: artan sütun sıralamasını aktifleştir</value>
+  </data>
+  <data name="activate_to_sort_column_descending" xml:space="preserve">
+    <value>: azalan sütun soralamasını aktifleştir</value>
+  </data>
+  <data name="No_matching_records_found" xml:space="preserve">
+    <value>Hiçbir eşleşen kayıt bulunamadı</value>
+  </data>
+  <data name="Error_Name" xml:space="preserve">
+    <value>Hata Adı</value>
+  </data>
+  <data name="Inverter_Name" xml:space="preserve">
+    <value>INVERTER ADI</value>
+  </data>
+  <data name="New_Alarm" xml:space="preserve">
+    <value>Yeni Alarm</value>
+  </data>
+  <data name="Seen_Alarm" xml:space="preserve">
+    <value>Görülen Alarm</value>
+  </data>
+  <data name="Osos_Recording" xml:space="preserve">
+    <value>Osos Kayıtlar</value>
+  </data>
+  <data name="Cumulative" xml:space="preserve">
+    <value>Kümülatif</value>
+  </data>
+  <data name="Azimuth" xml:space="preserve">
+    <value>Azimut</value>
+  </data>
+  <data name="Tilt" xml:space="preserve">
+    <value>Sehpa Açısı</value>
+  </data>
+  <data name="Diagram" xml:space="preserve">
+    <value>Şeması</value>
+  </data>
+  <data name="Event_Recording" xml:space="preserve">
+    <value>Olay Kaydı</value>
+  </data>
+  <data name="Single_Line" xml:space="preserve">
+    <value>Tek Hat</value>
+  </data>
+  <data name="Flow" xml:space="preserve">
+    <value>Debi</value>
+  </data>
+  <data name="Instant_AC_Power" xml:space="preserve">
+    <value>Anlık AC Güç</value>
+  </data>
+  <data name="Unit" xml:space="preserve">
+    <value>Ünite</value>
+  </data>
+  <data name="Cloudiness" xml:space="preserve">
+    <value>Bulutluluk Oranı</value>
+  </data>
+  <data name="Humidity" xml:space="preserve">
+    <value>Nem</value>
+  </data>
+  <data name="Pressure" xml:space="preserve">
+    <value>Basınç</value>
+  </data>
+  <data name="door_switch" xml:space="preserve">
+    <value>Kapı Sensörü</value>
+  </data>
+  <data name="redresor_ac_fault" xml:space="preserve">
+    <value>Ac Redresör Arızası</value>
+  </data>
+  <data name="redresor_dc_high" xml:space="preserve">
+    <value>Dc Redresör Yüksek</value>
+  </data>
+  <data name="redresor_dc_leak" xml:space="preserve">
+    <value>Dc Redresör Kaçak</value>
+  </data>
+  <data name="redresor_dc_low" xml:space="preserve">
+    <value>Dc Redresör Düşük</value>
+  </data>
+  <data name="smoke_sensor" xml:space="preserve">
+    <value>Duman Dedektörü</value>
+  </data>
+  <data name="Download" xml:space="preserve">
+    <value>İndir</value>
+  </data>
+  <data name="CF" xml:space="preserve">
+    <value>KF</value>
+  </data>
+  <data name="End_Date" xml:space="preserve">
+    <value>Bitiş Tarihi</value>
+  </data>
+  <data name="Capacitive_Reactive_Rate" xml:space="preserve">
+    <value>Kapasitif Reaktif Oran</value>
+  </data>
+  <data name="Climate_Chart" xml:space="preserve">
+    <value>Klima Grafiği</value>
+  </data>
+  <data name="Inductive_Reactive_Rate" xml:space="preserve">
+    <value>Endüktif Reaktif Oran</value>
+  </data>
+  <data name="Instant_Values" xml:space="preserve">
+    <value>Anlık Değerler</value>
+  </data>
+  <data name="Meteorology_Chart" xml:space="preserve">
+    <value>Meteoroloji Grafiği</value>
+  </data>
+  <data name="Monthly_Capacitive_Reactive_Rate" xml:space="preserve">
+    <value>Aylık Kapasitif Reaktif Oranı</value>
+  </data>
+  <data name="Monthly_Inductive_Reactive_Rate" xml:space="preserve">
+    <value>Aylık Endüktif Reaktif Oranı</value>
+  </data>
+  <data name="Osos_Recording_List" xml:space="preserve">
+    <value>Osos Kayıt Listesi</value>
+  </data>
+  <data name="Values" xml:space="preserve">
+    <value>Değerler</value>
+  </data>
+  <data name="Location_Grouping" xml:space="preserve">
+    <value>Yer Gruplaması</value>
+  </data>
+  <data name="Ekk_Energy_Index_Values" xml:space="preserve">
+    <value>Ekk Enerji Endeksi Değerleri</value>
+  </data>
+  <data name="Montly_Fence_Company_Compare" xml:space="preserve">
+    <value>Aylık Çit Şirketi Karşılaştırmak</value>
+  </data>
+  <data name="Rain_Graph" xml:space="preserve">
+    <value>Yağmur Grafiği</value>
+  </data>
+  <data name="System_room_info" xml:space="preserve">
+    <value>Sistem Odası Verileri</value>
+  </data>
+  <data name="Error_Type" xml:space="preserve">
+    <value>Hata Tipi</value>
+  </data>
+  <data name="Alarms" xml:space="preserve">
+    <value>Alarmlar</value>
+  </data>
+  <data name="Inverter_State" xml:space="preserve">
+    <value>Inverter Durum</value>
+  </data>
+  <data name="Black" xml:space="preserve">
+    <value>Siyah</value>
+  </data>
+  <data name="Blue" xml:space="preserve">
+    <value>Mavi</value>
+  </data>
+  <data name="Cable" xml:space="preserve">
+    <value>Kablo</value>
+  </data>
+  <data name="Cable_Remove_Date" xml:space="preserve">
+    <value>Kablo Çıkarma Zamanı</value>
+  </data>
+  <data name="Card" xml:space="preserve">
+    <value>Kart</value>
+  </data>
+  <data name="Charge_Data" xml:space="preserve">
+    <value>Şarj Tarihi</value>
+  </data>
+  <data name="Charge_Records" xml:space="preserve">
+    <value>Şarj Kayıtları</value>
+  </data>
+  <data name="Charging_Timeline" xml:space="preserve">
+    <value>Şarj Zaman Çizelgesi</value>
+  </data>
+  <data name="Connect" xml:space="preserve">
+    <value>Bağlı</value>
+  </data>
+  <data name="Dashboard" xml:space="preserve">
+    <value>Gösterge Paneli</value>
+  </data>
+  <data name="Device" xml:space="preserve">
+    <value>Cihaz</value>
+  </data>
+  <data name="Devices" xml:space="preserve">
+    <value>Cihazlar</value>
+  </data>
+  <data name="Disconnect" xml:space="preserve">
+    <value>Bağlı Değil</value>
+  </data>
+  <data name="End_User" xml:space="preserve">
+    <value>Son Kullanıcı</value>
+  </data>
+  <data name="Fault" xml:space="preserve">
+    <value>Hata</value>
+  </data>
+  <data name="Green" xml:space="preserve">
+    <value>Yeşil</value>
+  </data>
+  <data name="Grey" xml:space="preserve">
+    <value>Gri</value>
+  </data>
+  <data name="Information" xml:space="preserve">
+    <value>Bilgi</value>
+  </data>
+  <data name="Large_Icon" xml:space="preserve">
+    <value>Büyük Simgeler</value>
+  </data>
+  <data name="Late_Time" xml:space="preserve">
+    <value>Geçen Süre</value>
+  </data>
+  <data name="Light" xml:space="preserve">
+    <value>Açık</value>
+  </data>
+  <data name="Menu" xml:space="preserve">
+    <value>Menü</value>
+  </data>
+  <data name="Purple" xml:space="preserve">
+    <value>Mor</value>
+  </data>
+  <data name="Red" xml:space="preserve">
+    <value>Kırmızı</value>
+  </data>
+  <data name="Side" xml:space="preserve">
+    <value>Yan</value>
+  </data>
+  <data name="Tag" xml:space="preserve">
+    <value>Etiketler</value>
+  </data>
+  <data name="Time" xml:space="preserve">
+    <value>Süre</value>
+  </data>
+  <data name="Top" xml:space="preserve">
+    <value>Üst</value>
+  </data>
+  <data name="Values_Of_Devices" xml:space="preserve">
+    <value>Cihazların Değerleri</value>
+  </data>
+  <data name="Yellow" xml:space="preserve">
+    <value>Sarı</value>
+  </data>
+  <data name="Add" xml:space="preserve">
+    <value>Ekle</value>
+  </data>
+  <data name="Charge" xml:space="preserve">
+    <value>Şarj</value>
+  </data>
+  <data name="Charging" xml:space="preserve">
+    <value>Şarj Oluyor</value>
+  </data>
+  <data name="Language" xml:space="preserve">
+    <value>Dil</value>
+  </data>
+  <data name="Languages" xml:space="preserve">
+    <value>Diller</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>Hayır</value>
+  </data>
+  <data name="Not_Charging" xml:space="preserve">
+    <value>Şarj Olmuyor</value>
+  </data>
+  <data name="Operations" xml:space="preserve">
+    <value>İşlemler</value>
+  </data>
+  <data name="Percentage_Of_Charge" xml:space="preserve">
+    <value>Şarj Yüzdesi</value>
+  </data>
+  <data name="Remove_The_Plug" xml:space="preserve">
+    <value>Fişi Çıkarın</value>
+  </data>
+  <data name="Theme" xml:space="preserve">
+    <value>Tema</value>
+  </data>
+  <data name="View" xml:space="preserve">
+    <value>Görünüm</value>
+  </data>
+  <data name="White" xml:space="preserve">
+    <value>Beyaz</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Evet</value>
+  </data>
+  <data name="Turn_Back" xml:space="preserve">
+    <value>Geri Dön</value>
+  </data>
+  <data name="Heatmap" xml:space="preserve">
+    <value>Isı Haritası</value>
+  </data>
+</root>

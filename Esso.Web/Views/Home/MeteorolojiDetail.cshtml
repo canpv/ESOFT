@@ -1,0 +1,584 @@
+﻿@model int
+@using Esso.Data;
+@using Esso.Models;
+@using Microsoft.AspNet.Identity
+@using language
+@{
+    ViewBag.Title = "MeteorolojiDetail";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@{
+    EssoEntities DB = new EssoEntities();
+
+    #region User yetkileri kontrol
+    TBL_STATION stat = new TBL_STATION();
+    stat = null;
+
+    var userId = User.Identity.GetUserId();
+
+    //User yetkileri kontrol ediliyor
+    try
+    {
+        if (User.IsInRole("M_ADMIN"))
+        {
+            stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+        }
+        else if (User.IsInRole("COMP_ADMIN"))
+        {
+            int cmpId = DB.Stations.Where(a => a.ID == Model && a.IS_DELETED == false).FirstOrDefault().COMPANY_ID;
+
+            if (DB.CompanyUsers.Any(a => a.COMPANY_ID == cmpId && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+        else if (User.IsInRole("COMP_USER"))
+        {
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+        else if (User.IsInRole("DEMO"))
+        {
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+    }
+    catch (Exception)
+    {
+
+    }
+    #endregion
+}
+
+@{
+    if (stat == null)
+    {
+        @Html.Partial("_ErrorPagePartial")
+    }
+    else
+    {
+        var stationCount = DB.Inverters.Where(x => x.STATION_ID == Model).Count();
+        var _stationDetail = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+
+        <div class="page-title">
+            <div class="title_left">
+                @if (User.IsInRole("DEMO"))
+                {
+                    <h3>@_stationDetail.DEMO_NAME</h3>
+                }
+                else
+                {
+                    <h3>@_stationDetail.NAME</h3>
+                }
+            </div>
+        </div>
+        @Html.Partial("MenuPartial")
+        <div class="clearfix"></div>
+        <input type="hidden" value="@Resources.Irradiation" id="hdn_irradiation" />
+        <input type="hidden" value="@Resources.Pyranometer" id="hdn_pyranometer" />
+        <input type="hidden" value="@Resources.External_Temp" id="hdn_externalTemp" />
+        <input type="hidden" value="@Resources.Cell_Temp" id="hdn_cellTemp" />
+        <input type="hidden" value="@Resources.Wind_Speed" id="hdn_wind" />
+        <input type="hidden" value="@Resources.Temperature" id="hdn_temperature" />
+        <div class="row">
+            <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                <div class="tile-stats" style="background: #f7f7f7">
+                    <div class="icon">
+                        <i class="">
+                            <img src="~/images/solarpanel.png" />
+                        </i>
+                    </div>
+                    <div id="irradiation" class="count">-</div>
+                    <h3 style="color: #07a1ff">@Resources.Irradiation W/m²</h3>
+                </div>
+            </div>
+            <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                <div class="tile-stats" style="background: #f7f7f7">
+                    <div class="icon">
+                        <i class="">
+                            <img src="~/images/wind.png" />
+                        </i>
+                    </div>
+                    <div id="wind" class="count">-</div>
+                    <h3 style="color: #07a1ff">@Resources.Wind_Speed m/s</h3>
+                </div>
+            </div>
+            <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                <div class="tile-stats" style="background: #f7f7f7">
+                    <div class="icon">
+                        <i class="">
+                            <img src="~/images/temp.png" />
+                        </i>
+                    </div>
+                    <div id="cell" class="count">-</div>
+                    <h3 style="color: #07a1ff">@Resources.Cell_Temp. °C</h3>
+                </div>
+            </div>
+            <div class="animated flipInY col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                <div class="tile-stats" style="background: #f7f7f7">
+                    <div class="icon">
+                        <i class="">
+                            <img src="~/images/outTemp.png" />
+                        </i>
+                    </div>
+                    <div id="external" class="count">-</div>
+                    <h3 style="color: #07a1ff">@Resources.External_Temp. °C</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <h2>@Resources.Daily_Meteorology_Chart</h2>
+
+
+                        <div class="clearfix"></div>
+                        <img id="LoadingImage" src="~/images/loader.gif" />
+
+                    </div>
+                    <div class="x_content">
+                        <div id="echart_line" style="height:500px;"></div>
+                        <div class="well" style="overflow: auto">
+
+
+                            <div class="col-md-12">
+                                <div class="btn-group">
+                                    <h4 id="bakisTarih"></h4>
+                                </div>
+                                <div class="btn-group">
+                                    <input name="beginDaily" id="single_cal4" class="form-control has-feedback-left" type="text" />
+                                </div>
+                                <div class="btn-group">
+                                    <input type="button" class="btn btn-info" id="btnListDaily" value="@Resources.Show" />
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br />
+<script src = "~/Content/custom.min.js" ></script>
+        <script>
+            $(document).ready(function () {
+                function NumberConvert(nStr) {
+                    if (nStr != null) {
+                        nStr = nStr.toFixed(1);
+                    }
+
+                    nStr += '';
+                    x = nStr.split('.');
+                    x1 = x[0];
+                    x2 = x.length > 1 ? ',' + x[1] : '';
+                    var rgx = /(\d+)(\d{3})/;
+                    while (rgx.test(x1)) {
+                        x1 = x1.replace(rgx, '$1' + '.' + '$2');
+                    }
+                    return x1 + x2;
+                }
+                function EndData() {
+                    $.ajax({
+                        url: "/Home/EndProductionData?stationId=@Model",
+                        type: "POST",
+                        dataType: "json",
+                        success: function (data) {
+                            //Meteoroloji
+                            $("#irradiation").html((data[0]._isinim).toFixed(1).replace(".", ","));
+                            $("#wind").html(data[0]._ruzgar.toFixed(1).replace(".", ","));
+                            $("#cell").html(data[0]._hucreSicakligi.toFixed(1).replace(".", ","));
+                            $("#external").html(data[0]._ortamSicakligi.toFixed(1).replace(".", ","));
+                        }
+                    });
+                }
+                    EndData();
+                var timer, delay = 300000;
+                timer = setInterval(function () {
+                    EndData();
+                }, delay)
+                    // Grafik Settings bas.
+                var theme = {
+                    color: [
+                        'rgba(52,152,219,0.5)', '#fea80c', '#e74c3c', '#179e17',
+                        '#9B59B6', '#8abb6f', '#759c6a', '#bfd3b7'
+                    ],
+
+
+                    title: {
+                        itemGap: 8,
+                        textStyle: {
+                            fontWeight: 'normal',
+                            color: '#408829'
+                        }
+                    },
+
+                    dataRange: {
+                        color: ['#1f610a', '#97b58d']
+                    },
+
+                    toolbox: {
+                        color: ['#408829', '#408829', '#408829', '#408829']
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            animation: true
+                        }
+                    },
+                    dataZoom: {
+                        dataBackgroundColor: '#eee',
+                        fillerColor: 'rgba(64,136,41,0.2)',
+                        handleColor: '#408829'
+                    },
+                    grid: {
+                        borderWidth: 0
+                    },
+
+                    categoryAxis: {
+                        axisLine: {
+                            lineStyle: {
+                                color: '#408829'
+                            }
+                        },
+                        splitLine: {
+                            lineStyle: {
+                                color: ['#eee']
+                            }
+                        }
+                    },
+
+                    valueAxis: {
+                        axisLine: {
+                            lineStyle: {
+                                color: '#408829'
+                            }
+                        },
+                        splitArea: {
+                            show: true,
+                            areaStyle: {
+                                color: ['rgba(250,250,250,0.1)', 'rgba(200,200,200,0.1)']
+                            }
+                        },
+                        splitLine: {
+                            lineStyle: {
+                                color: ['#eee']
+                            }
+                        }
+                    },
+                    timeline: {
+                        lineStyle: {
+                            color: '#408829'
+                        },
+                        controlStyle: {
+                            normal: { color: '#408829' },
+                            emphasis: { color: '#408829' }
+                        }
+                    },
+
+
+                    textStyle: {
+                        fontFamily: 'Arial, Verdana, sans-serif'
+                    }
+                };
+                    //Grafik Settings bit.
+
+ 
+                function DateFormat(vl) {
+                    var value = new Date
+                        (
+                        parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+                        );
+                    var dat = value.getDate() +
+                        "/" +
+                        (value.getMonth() + 1) +
+                        "/" +
+                        value.getFullYear();
+
+                    var time = value.getHours() +
+                        ":" +
+                        value.getMinutes()
+                    return time.toString();
+                }
+                function ConvertTicksToDate(vl) {
+                    vl = vl.replace("Date", "");
+                    vl = vl.replace("/", "");
+                    vl = vl.replace("(", "");
+                    vl = vl.replace(")", "");
+                    vl = vl.replace("/", "").trim();
+
+                    var vlDate = new Date(parseInt(vl));
+                    return vlDate.toLocaleDateString();
+                }
+
+                $('#btnListDaily').click(function () {
+                    $(this).button('loading');
+                    MeteorolojiChart();
+                });
+                $('#btnListDaily').button('loading');
+                MeteorolojiChart();
+
+                function ChartToolTip() {
+
+                };
+
+                function MeteorolojiChart() {
+
+                    var beginDate = $('input[name="beginDaily"]').val();
+
+
+                    if (!beginDate || beginDate.length == 0) {
+                        beginDate = new Date().toISOString();
+                    }
+
+                    $("#LoadingImage").show();
+                    $.ajax({
+                        type: "get",
+                        url: "/Home/GetLineChartMeteoroloji",
+                        dataType: "json",
+                        contentType: "application/json; charset=utf-8",
+                        data: { beginDate: beginDate, stationId: @Model },
+                        success: function (data) {
+                            var _irradiation = $('#hdn_irradiation').val();
+                            var _pyranometer = $('#hdn_pyranometer').val();
+                            var _externalTemp = $('#hdn_externalTemp').val();
+                            var _cellTemp = $('#hdn_cellTemp').val();
+                            var _wind = $('#hdn_wind').val();
+                            var _temperature = $('#hdn_temperature').val();
+                            
+                            $("#LoadingImage").hide();
+                            $('#btnListDaily').button('reset');
+                            var echartLine = echarts.init(document.getElementById('echart_line'), theme);
+                    
+                            echartLine.setOption({
+                                tooltip: {
+                                    trigger: 'axis',
+                                    axisPointer: {
+                                        animation: true
+                                    },
+                                       formatter: function (params) {
+                                        //var colorSpan = color => '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background-color:' + color + '"></span>';
+                                        //var ItemsArray = [
+                                        //    { unitId: 0, value: 'W/m²' }
+                                        //    , { unitId: 1, value: 'W/m²' }
+                                        //    , { unitId: 2, value: '°C' }
+                                        //    , { unitId: 3, value: '°C' }
+                                        //    , { unitId: 4, value: 'm/s' }
+                                        //];
+                                        let ItemsArray = ['W/m²','W/m²','°C','°C','m/s'];
+
+                                        var tooltipText = "";
+                                        var _unit;
+                                        tooltipText += params[0].name;
+                                        for (var i = 0; i < params.length; i++) {
+                                            //_unit =  ItemsArray.find(x => x.unitId === params[i].seriesIndex).value;
+                                            _unit = ItemsArray[params[i].seriesIndex];
+                                            if (params[i].value == 0) {
+                                                tooltipText += "<br/>" + '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background-color:' + params[i].color + '"></span>' + params[i].seriesName + " : " + "-" + " " + _unit;
+                                            }
+                                            else {
+                                                tooltipText += "<br/>" + '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background-color:' + params[i].color + '"></span>' + params[i].seriesName + " : " + NumberConvert(params[i].value) + " " + _unit;
+                                            }
+                                        }
+                                        return tooltipText;
+                                    }
+                                },
+                                legend: {
+                                    x: 200,
+                                    y: 20,
+                                    data: [_irradiation, _pyranometer, _externalTemp, _cellTemp, _wind]
+                                },
+                                toolbox: {
+                                    show: true,
+                                    feature: {
+                                        mark: { show: false },
+                                        dataZoom: { show: false },
+                                        dataView: { show: false },
+                                        magicType: {
+                                            show: true,
+                                            title: {
+                                                line: 'Line',
+                                                bar: 'Bar',
+                                                stack: 'Stack',
+                                                tiled: 'Tiled'
+                                            },
+                                            type: ['line', 'bar', 'stack', 'tiled']
+                                        },
+                                        restore: {
+                                            show: true,
+                                            title: "Restore"
+                                        },
+                                        saveAsImage: {
+                                            show: true,
+                                            title: "Save Image"
+                                        }
+                                    }
+                                },
+                                calculable: true,
+                                dataZoom: {
+                                    show: true,
+                                    realtime: true,
+                                    start: 0,
+                                    end: 100
+                                },
+
+                                xAxis: [{
+                                    type: 'category',
+                                    boundaryGap: false,
+                                    data: data.map(function (a) { return DateFormat(a.date); })
+                                }],
+                                yAxis: [
+                                    {
+                                        type: 'value',
+                                        name: _irradiation,
+                                        axisLabel: {
+                                            formatter: '{value} W/m²'
+                                        }
+                                    },
+                                    {
+                                        type: 'value',
+                                        name: '                   ' + _temperature + '        '+_wind+'',
+                                        axisLabel: {
+                                            formatter: '{value} °C'
+                                        }
+                                    },
+                                    {
+                                        type: 'value',
+                                        name: '',
+                                        axisLabel: {
+                                            formatter: '                 {value} m/s'
+                                        }
+                                    }
+                                ],
+                                series: [{
+                                    name: _irradiation,
+                                    type: 'line',
+                                    smooth: true,
+                                    itemStyle: {
+                                        normal: {
+                                            areaStyle: {
+                                                type: 'default'
+                                            }
+                                        }
+                                    },
+                                    data: data.map(function (a) { return a.irradiation; }),
+                                    markPoint: {
+                                        data: [
+                                            {
+                                            type: 'max',
+                                            name: 'Maximum Irradiation (kW)'
+                                        }]
+                                    }
+                                }, {
+                                        name: _pyranometer,
+                                        type: 'line',
+                                        yAxisIndex: 0,
+                                        smooth: true,
+                                        itemStyle: {
+                                            normal: {
+
+                                            }
+                                        },
+                                        data: data.map(function (a) { return a.pyranometer; })
+                                    },
+                                    {
+                                    name: _externalTemp,
+                                    type: 'line',
+                                    yAxisIndex: 1,
+                                    smooth: true,
+                                    itemStyle: {
+                                        normal: {
+
+                                        }
+                                    },
+                                    data: data.map(function (a) { return a.external_temp; })
+                                }, {
+                                    name: _cellTemp,
+                                    type: 'line',
+                                    yAxisIndex: 1,
+
+                                    smooth: false,
+                                    itemStyle: {
+                                        normal: {
+
+                                        }
+                                    },
+                                    data: data.map(function (a) { return a.cell_temp; })
+                                }, {
+                                    name: _wind,
+                                    type: 'line',
+                                    yAxisIndex: 2,
+
+                                    smooth: false,
+                                    itemStyle: {
+                                        normal: {
+
+                                        }
+                                    },
+                                    data: data.map(function (a) { return a.wind; })
+                                }]
+                            });
+
+
+                        }
+                    });
+                }
+
+                    //Meteoroloji Grafigi bit.
+                    //Datetime bas.
+                $('#single_cal4').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+                $('#single_cal5').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+
+                $('#inpHour').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+
+                $('#inpAkim').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+
+                $('#inpHour').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+                    //Datetime bit.
+            });
+        </script>
+
+    }
+}

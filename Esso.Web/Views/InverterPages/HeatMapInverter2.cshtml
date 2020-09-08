@@ -1,0 +1,349 @@
+﻿@model int
+@using Esso.Data;
+@using Esso.Models;
+@using Microsoft.AspNet.Identity;
+@using language
+@{
+    ViewBag.Title = "HeatMapInverter2";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/heatmap.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+
+@{
+    EssoEntities DB = new EssoEntities();
+
+    #region User yetkileri kontrol
+    TBL_STATION stat = new TBL_STATION();
+    stat = null;
+
+    var userId = User.Identity.GetUserId();
+
+    //User yetkileri kontrol ediliyor
+    try
+    {
+        if (User.IsInRole("M_ADMIN"))
+        {
+            stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+        }
+        else if (User.IsInRole("COMP_ADMIN"))
+        {
+            int cmpId = DB.Stations.Where(a => a.ID == Model && a.IS_DELETED == false).FirstOrDefault().COMPANY_ID;
+
+            if (DB.CompanyUsers.Any(a => a.COMPANY_ID == cmpId && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+        else if (User.IsInRole("COMP_USER"))
+        {
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+        else if (User.IsInRole("DEMO"))
+        {
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+    }
+    catch (Exception)
+    {
+
+    }
+    #endregion
+}
+
+@{
+    if (stat == null)
+    {
+        @Html.Partial("_ErrorPagePartial")
+    }
+    else
+    {
+        var stationCount = DB.Inverters.Where(x => x.STATION_ID == Model).Count();
+        var _stationDetail = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+        string css = "";
+
+        var company = (from u in DB.Stations
+                       where u.ID == Model
+                       select new
+                       {
+                           IsCentral = u.IS_CENTRAL_INV
+                       }).FirstOrDefault();
+
+        if (company.IsCentral == true)
+        {
+            css = "none";
+        }
+        else
+        {
+            css = "";
+        }
+
+        <div class="page-title">
+            <div class="title_left">
+                @if (User.IsInRole("DEMO"))
+                {
+                    <h3>@_stationDetail.DEMO_NAME</h3>
+                }
+                else
+                {
+                    <h3>@_stationDetail.NAME</h3>
+                }
+            </div>
+        </div>
+
+        <div class="row">
+            @Html.Partial("MenuPartial")
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <h2>@Resources.Inverter_Performance_Chart</h2>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                        <input type="hidden" value="@Resources.Current" id="hdn_current" />
+                        <input type="hidden" value="@Resources.No_Data" id="hdn_noData" />
+                        <div id="container"></div>
+                        <div class="well" style="overflow: auto">
+                            <div class="col-md-6">
+                                <div class="btn-group">
+                                    <h4 id="bakisTarih1"></h4>
+                                </div>
+                                <div class="btn-group">
+                                    <input name="beginDaily" id="single_cal5" class="form-control has-feedback-left" type="text" />
+
+                                </div>
+                                <div class="btn-group">
+                                    <input type="button" class="btn btn-info" id="btnListDailyv1" value="@Resources.Show" />
+
+                                </div>
+                                <div class="btn-group">
+                                    <img id="LoadingImageHeatMap" src="~/images/loader.gif" />
+
+                                </div>
+                            </div>
+                        </div>
+
+
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            $(document).ready(function () {
+                function DateFormat(vl) {
+                    var value = new Date
+                        (
+                        parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+                        );
+                    var dat = value.getFullYear() + "-" + (value.getMonth() + 1) + "-" + value.getDate() + "-" + value.getHours();
+
+                    var time = value.getHours() +
+                        ":" +
+                        value.getMinutes() + "0"
+                    return dat.toString();
+                }
+                //Datetime bas.
+                $('#single_cal4').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+
+                $('#single_cal5').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+
+                $('#single_cal3').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+                //Datetime bit.
+            });
+
+        </script>
+        <script>
+            $(document).ready(function () {
+
+        $('#btnListDailyv1').click(function () {
+            GetStringHeatMap();
+        });
+
+        GetStringHeatMap();
+            function GetStringHeatMap() {
+
+                $("#LoadingImageHeatMap").show();
+            var selectDate = $('input[name="beginDaily"]').val();
+
+            if (!selectDate || selectDate.length == 0) {
+                selectDate = new Date().toISOString();
+            }
+            $.ajax({
+                url: "/Licensed/HourlyColorReport/",
+                type: "POST",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                data: "{'slctDate':'" + selectDate + "','stationId':'" +@Model+ "'}",
+                success: function (data) {
+                    var _noData = $('#hdn_noData').val();
+                    var _current = $('#hdn_current').val();
+                    $("#LoadingImageHeatMap").hide();
+                    var json = [];
+                    var Nodata;
+                    if (data.ErrorMessage == "") {
+                         json = {
+                            "Data": []
+                        };
+                         Nodata = "";
+                         var listHour = [];
+                         var listStrName = [];
+                         var say = 0;
+                         for (var i = 0; i < data.strModel.Hours.length; i++) {
+                             listHour.push(data.strModel.Hours[i]);
+                             for (var j = 0; j < data.strModel.StringList.length; j++) {                             
+                                     json.Data.push({ 'x': say, 'y': j, 'value': data.strModel.series[j].values[i] });
+                                     if (i == 0) {
+                                     listStrName.push(data.strModel.StringList[j])
+                                 }
+                            }
+                             say++;
+                        }
+                    }
+                    else {
+                        json.Data = [];
+                        Nodata = _noData;
+                    }
+
+                    Highcharts.chart('container', {
+                        chart: {
+                            type: 'heatmap',
+                            marginTop: -5,
+                            marginBottom: 120,
+                            plotBorderWidth: 3,
+                            height: (9 / 16 * 100) + '%', // 16:9 ratio
+                            zoomType: 'xy',
+                            resetZoomButton: {
+                                position: {
+                                    x: 0,
+                                    y: 20
+                                }
+                            }
+                        },
+                        title: {
+                            text: Nodata
+                        },
+                        credits: {
+                            enabled: false
+                        },
+                        xAxis: {
+                            type: 'category',
+                            tickPixelInterval: 200,
+                            categories: listHour,
+                            labels: {
+                                formatter: function () {
+                                    return this.value+":00";
+                                }
+                            }
+                        },
+                        yAxis: {
+                            type: 'category',
+                            title: {
+                                text: null
+                            },
+                            categories: listStrName,
+                            labels: {
+                                formatter: function (a) {
+                                    return a.value;
+                                }
+                            }
+                        },
+
+                        colorAxis: {
+                            stops: [
+                                [0, '#af272f'],
+                                [0.25, '#dd5f03'],
+                                [0.5, '#ffb549'],
+                                [0.75, '#f9c335'],
+                                [1, '#f5e1a4']
+                            ],
+                            min: 0,
+                            max: 10,
+                            startOnTick: false,
+                            endOnTick: false,
+                            labels: {
+                                format: '{value} A'
+                            }
+                        },
+                        legend: {
+                            title: {
+                                text: 'String ' + _current +' [A]'
+                            },
+                            align: 'center',
+                            verticalAlign: 'bottom',
+                            layout: 'horizontal',
+                            x: 0,
+                            y: 0,
+                            symbolWidth: 600
+                        },
+                        tooltip: {
+                            formatter: function () {
+                                return "<b>" + this.series.yAxis.categories[this.point.y]  +"<br/>" + this.series.xAxis.categories[this.point.x] + ":00</b>" +
+                                    "<b> " + this.point.value + ' A</b>';
+                            }
+                        },
+                        navigation: {
+                            backgroundColor: {
+                                linearGradient: [0, 0, 0, 0]
+                            },
+                            buttonOptions: {
+                                theme: {
+                                    fill: '#f7f7f700'
+                                },
+                                symbolStroke: 'black',
+                                symbolSize: 13
+                            }
+                        },
+                        series: [{
+                            borderWidth: 0,
+                            turboThreshold: 0,
+                            data: json.Data
+                        }]
+                    });
+
+                    }
+        });
+        }
+   });
+
+        </script>
+
+    }
+}
+
+
+
+
+
+

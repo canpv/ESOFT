@@ -1,0 +1,568 @@
+﻿@using System.Web.UI.WebControls;
+@model int
+@using Esso.ViewModels
+@using Esso.Data;
+@using Esso.Models;
+@using Microsoft.AspNet.Identity
+@using language
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{
+    EssoEntities DB = new EssoEntities();
+
+    #region User yetkileri kontrol
+    TBL_STATION stat = new TBL_STATION();
+    stat = null;
+
+    var userId = User.Identity.GetUserId();
+
+    //User yetkileri kontrol ediliyor
+    try
+    {
+        if (User.IsInRole("M_ADMIN"))
+        {
+            stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+        }
+        else if (User.IsInRole("COMP_ADMIN"))
+        {
+            int cmpId = DB.Stations.Where(a => a.ID == Model && a.IS_DELETED == false).FirstOrDefault().COMPANY_ID;
+
+            if (DB.CompanyUsers.Any(a => a.COMPANY_ID == cmpId && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+        else if (User.IsInRole("COMP_USER"))
+        {
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+        else if (User.IsInRole("DEMO"))
+        {
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+    }
+    catch (Exception)
+    {
+
+    }
+    #endregion
+}
+
+@{
+    if (stat == null)
+    {
+        @Html.Partial("_ErrorPagePartial")
+    }
+    else
+    {
+
+        var _station = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+
+
+        <div class="">
+            <div class="page-title">
+                <div class="title_left">
+                    @if (User.IsInRole("DEMO"))
+                    {
+                        <h3>@_station.DEMO_NAME</h3>
+                    }
+                    else
+                    {
+                        <h3>@_station.NAME</h3>
+                    }
+                </div>
+            </div>
+            @Html.Partial("MenuPartial")
+            <div class="clearfix"></div>
+            <div class="row">
+                <div class="col-md-12 col-sm-12 col-xs-12">
+                    <div class="x_panel">
+                        <div class="x_content">
+                            <div class="" role="tabpanel" data-example-id="togglable-tabs">
+                                <ul id="myTab1" class="nav nav-tabs bar_tabs" role="tablist">
+                                    <li role="presentation" class="active">
+                                        <a href="#tab_contentA" id="profile-tabA" role="tab" data-toggle="tab" aria-controls="home" aria-expanded="true">Unit @Resources.Value</a>
+                                    </li>
+                                    <li role="presentation" id="profile-tabB" class="">
+                                        <a href="#tab_contentB" role="tab" id="profile-tab3" data-toggle="tab" aria-expanded="false">Unit @Resources.Graphic</a>
+                                    </li>
+                                </ul>
+                                <div id="myTabContent" class="tab-content">
+                                    <div role="tabpanel" class="tab-pane fade active in" id="tab_contentA" aria-labelledby="home-tab">
+                                        <div class="x_panel">
+                                            <div id="tableDiv"></div>
+                                        </div>
+                                    </div>
+                                    <div role="tabpanel" class="tab-pane fade" id="tab_contentB" aria-labelledby="profile-tab">
+                                        <div class="x_panel">
+                                            <div class="x_content">
+                                                <div id="echart_line" style="height:500px;"></div>
+                                                <div class="well" style="overflow: auto">
+                                                    <div class="col-md-12">
+                                                        <div class="btn-group">
+                                                            <input name="begin" id="single_cal4" class="form-control has-feedback-left" type="text" />
+                                                        </div>
+                                                        <div class="btn-group">
+                                                            <select id="selectedTag" name="selectedTag" class="form-control">
+                                                            </select>
+                                                        </div>
+                                                        <div class="btn-group">
+                                                            <input type="button" class="btn btn-info" id="btnList" value="@Resources.Show" />
+                                                        </div>
+                                                        <div class="btn-group">
+                                                            <img id="LoadingImage" src="~/images/loader.gif" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+
+            $(document).ready(function () {
+                var theme = {
+
+                    color: [
+                        '#26B99A', '#34495E', '#e74c3c', '#179e17',
+                        '#9B59B6', '#ff9201', '#755326', '#4c3a26'
+                    ],
+
+
+                    title: {
+                        itemGap: 8,
+                        textStyle: {
+                            fontWeight: 'normal',
+                            color: '#408829'
+                        }
+                    },
+
+                    dataRange: {
+                        color: ['#1f610a', '#97b58d']
+                    },
+
+                    toolbox: {
+                        color: ['#408829', '#408829', '#408829', '#408829']
+                    },
+
+                    tooltip: {
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        axisPointer: {
+                            type: 'line',
+                            lineStyle: {
+                                color: '#408829',
+                                type: 'dashed'
+                            },
+                            crossStyle: {
+                                color: '#408829'
+                            },
+                            shadowStyle: {
+                                color: 'rgba(200,200,200,0.3)'
+                            }
+                        }
+                    },
+
+                    dataZoom: {
+                        dataBackgroundColor: '#eee',
+                        fillerColor: 'rgba(64,136,41,0.2)',
+                        handleColor: '#408829'
+                    },
+                    grid: {
+                        borderWidth: 0
+                    },
+                    categoryAxis: {
+                        axisLine: {
+                            lineStyle: {
+                                color: '#408829'
+                            }
+                        },
+                        splitLine: {
+                            lineStyle: {
+                                color: ['#eee']
+                            }
+                        }
+                    },
+                    valueAxis: {
+                        axisLine: {
+                            lineStyle: {
+                                color: '#408829'
+                            }
+                        },
+                        splitArea: {
+                            show: true,
+                            areaStyle: {
+                                color: ['rgba(250,250,250,0.1)', 'rgba(200,200,200,0.1)']
+                            }
+                        },
+                        splitLine: {
+                            lineStyle: {
+                                color: ['#eee']
+                            }
+                        }
+                    },
+                    timeline: {
+                        lineStyle: {
+                            color: '#408829'
+                        },
+                        controlStyle: {
+                            normal: { color: '#408829' },
+                            emphasis: { color: '#408829' }
+                        }
+                    },
+                    textStyle: {
+                        fontFamily: 'Arial, Verdana, sans-serif'
+                    }
+                };
+        function DateFormat(vl) {
+
+            var value = new Date
+                (
+                parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+                );
+            var dk;
+            var dkUzunluk = value.getMinutes().toString().length;
+            if (dkUzunluk == 1) {
+                dk = "0" + value.getMinutes();
+            }
+            else {
+                dk = value.getMinutes();
+            }
+            var saat;
+            var dkUzunluk = value.getHours().toString().length;
+            if (dkUzunluk == 1) {
+                saat = "0" + value.getHours()
+            }
+            else {
+                saat = value.getHours()
+            }
+
+            var time = saat + ":" + dk
+
+            return time.toString();
+        }
+
+
+        function GetUnitData() {
+            $.ajax({
+                url: "/Unit/UnitValues?stationId=@Model",
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+                    debugger;
+                    var tableHtml = "";
+                    var keys = Object.keys(data[0]);
+                    var number = 0;
+                    var listTag = [];
+                    var listTagFiltered = [];
+
+                    $.each(data, function (i, item) {
+                        number++;
+                        var trDiv = "";
+                   
+                        $.each(keys, function (j, item2) {                        
+                            //listTag.push(item2);                     
+                            trDiv += '<tr><td>' + item2 + '</td><td>' + (data[i][item2])+'</td></tr>';
+                        });
+
+                        //$.each(listTag, function (m, el) {
+                        //    if ($.inArray(el, listTagFiltered) === -1) listTagFiltered.push(el);
+                        //});
+
+
+                        tableHtml += '<div class="col-md-4 col-sm-12 col-xs-12"><div class="x_panel"><div class="x_title"><h2>UNIT ' + number + '</h2><div class="clearfix"></div></div><div class="x_content">' +
+                            '<table id="example" class="table table-striped jambo_table bulk_action">' +
+                            trDiv +
+                            '</table>' +
+                            '</div></div></div>';
+
+
+
+                    });
+
+                    //for (var z = 0; z < listTagFiltered.length; z++) {
+                    //    $('#selectedTag').append("<option value=" + listTagFiltered[z] + ">" + listTagFiltered[z] + "</option>");
+                    //}
+
+                    $('#tableDiv').html(tableHtml);
+                }
+
+            });
+        }
+
+        GetUnitData();
+        var timer, delay = 200000;
+        timer = setInterval(function () {
+            GetUnitData();
+        }, delay)
+
+
+       
+
+         //Unit Grafiği bas.
+
+                 $('#btnList').click(function () {
+                     $(this).button('loading');
+                    CallChartData();
+                });
+
+                $('#profile-tabB').click(function () {
+                    //FillTagNameCmb();
+                     setTimeout(function () {
+                         debugger;
+                         FillTagNameCmb();
+                         CallChartData();
+                     }, 250);
+                });
+
+                FillTagNameCmb();
+
+                function FillTagNameCmb() {
+                    $.ajax({
+                        url: "/Unit/GetTag/",
+                        type: "POST",
+                        dataType: "json",
+                        contentType: "application/json; charset=utf-8",
+                        success: function (data) {
+                            debugger;
+                            for (var z = 0; z < data.length; z++) {
+                                $('#selectedTag').append("<option value=" + data[z] + ">" + data[z] + "</option>");
+                            }
+                        }
+                    });
+                }
+               
+                function CallChartData() {
+                    debugger;
+                    $('#btnList').button('loading');
+                    var beginDate = $('input[name="begin"]').val();
+
+                    if (!beginDate || beginDate.length == 0) {
+                        beginDate = new Date().toISOString();
+                    }
+
+                    var secTag = $('#selectedTag').val();
+                    if (!secTag) {
+                        debugger;
+                        return;
+                    }
+
+                    $.ajax({
+                        url: "/Unit/GetUnitCount/",
+                        type: "POST",
+                        dataType: "json",
+                        contentType: "application/json; charset=utf-8",
+                        data: "{'stationId':'" + @Model + "'}",
+                        success: function (data) {
+                            debugger;
+                            getData(data);
+                        }
+                    });
+
+                    $("#LoadingImage").show();
+
+                 
+
+                    function getData(unitData)
+                    {
+                        debugger;
+                        $("#LoadingImage").show();
+                        $.ajax({
+                            type: "Post",
+                            url: "/Unit/GetChartUnitDetail",
+                            dataType: "json",
+                            contentType: "application/json; charset=utf-8",
+                            data: "{'beginDate':'" + beginDate +"','stationId':'"+@Model+ "'}",
+                            success: function (data) {
+                                debugger;
+                                $('#btnList').button('reset');
+                                var listDate = [];
+                                for (var i = 0; i < data.units.length; i++) {
+                                    listDate.push(DateFormat(data.units[i].INSERT_DATE));
+                                }
+                                var seriesList = [];
+                                var invId = [];
+                                var dataList = [];
+                                var listDateFiltered = [];
+                                var inv;
+                                var legendData = [];
+                                $.each(listDate, function (i, el) {
+                                    if ($.inArray(el, listDateFiltered) === -1) listDateFiltered.push(el);
+                                });
+                           
+                                for (var i = 0; i <= unitData.length - 1; i++) {
+
+                                    listDateFiltered.push(unitData[i].INSERT_DATE);
+
+                                    inv = unitData.map(function (a) { return a.NAME; });
+
+                                    legendData = data.units.filter(
+                                                function (d) {
+                                                    return (parseInt(d.UNIT_ID) == parseInt(unitData[i].ID));
+                                                }
+                                            );
+                                                       
+                                    legendData = legendData.map(function (d) {
+                                        if (d.UNIT_ID == parseInt(unitData[i].ID)) {
+                                            return d[secTag];
+                                            } 
+                                        });
+                                                                    
+                                    seriesList.push(
+                                    {
+                                        name: inv[i],
+                                        type: 'line',
+                                        smooth: true,
+                                        itemStyle: {
+                                            normal: {
+
+                                            }
+                                        },
+
+                                        data:legendData
+                                    });
+                                }
+                                var echartLine = echarts.init(document.getElementById('echart_line'), theme);
+                                echartLine.setOption({
+                                    tooltip: {
+                                        trigger: 'axis'
+                                    },
+                                    legend: {
+                                        x: 90,
+                                        y: 0,
+                                        data: inv
+                                    },
+                                    toolbox: {
+                                        show: true,
+                                        feature: {
+                                            mark: { show: false },
+                                            dataZoom: { show: false },
+                                            dataView: {
+                                                show: false,
+                                                title: "Döküman"
+                                            },
+                                            magicType: {
+                                                show: false,
+                                                title: {
+                                                    line: 'Line',
+                                                    bar: 'Bar',
+                                                    stack: 'Stack',
+                                                    tiled: 'Tiled'
+                                                },
+                                                type: ['line', 'bar', 'stack', 'tiled']
+                                            },
+                                            restore: {
+                                                show: true,
+                                                title: "Yenile"
+                                            },
+                                            saveAsImage: {
+                                                show: true,
+                                                title: "Resim Kaydet"
+                                            }
+                                        }
+                                    },
+                                    calculable: true,
+                                    dataZoom: [{
+                                        show: true,
+                                        realtime: true,
+                                        start: 0,
+                                        end: 100,
+                                        dataBackgroundColor: '#30aae1',
+                                        fillerColor: 'rgba(197,197,197,0.3)',
+                                        handleColor: '#868686'
+                                    },
+                                    {
+                                        type: 'inside',
+                                        realtime: true,
+                                        start: 0,
+                                        end: 100
+                                        }],
+                                    xAxis: [{
+                                        type: 'category',
+                                        boundaryGap: false,
+                                        data: listDateFiltered
+                                    }],
+                                    yAxis: [{
+                                        type: 'value',
+                                        yAxisIndex: 2,
+                                        axisLabel: {
+                                            formatter: '{value} '
+                                        }
+                                    }],
+                                    series: seriesList
+
+                                });
+                                function legendHandler(evt) {
+                                    var state = evt.dataItem.hidden;
+                                    if (evt.dataItem.id == "all") {
+                                        for (var i1 in evt.chart.graphs) {
+                                            if (evt.chart.graphs[i1].id != "all") {
+                                                evt.chart[evt.dataItem.hidden ? "hideGraph" : "showGraph"](evt.chart.graphs[i1]);
+                                            }
+                                        }
+                                    }
+                                }
+                                $("#LoadingImage").hide();
+                            }
+                        });
+                    }
+                }
+            //Unit Grafiği bit.
+
+                //Datetime bas.
+                $('#single_cal4').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+
+                $('#single_cal5').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+                $('#single_cal_heatMap').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+                $('#single_cal3').daterangepicker({
+                    singleDatePicker: true, locale: {
+                        format: 'DD/MM/YYYY'
+                    },
+                    singleClasses: "picker_4"
+                }, function (start, end, label) {
+                    console.log(start.toISOString(), end.toISOString(), label);
+                });
+         //Datetime bit.
+            });
+
+        </script>
+
+    }
+}

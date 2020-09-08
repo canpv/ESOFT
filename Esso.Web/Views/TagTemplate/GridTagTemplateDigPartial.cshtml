@@ -1,0 +1,57 @@
+﻿@using System.Web.UI.WebControls
+
+@model List<Esso.ViewModels.TagTempDetGridModel>
+
+@{
+
+    GridViewSettings settings = new GridViewSettings();
+
+    settings.Name = "gvTemplateDig";
+    settings.KeyFieldName = "ID";
+    settings.CallbackRouteValues = new { Controller = "TagTemplate", Action = "GridTagTemplateDigPartial" };
+    settings.Width = Unit.Percentage(100);
+    settings.Height = Unit.Percentage(100);
+    settings.SettingsBehavior.AllowFocusedRow = true;
+
+    settings.SettingsEditing.BatchUpdateRouteValues = new { Controller = "TagTemplate", Action = "GridUpdateTagTemplateDet", isGeneral = false };
+
+    settings.SettingsEditing.Mode = GridViewEditingMode.Batch;
+    settings.SettingsEditing.BatchEditSettings.EditMode = GridViewBatchEditMode.Cell;
+    settings.SettingsEditing.BatchEditSettings.StartEditAction = GridViewBatchStartEditAction.Click;
+
+    settings.SettingsEditing.BatchEditSettings.EditMode = GridViewBatchEditMode.Row;
+    settings.SettingsPager.Mode = GridViewPagerMode.ShowAllRecords;
+
+    settings.ClientSideEvents.BeginCallback = "onTemplateDigGridCallback";
+    //settings.ClientSideEvents.EndCallback = "onTemplateDetGridEndCallback";
+
+    settings.Settings.ShowFilterRow = true;
+    settings.Settings.ShowFilterRowMenu = true;
+
+    settings.Settings.ShowGroupPanel = true;
+    //settings.SettingsBehavior.AllowSort = false;
+    //settings.ClientSideEvents.BeginCallback = "onTemplateGridCallback";
+
+    settings.EnableRowsCache = true;
+
+    //Column info
+    settings.Columns.Add(c => { c.FieldName = "TAG_NAME"; c.Caption = "Tag"; });
+    settings.Columns.Add(c => { c.FieldName = "ADDRESS"; c.Caption = "Address"; c.Width = Unit.Pixel(150); });
+    settings.Columns.Add(c => { c.FieldName = "TAG_ID"; c.Caption = "TID"; c.Width = Unit.Pixel(50); });
+
+    settings.CellEditorInitialize += (s, e) =>
+    {
+
+        ASPxEdit editor = (ASPxEdit)e.Editor;
+        editor.ValidationSettings.Display = Display.None;
+        if (e.Column.FieldName == "TAG_NAME" || e.Column.FieldName == "TAG_ID")
+        {
+            e.Editor.ReadOnly = true;
+        }
+    };
+
+
+    var grid = Html.DevExpress().GridView(settings);
+}
+
+@grid.Bind(Model).GetHtml()

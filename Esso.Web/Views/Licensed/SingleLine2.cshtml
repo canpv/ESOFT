@@ -1,0 +1,910 @@
+﻿@model int
+@using System.Web.UI.WebControls;
+@using Esso.ViewModels
+@using Esso.Data;
+@using Esso.Models;
+@using Microsoft.AspNet.Identity
+@using language
+@{
+    ViewBag.Title = "SingleLine2";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.0/jquery-confirm.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.0/jquery-confirm.min.js"></script>
+<style>
+    .modal-content {
+        width: 360px;
+    }
+
+    .modal--content-header {
+        background-color: #337AB7;
+        padding: 16px 16px;
+        color: #FFF;
+        border-bottom: 2px dashed #337AB7;
+    }
+
+    img span {
+        display: none;
+        position: absolute;
+        color: #fff;
+        background: #000;
+        padding: 25px;
+    }
+
+    img {
+        position: relative;
+    }
+
+        img:hover span {
+            display: block;
+            text-align: center;
+        }
+</style>
+
+
+
+<style>
+    table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th, th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 4px;
+    }
+
+    tr:nth-child(even) {
+        background-color: #dddddd;
+    }
+</style>
+<style>
+    .button1 {
+        display: inline-block;
+        padding: 12px 20px;
+        font-size: 20px;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+        outline: none;
+        color: #fff;
+        background-color: #4CAF50;
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 9px #999;
+        width: 30%;
+    }
+
+        .button1:hover {
+            background-color: #3e8e41
+        }
+
+        .button1:active {
+            background-color: #3e8e41;
+            box-shadow: 0 5px #666;
+            transform: translateY(4px);
+        }
+
+    .button2 {
+        display: inline-block;
+        padding: 12px 20px;
+        font-size: 20px;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+        outline: none;
+        color: #fff;
+        background-color: #ff0000;
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 9px #999;
+        width: 30%;
+    }
+
+        .button2:hover {
+            background-color: #c13a3a
+        }
+
+        .button2:active {
+            background-color: #c13a3a;
+            box-shadow: 0 5px #666;
+            transform: translateY(4px);
+        }
+
+    .center1 {
+        border: 0;
+        background-color: white;
+        width: 60px;
+        height: 60px;
+        width: 60px;
+        height: 60px;
+        border: 0;
+        background-color: white;
+    }
+
+    .tdborder {
+        background-color: white;
+        width: 60px;
+        height: 60px;
+        width: 60px;
+        height: 60px;
+    }
+
+    .tdborder2 {
+        background-color: white;
+    }
+
+    .tablecard {
+        width: 250px;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.8), 0 6px 20px 0 rgba(0, 0, 0, 0.8);
+        text-align: center;
+    }
+</style>
+
+
+
+@{
+    EssoEntities DB = new EssoEntities();
+
+    #region User yetkileri kontrol
+    TBL_STATION stat = new TBL_STATION();
+    stat = null;
+
+    var userId = User.Identity.GetUserId();
+
+    var user_name = User.Identity.Name;
+    int? money;
+    var user_money = DB.UserEntity.Where(x => x.USER_ID == userId).FirstOrDefault();
+
+    if (user_money != null)
+    {
+        money = DB.UserEntity.Where(x => x.USER_ID == userId).Select(x => new { x = x.SHOW_MONEY }).FirstOrDefault().x;
+    }
+    else
+    {
+        money = null;
+    }
+
+    //User yetkileri kontrol ediliyor
+    try
+    {
+        if (User.IsInRole("M_ADMIN"))
+        {
+            stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+        }
+        else if (User.IsInRole("COMP_ADMIN"))
+        {
+            int cmpId = DB.Stations.Where(a => a.ID == Model && a.IS_DELETED == false).FirstOrDefault().COMPANY_ID;
+
+            if (DB.CompanyUsers.Any(a => a.COMPANY_ID == cmpId && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+        else if (User.IsInRole("COMP_USER"))
+        {
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+        else if (User.IsInRole("DEMO"))
+        {
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+
+    }
+    catch (Exception)
+    {
+
+    }
+    #endregion
+
+}
+
+@{
+    if (stat == null)
+    {
+        @Html.Partial("_ErrorPagePartial")
+    }
+    else
+    {
+        <div class="row">
+            @Html.Partial("MenuPartial")
+        </div>
+
+        <div style="overflow-x:auto;">
+            <div class="modal fade bd-example-modal-sm" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true" style="overflow-x:auto;">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div align="center" class="modal-header">
+                            <h5 style="font-size: 18px;font-family: serif;font-weight: bolder;" class="modal-title" id="exampleModalLabel">Modal title</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        @if (user_name == "muhendis")
+                        {
+                            <div class="modal-body" align="center">
+                                <button class="button1" id="btn_on" commandval="1" type="button" modBusWriteAdress="" onclick="modbus_komut_gonderme('btn_on')">Aç</button>
+                                <button class="button2" id="btn_off" commandval="2" type="button" modBusWriteAdress="" onclick="modbus_komut_gonderme('btn_off')">Kapat</button>
+                                @*<button id="btn1_on" onclick="modbus_komut_gonderme('btn1_on')" modBusWriteAdress="12588" commandval="1" class="button1">Aç</button>*@
+                            </div>
+                        }
+                        else
+                        {
+
+                            <div class="modal-body" align="center">
+                                <div align="center">
+                                    <h5 style="color:white;background-color:red">TEKHAT İÇİN MÜDAHALE YETKİNİZ BULUNMAMAKTADIR.</h5>
+                                </div>
+                            </div>
+                        }
+                        <div class="modal-footer">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <table id="TekHatTable" class="tablecard" border="0" valign="center" style="width:780px; margin-left: auto; margin-right: auto; ">
+                <tr> <td><div id="divdeps" style="display:none" title=""></div></td></tr>
+                <tr style="height:30px">
+                    <td colspan="13"><h2>@Resources.Single_Line_Diagram</h2></td>
+                </tr>
+                <tr>
+
+                    <td colspan="13"><h3>DM</h3></td>
+
+                </tr>
+                <tr>
+
+                    <td class="tdborder"></td>
+                    <td class="tdborder"></td>
+                    <td class="tdborder"></td>
+                    <td class="tdborder"></td>
+                    <td><img id="bara11" class="center1" bara="1" src="~/images/Tekhat/sag_alt_kose_siyah.png"></td>
+                    <td><img id="bara1son" class="center1" bara="1" src="~/images/Tekhat/sol_alt_kose_siyah.png" /></td>
+                    <td><img id="bara21" class="center1" bara="2" src="~/images/Tekhat/sag_alt_kose_siyah.png" /></td>
+                    <td><img id="bara22" class="center1" bara="2" src="~/images/Tekhat/yatay_duz_siyah.png" /></td>
+                    <td><img id="bara23" class="center1" bara="2" src="~/images/Tekhat/yatay_duz_siyah.png" /></td>
+                    <td><img id="bara2son" class="center1" bara="2" src="~/images/Tekhat/sol_alt_kose_siyah.png"></td>
+                    <td class="tdborder"></td>
+                    <td class="tdborder"></td>
+                    <td class="tdborder"></td>
+
+                </tr>
+                <tr>
+                    <td class="tdborder"></td>
+                    <td class="tdborder"></td>
+                    <td class="tdborder"><img id="1000592" style="width:30px;height:30px" class="center1" src="~/images/Tekhat/fire-off.png" /></td>
+                    <td class="center1"><img id="1000001" style="width:30px;height:30px" class="center1" src="~/images/Tekhat/closed-door.png" /></td>
+                    <td title="DM OTOPRODÜKTÖR HÜCRESİ AYIRICI" data-toggle="modal" data-read="12489" data-title="DM OTOPRODÜKTÖR HÜCRESİ AYIRICI" data-write="12589"><img id="img1" class="center1" src="~/images/Tekhat/ayirici-acik.png"></td>
+                    <td title="DM ÖLÇÜ HÜCRESİ AYIRICI" data-toggle="modal" data-read="12491" data-title="DM ÖLÇÜ HÜCRESİ AYIRICI" data-write="12590"><img id="img3" class="center1" src="~/images/Tekhat/ayirici-acik.png" /></td>
+                    <td><img id="bara24" class="center1" bara="2" src="~/images/Tekhat/dikey_duz_siyah.png" /></td>
+                    <td title="DM TM1 KESİCİLİ GİRİŞ ÇIKIŞ HÜCRESİ AYIRICI" data-title="DM TM1 KESİCİLİ GİRİŞ ÇIKIŞ HÜCRESİ AYIRICI" data-toggle="modal" data-read="12494" data-write="12592"><img id="img6" class="center1" src="~/images/Tekhat/ayirici-acik.png" /></td>
+                    <td class="center1"></td>
+                    @*<td title="DM TM3 KESİCİLİ GİRİŞ ÇIKIŞ HÜCRESİ AYIRICI" data-title="DM TM3 KESİCİLİ GİRİŞ ÇIKIŞ HÜCRESİ AYIRICI" data-toggle="modal" data-read="12497" data-write="12594"><img id="img9" class="center1" src="~/images/Tekhat/ayirici-acik.png" /></td>*@
+                    <td title="DM SİGORTALI TRAFO KORUMA HÜCRESİ AYIRICI" data-title="DM SİGORTALI TRAFO KORUMA HÜCRESİ AYIRICI" data-toggle="modal" data-target="#exampleModal" data-read="12496" data-write="12595"><img id="img8" class="center1" src="~/images/Tekhat/ayirici-acik.png"></td>
+                    @*<td class="tdborder"></td>*@
+                    <td class="center1"></td>
+                    <td title="AYDINLATMA" class="tdborder" data-title="AYDINLATMA" data-toggle="modal" data-target="#exampleModal" data-read="12526" data-write="12612"><img style="width:40px;height:40px" id="light" class="center1" src="~/images/Tekhat/light-off-icon.jpg"></td>
+                    <td class="tdborder"></td>
+                </tr>
+
+                <tr>
+
+                    <td class="center1"></td>
+                    <td class="center1"></td>
+                    <td class="center1"></td>
+                    <td class="center1"></td>
+                    <td title="DM OTOPRODÜKTÖR HÜCRESİ KESİCİ" data-title="DM OTOPRODÜKTÖR HÜCRESİ KESİCİ" data-toggle="modal" data-target="#exampleModal" data-read="12488" data-write="12588"><img id="img0" class="center1" src="~/images/Tekhat/kesici-acik.png"></td>
+                    <td title="DM ÖLÇÜ HÜCRESİ TOPRAK AYIRICISI"><img id="img4" class="center1" src="~/images/Tekhat/toprak_ayirici-acik.png" /></td>
+                    <td><img id="bara25" class="center1" bara="2" src="~/images/Tekhat/dikey_duz_siyah.png" /></td>
+                    <td title="DM TM1 KESİCİLİ GİRİŞ ÇIKIŞ HÜCRESİ KESİCİ" data-title="DM TM1 KESİCİLİ GİRİŞ ÇIKIŞ HÜCRESİ KESİCİ" data-toggle="modal" data-target="#exampleModal" data-read="12493" data-write="12591"><img id="img5" class="center1" src="~/images/Tekhat/kesici-acik.png" /></td>
+                    @*<td title="DM TM3 KESİCİLİ GİRİŞ ÇIKIŞ HÜCRESİ KESİCİ" data-title="DM TM3 KESİCİLİ GİRİŞ ÇIKIŞ HÜCRESİ KESİCİ" data-toggle="modal" data-target="#exampleModal" data-read="12496" data-write="12593"><img id="img8" class="center1" src="~/images/Tekhat/kesici-acik.png" /></td>*@
+                    <td class="center1"></td>
+                    <td title="SİGORTA"><img id="sigorta" class="center1" src="~/images/Tekhat/sigorta-kesim.png" /></td>
+                    <td class="center1"></td>
+                    <td class="center1"></td>
+                    <td class="center1"></td>
+
+                </tr>
+                <tr>
+
+                    <td class="center1"></td>
+                    <td class="center1"></td>
+                    <td class="center1"></td>
+                    <td class="center1"></td>
+                    <td title="DM OTOPRODÜKTÖR HÜCRESİ TOPRAK AYIRICISI"><img id="img2" class="center1" src="~/images/Tekhat/toprak_ayirici-acik.png"></td>
+                    <td><img id="bara26" class="center1" bara="2" src="~/images/Tekhat/sag_ust_kose_siyah.png"></td>
+                    <td><img id="bara27" class="center1" bara="2" src="~/images/Tekhat/sol_ust_kose_siyah.png" /></td>
+                    <td title="DM TM1 KESİCİLİ GİRİŞ ÇIKIŞ HÜCRESİ TOPRAK AYIRICISI"><img id="img7" class="center1" src="~/images/Tekhat/toprak_ayirici-acik.png" /></td>
+                    @*<td title="DM TM3 KESİCİLİ GİRİŞ ÇIKIŞ HÜCRESİ TOPRAK AYIRICISI"><img id="img10" class="center1" src="~/images/Tekhat/toprak_ayirici-acik.png" /></td>*@
+                    <td class="center1"></td>
+                    <td title="DM SİGORTALI TRAFO KORUMA HÜCRESİ TOPRAK AYIRICISI"><img id="img9" class="center1" src="~/images/Tekhat/toprak_ayirici-acik.png" /></td>
+                    <td class="center1"></td>
+                    <td class="center1"></td>
+                    <td class="center1"></td>
+
+                </tr>
+
+                <tr>
+
+                    <td class="center1"></td>
+                    <td class="center1"></td>
+                    <td class="center1"></td>
+                    <td class="center1"></td>
+                    <td class="center1"></td>
+                    <td class="center1"></td>
+                    <td class="center1"></td>
+                    <td><img id="trafo1" class="center1" src="~/images/Tekhat/trafo-tuketim.png" /></td>
+                    <td class="center1"></td>
+                    <td class="center1"></td>
+                    <td class="center1"></td>
+                    <td class="center1"></td>
+                    <td class="center1"></td>
+
+                </tr>
+
+
+
+            </table>
+
+            <br />
+            <br />
+            <br />
+        </div>
+        <div class="clearfix"></div>
+        <input type="hidden" value="@Resources.OFF" id="hdn_OFF" />
+        <input type="hidden" value="@Resources.ON" id="hdn_ON" />
+        <div class="row top_tiles">
+            <div class="animated flipInY col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                <div class="tile-stats">
+                    <div class="icon"><i class="fa fa-level-up"></i></div>
+                    <div class="count" style="color:#249624" id="EkkProducedEnergy">-</div>
+                    <h3 style="color:#3f5367">@Resources.Produced_Energy</h3>
+                </div>
+            </div>
+            <div class="animated flipInY col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                <div class="tile-stats">
+                    <div class="icon"><i class="fa fa-level-down"></i></div>
+                    <div class="count" id="EkkConsumedEnergy" style="color:#249624">-</div>
+                    <h3 style="color:#3f5367">@Resources.Consumed_Energy</h3>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <h2>@Resources.Energy_Quality_Recorder</h2>
+                        <ul class="nav navbar-right panel_toolbox">
+                            <li>
+                                <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                            </li>
+                            <li>
+                                <a class="close-link"><i class="fa fa-close"></i></a>
+                            </li>
+                        </ul>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+
+                        <table id="datatable" class="table table-striped jambo_table bulk_action">
+                            <thead>
+                                <tr>
+                                    <th width="155">@Resources.Address</th>
+                                    <th>@Resources.Value</th>
+                                    <th>@Resources.Date</th>
+                                </tr>
+                            </thead>
+                            <tr>
+                                <td id="f_address"></td>
+                                <td id="f_value"></td>
+                                <td id="f_date"></td>
+                            </tr>
+                            <tr>
+                                <td id="Ia_address"></td>
+                                <td id="Ia_value"></td>
+                                <td id="Ia_date"></td>
+                            </tr>
+                            <tr>
+                                <td id="Ib_address"></td>
+                                <td id="Ib_value"></td>
+                                <td id="Ib_date"></td>
+                            </tr>
+                            <tr>
+                                <td id="Ic_address"></td>
+                                <td id="Ic_value"></td>
+                                <td id="Ic_date"></td>
+                            </tr>
+                            <tr>
+                                <td id="p_address"></td>
+                                <td id="p_value"></td>
+                                <td id="p_date"></td>
+                            </tr>
+                            <tr>
+                                <td id="pf_address"></td>
+                                <td id="pf_value"></td>
+                                <td id="pf_date"></td>
+                            </tr>
+                            <tr>
+                                <td id="q_address"></td>
+                                <td id="q_value"></td>
+                                <td id="q_date"></td>
+                            </tr>
+                            <tr>
+                                <td id="s_address"></td>
+                                <td id="s_value"></td>
+                                <td id="s_date"></td>
+                            </tr>
+                            <tr>
+                                <td id="vab_address"></td>
+                                <td id="vab_value"></td>
+                                <td id="vab_date"></td>
+                            </tr>
+                            <tr>
+                                <td id="vac_address"></td>
+                                <td id="vac_value"></td>
+                                <td id="vac_date"></td>
+                            </tr>
+
+                            <tr>
+                                <td id="vbc_address"></td>
+                                <td id="vbc_value"></td>
+                                <td id="vbc_date"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 col-sm-12 col-xs-12">
+                    <div class="x_panel">
+                        <div class="x_title">
+                            <h2>@Resources.Protection_Relay</h2>
+                            <ul class="nav navbar-right panel_toolbox">
+                                <li>
+                                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                                </li>
+                                <li>
+                                    <a class="close-link"><i class="fa fa-close"></i></a>
+                                </li>
+                            </ul>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="x_content">
+
+                            <table id="datatable" class="table table-striped jambo_table bulk_action">
+                                <thead>
+                                    <tr>
+                                        <th width="155">@Resources.Address</th>
+                                        <th>@Resources.Value</th>
+                                        <th>@Resources.Date</th>
+                                    </tr>
+                                </thead>
+
+                                <tr>
+                                    <td id="I1_address"></td>
+                                    <td id="I1_value"></td>
+                                    <td id="I1_date"></td>
+                                </tr>
+                                <tr>
+                                    <td id="I2_address"></td>
+                                    <td id="I2_value"></td>
+                                    <td id="I2_date"></td>
+                                </tr>
+                                <tr>
+                                    <td id="I3_address"></td>
+                                    <td id="I3_value"></td>
+                                    <td id="I3_date"></td>
+                                </tr>
+                                <tr>
+                                    <td id="In_address"></td>
+                                    <td id="In_value"></td>
+                                    <td id="In_date"></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <script>
+
+            $("#exampleModal").css("display", "none");
+            if (true) {
+                $('#exampleModal').on('show.bs.modal', function (event) {
+
+                    var button = $(event.relatedTarget) // Button that triggered the modal
+                    var recipient = button.data('whatever') // Extract info from data-* attributes
+                    var modBusWriteAdress = button.data('write')
+                    var title2 = button.data('title')
+                    var modBusReadAdress = button.data('read')
+                    // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+                    // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+                    var adress = $(this);
+
+                    $("#btn_on").attr("modBusWriteAdress", modBusWriteAdress);
+                    $("#btn_on").attr("title2", title2);
+                    $("#btn_on").attr("modBusReadAdress", modBusReadAdress);
+                    $("#btn_off").attr("modBusWriteAdress", modBusWriteAdress);
+                    $("#btn_off").attr("title2", title2);
+                    $("#btn_off").attr("modBusReadAdress", modBusReadAdress);
+                    var modal = $(this)
+                    modal.find('.modal-title').text(title2)
+                    modal.find('.modal-body input').val(recipient)
+
+
+                })
+            }
+
+        @*</script>
+        <script type="text/javascript">*@
+    $(function () {
+        $(document).tooltip();
+    });
+    modbus_okuma();
+    var timer, delay = 10000;
+    timer = setInterval(function () {
+        modbus_okuma();
+    }, delay);
+            function modbus_okuma() {
+
+
+
+
+            var data = {  'station_id':@Model};
+                $.ajax({
+
+                    url: "/Home/ModbusOpen",
+                    type: "POST",
+                    dataType: "json",
+                    data: data,
+
+                    success: function (data) {
+                        debugger;
+                        //TekHatTable
+
+                        if (!data.IsSuccess) {
+
+                                $.alert({
+                                    title: 'UYARI !',
+                                    content: 'Bağlantı Hatası'
+                                });
+
+                            return ;
+
+                            }
+
+
+
+                        for (var i = 0; i < data.arraylist2.length; i++) {
+
+
+
+                            if (data.arraylist2[i].TAG_TYPE == "1") {
+
+                                if (data.arraylist2[i].DESC == "0") {
+                                    $("#" + data.arraylist2[i].ADDRESS).attr("src", "/images/Tekhat/fire-off.png");
+                                }
+                                else {
+                                    $("#" + data.arraylist2[i].ADDRESS).attr("src", "/images/Tekhat/fire-on.png");
+                                }
+
+
+                            }
+                            else if (data.arraylist2[i].TAG_TYPE == "2") {
+
+                                if (data.arraylist2[i].DESC == "0") {
+                                    $("#" + data.arraylist2[i].ADDRESS).attr("src", "/images/Tekhat/closed-door.png");
+                                }
+                                else {
+                                    $("#" + data.arraylist2[i].ADDRESS).attr("src", "/images/Tekhat/opened-door.png");
+                                }
+                            }
+
+                        }
+
+
+
+
+
+                        $('img[energy="2"]').each(function () {
+                            $(this).attr("energy", "1");
+                        });
+
+                        if (data.OrtalamaGerilim > 20 && data.arraylist[1] == 2 && data.arraylist[0] == 2) {
+                            $("#bara11").attr("src", "/images/Tekhat/sag_alt_kose_kirmizi.png");
+                            $("#bara1son").attr("src", "/images/Tekhat/sol_alt_kose_kirmizi.png");
+                            $('img[bara="1"]').each(function () {
+                                $(this).attr("energy", "2");
+
+                            });
+
+                        }
+
+
+                        if ($("#bara1son").attr("energy") == "2" && data.arraylist[3] == 2) {
+                            $("#bara21").attr("src", "/images/Tekhat/sag_alt_kose_kirmizi.png");
+                            $("#bara22").attr("src", "/images/Tekhat/T_kose_kirmizi.png");
+                            $("#bara23").attr("src", "/images/Tekhat/yatay_duz_kirmizi.png");
+                            $("#bara24").attr("src", "/images/Tekhat/dikey_duz_kirmizi.png");
+                            $("#bara25").attr("src", "/images/Tekhat/dikey_duz_kirmizi.png");
+                            $("#bara26").attr("src", "/images/Tekhat/sag_ust_kose_kirmizi.png");
+                            $("#bara27").attr("src", "/images/Tekhat/sol_ust_kose_kirmizi.png");
+                            $("#bara2son").attr("src", "/images/Tekhat/sol_alt_kose_kirmizi.png");
+
+                            $('img[bara="2"]').each(function () {
+                                $(this).attr("energy","2");
+
+                            });
+                            if (data.arraylist[8] == 2) {
+                                $("#sigorta").attr("src", "/images/Tekhat/sigorta-iletim.png");
+                            }
+
+                        }
+
+
+
+
+                        if ($("#bara2son").attr("energy") == "2" && data.arraylist[5] == 2 && data.arraylist[6] == 2 ) {
+
+
+                            $("#trafo1").attr("src", "/images/Tekhat/trafo-uretim.png");
+
+                        }
+
+                        //if ($("#bara5son").attr("energy") == "2" && data.arraylist[15] == 2 && data.arraylist[16] == 2) {
+
+
+                        //    $("#trafo1").attr("src", "/images/Tekhat/trafo-uretim.png");
+
+                        //}
+                        //if ($("#bara9son").attr("energy") == "2" && data.arraylist[22] == 2 && data.arraylist[23] == 2) {
+
+
+                        //    $("#trafo2").attr("src", "/images/Tekhat/trafo-uretim.png");
+
+                        //}
+                        //if ($("#bara6son").attr("energy") == "2" && data.arraylist[29] == 2 && data.arraylist[30] == 2) {
+
+
+                        //    $("#trafo3").attr("src", "/images/Tekhat/trafo-uretim.png");
+
+                        //}
+
+                        debugger;
+                        if (data.arraylist[34] == 2) {
+                            $("#light").attr("src", "/images/Tekhat/light-on-icon.jpg");
+                        }
+                        else {
+                            $("#light").attr("src", "/images/Tekhat/light-off-icon.jpg");
+                        }
+
+
+                        for (var i = 0; i < data.arraylist.length; i++) {
+debugger;
+
+                            if (i == 1 || i == 3 || i == 6 || i == 8 ) {
+
+                                if (data.arraylist[i] == 1) {
+
+                                    $("#img"+ i).attr("src", "/images/Tekhat/ayirici-acik.png");
+                                }
+                                else if (data.arraylist[i] == 2) {
+
+                                    $("#img" + i).attr("src", "/images/Tekhat/ayirici-kapali.png");
+                                }
+                                else {
+
+                                    $("#img" + i).attr("src", "/images/Tekhat/Alert.gif");
+
+                                }
+
+                            }
+
+                            else if (i == 0 || i == 5 ) {
+                                if (data.arraylist[i] == 1) {
+
+                                    $("#img" + i).attr("src", "/images/Tekhat/kesici-acik.png");
+
+                                }
+                                else if (data.arraylist[i] == 2) {
+
+                                    $("#img" + i).attr("src", "/images/Tekhat/kesici-kapali.png");
+
+                                }
+                                else {
+
+                                    $("#img" + i).attr("src", "/images/Tekhat/Alert.gif");
+
+                                }
+                            }
+
+
+                            else {
+
+                                if (data.arraylist[i] == 1) {
+
+                                    $("#img" + i).attr("src", "/images/Tekhat/toprak_ayirici-acik.png");
+
+                                }
+                                else if (data.arraylist[i] == 2) {
+
+                                    $("#img" + i).attr("src", "/images/Tekhat/toprak_ayirici-kapali.png");
+                                }
+                                else {
+
+                                    $("#img" + i).attr("src", "/images/Tekhat/Alert.gif");
+                                }
+
+                                }
+}
+
+            }
+        });
+    }
+
+
+
+
+    function modbus_komut_gonderme(id) {
+
+        //$('button[type = "button"]').modal({
+        //    //backdrop: 'static',
+        //    keyboard: false
+        //})
+        //    .one('click', '#delete', function (e) {
+        //        $form.trigger('submit');
+        //    });
+
+        var modBusWriteAdress = $("#" + id).attr("modBusWriteAdress");
+        var modBusReadAdress = $("#" + id).attr("modBusReadAdress");
+
+        //if (modBusReadAdress!="12526") {
+
+        //    $.alert({
+        //        title: 'UYARI !',
+        //        content: 'GÜVENLİK AÇISINDAN HENÜZ AKTİF EDİLMEMİŞTİR.'
+        //    });
+
+        //    return;
+        //}
+
+
+        var command = $("#" + id).attr("commandval");
+        var data = { 'modBusWriteAdress': modBusWriteAdress, 'command': command, 'station_id':@Model, 'modBusReadAdress': modBusReadAdress};
+        $("#loading").show();
+        $.ajax({
+
+            url: "/Home/ModbusWrite",
+            type: "POST",
+            dataType: "json",
+            data: data,
+            success: function (data) {
+                   $("#loading").hide();
+               window.location.reload();
+
+            }
+
+        });
+    }
+
+
+
+            function ConvertTicksToTime(vl) {
+                vl = vl.replace("Date", "");
+                vl = vl.replace("/", "");
+                vl = vl.replace("(", "");
+                vl = vl.replace(")", "");
+                vl = vl.replace("/", "").trim();
+
+                var vlDate = new Date(parseInt(vl));
+                //return vlDate.getHours() + ":" + vlDate.getMinutes() + ":" + vlDate.getSeconds()+":"+vlDate.getMilliseconds();
+                return vlDate.toLocaleTimeString() + ":" + vlDate.getMilliseconds();
+            }
+            function ConvertTicksToDate(vl) {
+                vl = vl.replace("Date", "");
+                vl = vl.replace("/", "");
+                vl = vl.replace("(", "");
+                vl = vl.replace(")", "");
+                vl = vl.replace("/", "").trim();
+
+                var vlDate = new Date(parseInt(vl));
+                return vlDate.toLocaleDateString();
+            }
+
+            $(document).ready(function () {
+                //EKK Bas.
+                function GetEKK() {
+                    $.ajax({
+                        url: "/MVS/GetEkk?stationId=@Model",
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+                    $("#EkkProducedEnergy").html(data.H2_WP_minus.toFixed(2) == null ? 0 : data.H2_WP_minus.toFixed(2).replace(".",",") +" MWh");
+                    $("#EkkConsumedEnergy").html(data.H2_WP_plus.toFixed(2) == null ? 0 : data.H2_WP_plus.toFixed(2).replace(".", ",") + " MWh");
+
+                    $("#f_address").html("@Resources.Frequency : ");
+                    $("#f_value").html(data.H2_F == null ? null : data.H2_F.toFixed(2) +" Hz");
+                    $("#f_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+                    $("#Ia_address").html("@Resources.Current L1 : ");
+                    $("#Ia_value").html(data.H2_Ia == null ? null : data.H2_Ia.toFixed(2)+" A");
+                    $("#Ia_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+                    $("#Ib_address").html("@Resources.Current L2 : ");
+                    $("#Ib_value").html(data.H2_Ib == null ? null : data.H2_Ib.toFixed(2) + " A");
+                    $("#Ib_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+                    $("#Ic_address").html("@Resources.Current L3 : ");
+                    $("#Ic_value").html(data.H2_Ic == null ? null : data.H2_Ic.toFixed(2) + " A");
+                    $("#Ic_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+                    $("#p_address").html("@Resources.Active_Power_Sum : ");
+                    $("#p_value").html(data.H2_P == null ? null : data.H2_P.toFixed(2) +" kW");
+                    $("#p_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+                    $("#pf_address").html("@Resources.Power_Factor : ");
+                    $("#pf_value").html(data.H2_PF == null ? null : data.H2_PF.toFixed(2));
+                    $("#pf_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+                    $("#q_address").html("@Resources.Reactive_Power_Sum : ");
+                    $("#q_value").html(data.H2_Q == null ? null : data.H2_Q.toFixed(2) +" kVAr");
+                    $("#q_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+                    $("#s_address").html("@Resources.Visible_Power_Sum: ");
+                    $("#s_value").html(data.H2_S == null ? null : data.H2_S.toFixed(2)+" kVA");
+                    $("#s_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+                    $("#vab_address").html("@Resources.Voltage L1-L2 : ");
+                    $("#vab_value").html(data.H2_Vab == null ? null : data.H2_Vab.toFixed(2) + " kV");
+                    $("#vab_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+                    $("#vac_address").html("@Resources.Voltage L1-L3 : ");
+                    $("#vac_value").html(data.H2_Vac == null ? null : data.H2_Vac.toFixed(2) + " kV");
+                    $("#vac_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+                    $("#vbc_address").html("@Resources.Voltage L2-L3 : ");
+                    $("#vbc_value").html(data.H2_Vbc == null ? null : data.H2_Vbc.toFixed(2) + " kV");
+                    $("#vbc_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+                    $("#I1_address").html("@Resources.Current L1 : ");
+                    $("#I1_value").html(data.H3_Ia == null ? null : data.H3_Ia.toFixed(2) + " A");
+                    $("#I1_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+                    $("#I2_address").html("@Resources.Current L2 : ");
+                    $("#I2_value").html(data.H3_Ib == null ? null : data.H3_Ib.toFixed(2) + " A");
+                    $("#I2_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+                    $("#I3_address").html("@Resources.Current L3 : ");
+                    $("#I3_value").html(data.H3_Ic == null ? null : data.H3_Ic.toFixed(2) + " A");
+                    $("#I3_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+
+                    $("#In_address").html("@Resources.Neutral_Current : ");
+                    $("#In_value").html(data.H3_Ie == null ? null : data.H3_Ie.toFixed(2) + " A");
+                    $("#In_date").html(ConvertTicksToTime(data.tarih) + " / " + ConvertTicksToDate(data.tarih));
+                }
+            });
+        }
+        GetEKK();
+        var timer, delay = 300000;
+        timer = setInterval(function () {
+            GetEKK();
+        }, delay)
+        //EKK Bit.
+
+    });
+        </script>
+
+    }
+}

@@ -1,0 +1,1252 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{5FD16663-9592-4F57-9452-6908BBF863D8}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Esso.Web</RootNamespace>
+    <AssemblyName>Esso.Web</AssemblyName>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <UseIISExpress>true</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+    <UseGlobalApplicationHostFile />
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <Use64BitIISExpress />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisIgnoreGeneratedCode>true</CodeAnalysisIgnoreGeneratedCode>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Antlr3.Runtime, Version=3.5.0.2, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
+      <HintPath>..\packages\Antlr.3.5.0.2\lib\Antlr3.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="Autofac, Version=4.9.2.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.4.9.2\lib\net45\Autofac.dll</HintPath>
+    </Reference>
+    <Reference Include="Autofac.Integration.Mvc, Version=4.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.Mvc5.4.0.2\lib\net45\Autofac.Integration.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="AutoMapper, Version=6.1.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <HintPath>..\packages\AutoMapper.6.1.1\lib\net45\AutoMapper.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.Data.v17.1, Version=17.1.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\DevExpress.Data.v17.1.dll</HintPath>
+    </Reference>
+    <Reference Include="DevExpress.Printing.v17.1.Core, Version=17.1.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" />
+    <Reference Include="DevExpress.RichEdit.v17.1.Core, Version=17.1.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" />
+    <Reference Include="DevExpress.Utils.v17.1, Version=17.1.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" />
+    <Reference Include="DevExpress.Web.ASPxThemes.v17.1, Version=17.1.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" />
+    <Reference Include="DevExpress.Web.Mvc5.v17.1, Version=17.1.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" />
+    <Reference Include="DevExpress.Web.v17.1, Version=17.1.3.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a" />
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="EPPlus, Version=4.5.2.1, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
+      <HintPath>..\packages\EPPlus.4.5.2.1\lib\net40\EPPlus.dll</HintPath>
+    </Reference>
+    <Reference Include="ExcelDataReader, Version=3.6.0.0, Culture=neutral, PublicKeyToken=93517dbe6a4012fa, processorArchitecture=MSIL">
+      <HintPath>..\packages\ExcelDataReader.3.6.0\lib\net45\ExcelDataReader.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Identity.Core.2.2.1\lib\net45\Microsoft.AspNet.Identity.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.EntityFramework, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Identity.EntityFramework.2.2.1\lib\net45\Microsoft.AspNet.Identity.EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.Identity.Owin, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Identity.Owin.2.2.1\lib\net45\Microsoft.AspNet.Identity.Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Owin, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.3.1.0\lib\net45\Microsoft.Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Host.SystemWeb, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Host.SystemWeb.3.1.0\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Security, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Security.3.1.0\lib\net45\Microsoft.Owin.Security.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Security.Cookies, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Security.Cookies.3.1.0\lib\net45\Microsoft.Owin.Security.Cookies.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Security.OAuth, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.Security.OAuth.3.1.0\lib\net45\Microsoft.Owin.Security.OAuth.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.QualityTools.Testing.Fakes, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Oracle.ManagedDataAccess, Version=4.122.19.1, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=MSIL">
+      <HintPath>..\packages\Oracle.ManagedDataAccess.19.7.0\lib\net40\Oracle.ManagedDataAccess.dll</HintPath>
+    </Reference>
+    <Reference Include="Oracle.ManagedDataAccess.EntityFramework, Version=6.122.19.1, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=MSIL">
+      <HintPath>..\packages\Oracle.ManagedDataAccess.EntityFramework.19.7.0\lib\net45\Oracle.ManagedDataAccess.EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
+      <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Linq.Dynamic, Version=1.0.6132.35681, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Linq.Dynamic.1.0.7\lib\net40\System.Linq.Dynamic.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.6.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.6\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.Helpers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Mvc, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Mvc.5.2.3\lib\net45\System.Web.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Optimization">
+      <HintPath>..\packages\Microsoft.AspNet.Web.Optimization.1.1.3\lib\net40\System.Web.Optimization.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Razor.3.2.3\lib\net45\System.Web.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Deployment, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Deployment.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.WebPages.Razor.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="WebGrease, Version=1.6.5135.21930, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebGrease.1.6.0\lib\WebGrease.dll</HintPath>
+    </Reference>
+    <Reference Include="Z.EntityFramework.Plus.EF6, Version=1.7.5.0, Culture=neutral, PublicKeyToken=59b66d028979105b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Z.EntityFramework.Plus.EF6.1.7.5\lib\net45\Z.EntityFramework.Plus.EF6.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Web.Infrastructure">
+      <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="bin\Antlr3.Runtime.dll" />
+    <Content Include="bin\Autofac.dll" />
+    <Content Include="bin\Autofac.Integration.Mvc.dll" />
+    <Content Include="bin\AutoMapper.dll" />
+    <Content Include="bin\DevExpress.Data.v17.1.dll" />
+    <Content Include="bin\DevExpress.Printing.v17.1.Core.dll" />
+    <Content Include="bin\DevExpress.RichEdit.v17.1.Core.dll" />
+    <Content Include="bin\DevExpress.Utils.v17.1.dll" />
+    <Content Include="bin\DevExpress.Web.ASPxThemes.v17.1.dll" />
+    <Content Include="bin\DevExpress.Web.Mvc5.v17.1.dll" />
+    <Content Include="bin\DevExpress.Web.v17.1.dll" />
+    <Content Include="bin\EntityFramework.dll" />
+    <Content Include="bin\EntityFramework.SqlServer.dll" />
+    <Content Include="bin\Esso.Data.dll" />
+    <Content Include="bin\Esso.Data.pdb" />
+    <Content Include="bin\Esso.Model.dll" />
+    <Content Include="bin\Esso.Model.pdb" />
+    <Content Include="bin\Esso.Service.dll" />
+    <Content Include="bin\Esso.Service.pdb" />
+    <Content Include="bin\Esso.Web.dll" />
+    <Content Include="bin\Esso.Web.pdb" />
+    <Content Include="bin\Microsoft.AspNet.Identity.Core.dll" />
+    <Content Include="bin\Microsoft.AspNet.Identity.EntityFramework.dll" />
+    <Content Include="bin\Microsoft.AspNet.Identity.Owin.dll" />
+    <Content Include="bin\Microsoft.Owin.dll" />
+    <Content Include="bin\Microsoft.Owin.Host.SystemWeb.dll" />
+    <Content Include="bin\Microsoft.Owin.Security.Cookies.dll" />
+    <Content Include="bin\Microsoft.Owin.Security.dll" />
+    <Content Include="bin\Microsoft.Owin.Security.OAuth.dll" />
+    <Content Include="bin\Microsoft.Web.Infrastructure.dll" />
+    <Content Include="bin\Newtonsoft.Json.dll" />
+    <Content Include="bin\Oracle.ManagedDataAccess.dll" />
+    <Content Include="bin\Oracle.ManagedDataAccess.EntityFramework.dll" />
+    <Content Include="bin\Owin.dll" />
+    <Content Include="bin\System.Web.Helpers.dll" />
+    <Content Include="bin\System.Web.Mvc.dll" />
+    <Content Include="bin\System.Web.Optimization.dll" />
+    <Content Include="bin\System.Web.Razor.dll" />
+    <Content Include="bin\System.Web.WebPages.Deployment.dll" />
+    <Content Include="bin\System.Web.WebPages.dll" />
+    <Content Include="bin\System.Web.WebPages.Razor.dll" />
+    <Content Include="bin\WebGrease.dll" />
+    <Content Include="bin\Z.EntityFramework.Plus.EF6.dll" />
+    <Content Include="Content\bootstrap-progressbar-3.3.4.min.css" />
+    <Content Include="Content\bootstrap.css" />
+    <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Content\buttons.bootstrap.min.css" />
+    <Content Include="Content\Chart.min.js" />
+    <Content Include="Content\custom.min.css" />
+    <Content Include="Content\custom.min.js" />
+    <Content Include="Content\data-table\dataTables.responsive.js" />
+    <Content Include="Content\data-table\jquery-3.3.1.js" />
+    <Content Include="Content\data-table\jquery.dataTables.min.css" />
+    <Content Include="Content\data-table\jquery.dataTables.min.js" />
+    <Content Include="Content\dataTables.bootstrap.min.css" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\css\dataTables.bootstrap.css" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\css\dataTables.bootstrap.min.css" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\css\dataTables.bootstrap4.css" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\css\dataTables.bootstrap4.min.css" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\css\dataTables.foundation.css" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\css\dataTables.foundation.min.css" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\css\dataTables.jqueryui.css" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\css\dataTables.jqueryui.min.css" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\css\dataTables.semanticui.css" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\css\dataTables.semanticui.min.css" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\css\jquery.dataTables.css" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\css\jquery.dataTables.min.css" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\images\sort_asc.png" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\images\sort_asc_disabled.png" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\images\sort_both.png" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\images\sort_desc.png" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\images\sort_desc_disabled.png" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\js\dataTables.bootstrap.js" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\js\dataTables.bootstrap.min.js" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\js\dataTables.bootstrap4.js" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\js\dataTables.bootstrap4.min.js" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\js\dataTables.foundation.js" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\js\dataTables.foundation.min.js" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\js\dataTables.jqueryui.js" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\js\dataTables.jqueryui.min.js" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\js\dataTables.semanticui.js" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\js\dataTables.semanticui.min.js" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\js\jquery.dataTables.js" />
+    <Content Include="Content\DataTables\DataTables-1.10.18\js\jquery.dataTables.min.js" />
+    <Content Include="Content\DataTables\datatables.css" />
+    <Content Include="Content\DataTables\datatables.js" />
+    <Content Include="Content\DataTables\datatables.min.css" />
+    <Content Include="Content\DataTables\datatables.min.js" />
+    <Content Include="Content\daterangepicker.css" />
+    <Content Include="Content\echarts.min.js" />
+    <Content Include="Content\fixedHeader.bootstrap.min.css" />
+    <Content Include="Content\fullcalendar.min.js" />
+    <Content Include="Content\highcharts\heatmap\exporting.js" />
+    <Content Include="Content\highcharts\heatmap\heatmap.js" />
+    <Content Include="Content\highcharts\heatmap\highcharts.js" />
+    <Content Include="Content\Images\heatmaplegend.png" />
+    <Content Include="Content\moment.min.js" />
+    <Content Include="Content\morris.min.js" />
+    <Content Include="Content\nprogress.css" />
+    <Content Include="Content\other\green.css" />
+    <Content Include="Content\other\prettify.min.css" />
+    <Content Include="Content\other\select2.min.css" />
+    <Content Include="Content\other\starrr.css" />
+    <Content Include="Content\other\switchery.min.css" />
+    <Content Include="Content\pnotify.buttons.css" />
+    <Content Include="Content\pnotify.css" />
+    <Content Include="Content\pnotify.nonblock.css" />
+    <Content Include="Content\raphael.min.js" />
+    <Content Include="Content\responsive.bootstrap.min.css" />
+    <Content Include="Content\scroller.bootstrap.min.css" />
+    <Content Include="Content\select2.min.css" />
+    <Content Include="Content\Site.css" />
+    <Content Include="Content\themes\base\accordion.css" />
+    <Content Include="Content\themes\base\all.css" />
+    <Content Include="Content\themes\base\autocomplete.css" />
+    <Content Include="Content\themes\base\base.css" />
+    <Content Include="Content\themes\base\button.css" />
+    <Content Include="Content\themes\base\core.css" />
+    <Content Include="Content\themes\base\datepicker.css" />
+    <Content Include="Content\themes\base\dialog.css" />
+    <Content Include="Content\themes\base\draggable.css" />
+    <Content Include="Content\themes\base\images\ui-bg_flat_0_aaaaaa_40x100.png" />
+    <Content Include="Content\themes\base\images\ui-bg_flat_75_ffffff_40x100.png" />
+    <Content Include="Content\themes\base\images\ui-bg_glass_55_fbf9ee_1x400.png" />
+    <Content Include="Content\themes\base\images\ui-bg_glass_65_ffffff_1x400.png" />
+    <Content Include="Content\themes\base\images\ui-bg_glass_75_dadada_1x400.png" />
+    <Content Include="Content\themes\base\images\ui-bg_glass_75_e6e6e6_1x400.png" />
+    <Content Include="Content\themes\base\images\ui-bg_glass_95_fef1ec_1x400.png" />
+    <Content Include="Content\themes\base\images\ui-bg_highlight-soft_75_cccccc_1x100.png" />
+    <Content Include="Content\themes\base\images\ui-icons_222222_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_2e83ff_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_444444_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_454545_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_555555_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_777620_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_777777_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_888888_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_cc0000_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_cd0a0a_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_ffffff_256x240.png" />
+    <Content Include="Content\themes\base\jquery-ui.css" />
+    <Content Include="Content\themes\base\jquery-ui.min.css" />
+    <Content Include="Content\themes\base\menu.css" />
+    <Content Include="Content\themes\base\progressbar.css" />
+    <Content Include="Content\themes\base\resizable.css" />
+    <Content Include="Content\themes\base\selectable.css" />
+    <Content Include="Content\themes\base\selectmenu.css" />
+    <Content Include="Content\themes\base\slider.css" />
+    <Content Include="Content\themes\base\sortable.css" />
+    <Content Include="Content\themes\base\spinner.css" />
+    <Content Include="Content\themes\base\tabs.css" />
+    <Content Include="Content\themes\base\theme.css" />
+    <Content Include="Content\themes\base\tooltip.css" />
+    <Content Include="Content\vendors\animate.css\animate.css" />
+    <Content Include="Content\vendors\animate.css\animate.min.css" />
+    <Content Include="Content\vendors\animate.css\gulpfile.js" />
+    <Content Include="Content\vendors\font-awesome\css\font-awesome.css" />
+    <Content Include="Content\vendors\font-awesome\css\font-awesome.min.css" />
+    <Content Include="Content\vendors\font-awesome\fonts\fontawesome-webfont.svg" />
+    <Content Include="Content\vendors\font-awesome\HELP-US-OUT.txt" />
+    <Content Include="Content\vendors\nprogress\index.html" />
+    <Content Include="Content\vendors\nprogress\nprogress.css" />
+    <Content Include="Content\vendors\nprogress\nprogress.js" />
+    <Content Include="Content\vendors\nprogress\support\extras.css" />
+    <Content Include="Content\vendors\nprogress\support\style.css" />
+    <Content Include="Content\weather\date.js" />
+    <Content Include="Content\world.js" />
+    <Content Include="css\bootstrap-datepicker.min.css" />
+    <Content Include="css\bootstrap.css" />
+    <Content Include="css\custom.css" />
+    <Content Include="css\custom.min.css" />
+    <Content Include="css\daterangepicker.css" />
+    <Content Include="css\jquery-ui.min.css" />
+    <Content Include="css\site.css" />
+    <Content Include="images\debi.png" />
+    <Content Include="images\DigitalDataImages\duman_dedektoru.png" />
+    <Content Include="images\DigitalDataImages\height.png" />
+    <Content Include="images\DigitalDataImages\kapi_switch.png" />
+    <Content Include="images\DigitalDataImages\low.png" />
+    <Content Include="images\DigitalDataImages\redresor_ac_ariza.png" />
+    <Content Include="images\DigitalDataImages\redresor_dc.png" />
+    <Content Include="images\hidro.png" />
+    <Content Include="images\homepageicon.png" />
+    <Content Include="images\kot.png" />
+    <Content Include="images\maps_icon.png" />
+    <Content Include="images\PanelScada\moon.png" />
+    <Content Include="images\PanelScada\panel.png" />
+    <Content Include="images\PanelScada\soil.jpg" />
+    <Content Include="images\PanelScada\sun.png" />
+    <Content Include="images\sun.png" />
+    <Content Include="images\Weather\01n.png" />
+    <Content Include="images\Weather\02n.png" />
+    <Content Include="images\Weather\04n.png" />
+    <Content Include="images\Weather\13n.png" />
+    <Content Include="images\Weather\10n.png" />
+    <Content Include="images\Weather\11n.png" />
+    <Content Include="images\Weather\03d.png" />
+    <Content Include="images\Weather\04d.png" />
+    <Content Include="images\Weather\09d.png" />
+    <Content Include="images\Weather\01d.png" />
+    <Content Include="images\Weather\03n.png" />
+    <Content Include="images\Weather\HafifYagmurlu.png" />
+    <Content Include="images\Weather\hava-durumu-tahmin.png" />
+    <Content Include="images\Weather\13d.png" />
+    <Content Include="images\Weather\02d.png" />
+    <Content Include="images\Weather\Sisli.png" />
+    <Content Include="images\Weather\10d.png" />
+    <Content Include="images\Weather\11d.png" />
+    <Content Include="fonts\glyphicons-halflings-regular.svg" />
+    <Content Include="Global.asax" />
+    <Content Include="images\Alert.gif" />
+    <Content Include="images\dolar.png" />
+    <Content Include="images\EsoftLogo\esoftImage.png" />
+    <Content Include="images\EsoftLogo\EsoftLogo.png" />
+    <Content Include="images\EsoftLogo\EsoftLogo1.png" />
+    <Content Include="images\EsoftLogo\EsoftLogo2.png" />
+    <Content Include="images\EsoftLogo\esoft_icon1.png" />
+    <Content Include="images\EsoftLogo\esoft_icon2.png" />
+    <Content Include="images\EsoftLogo\esoft_icon3.png" />
+    <Content Include="images\EsoftLogo\rrr.png" />
+    <Content Include="images\EsoftLogo\y1.png" />
+    <Content Include="images\EsoftLogo\y2.png" />
+    <Content Include="images\EsoftLogo\y3.png" />
+    <Content Include="images\EsoftLogo\y4.png" />
+    <Content Include="images\heatmap_string_legend.png" />
+    <Content Include="images\homepage.png" />
+    <Content Include="images\img.jpg" />
+    <Content Include="images\janitza.png" />
+    <Content Include="images\languages\de.png" />
+    <Content Include="images\languages\en-US.png" />
+    <Content Include="images\languages\es.png" />
+    <Content Include="images\languages\fr.png" />
+    <Content Include="images\languages\tr.png" />
+    <Content Include="images\loader.gif" />
+    <Content Include="images\loaderSpinner.gif" />
+    <Content Include="images\loading.gif" />
+    <Content Include="images\loadingPoint.gif" />
+    <Content Include="images\logo\EsoftLogo.png" />
+    <Content Include="images\logo\Esoft_favicon.png" />
+    <Content Include="images\map.png" />
+    <Content Include="images\marker_green.png" />
+    <Content Include="images\marker_red.png" />
+    <Content Include="images\money.png" />
+    <Content Include="images\outTemp.png" />
+    <Content Include="images\ping.png" />
+    <Content Include="images\solar-panelorj.jpg" />
+    <Content Include="images\solarpanel.png" />
+    <Content Include="images\solarSmall.png" />
+    <Content Include="images\StationImages\0.png" />
+    <Content Include="images\Tekhat\Alert.gif" />
+    <Content Include="images\Tekhat\ayirici-acik.png" />
+    <Content Include="images\Tekhat\ayirici-kapali.png" />
+    <Content Include="images\Tekhat\closed-door.png" />
+    <Content Include="images\Tekhat\dikey_duz_kirmizi.png" />
+    <Content Include="images\Tekhat\dikey_duz_siyah.png" />
+    <Content Include="images\Tekhat\fire-off.png" />
+    <Content Include="images\Tekhat\fire-on.png" />
+    <Content Include="images\Tekhat\kesici-acik.png" />
+    <Content Include="images\Tekhat\kesici-kapali.png" />
+    <Content Include="images\Tekhat\kesici_acık.png" />
+    <Content Include="images\Tekhat\kesici_kapalı.png" />
+    <Content Include="images\Tekhat\light-off-icon.jpg" />
+    <Content Include="images\Tekhat\light-on-icon.jpg" />
+    <Content Include="images\Tekhat\opened-door.png" />
+    <Content Include="images\Tekhat\sag_alt_kose_kirmizi.png" />
+    <Content Include="images\Tekhat\sag_alt_kose_siyah.png" />
+    <Content Include="images\Tekhat\sag_ust_kose_kirmizi.png" />
+    <Content Include="images\Tekhat\sag_ust_kose_siyah.png" />
+    <Content Include="images\Tekhat\sigorta-iletim.png" />
+    <Content Include="images\Tekhat\sigorta-kesim.png" />
+    <Content Include="images\Tekhat\sol_alt_kose_kirmizi.png" />
+    <Content Include="images\Tekhat\sol_alt_kose_siyah.png" />
+    <Content Include="images\Tekhat\sol_ust_kose_kirmizi.png" />
+    <Content Include="images\Tekhat\sol_ust_kose_siyah.png" />
+    <Content Include="images\Tekhat\toprak_ayirici-acik.png" />
+    <Content Include="images\Tekhat\toprak_ayirici-kapali.png" />
+    <Content Include="images\Tekhat\trafo-tuketim.png" />
+    <Content Include="images\Tekhat\trafo-uretim.png" />
+    <Content Include="images\Tekhat\T_kose_kirmizi.png" />
+    <Content Include="images\Tekhat\T_kose_siyah.png" />
+    <Content Include="images\Tekhat\yatay_duz_kirmizi.png" />
+    <Content Include="images\Tekhat\yatay_duz_siyah.png" />
+    <Content Include="images\Tekhat\yuk_ayirici-acik.png" />
+    <Content Include="images\Tekhat\yuk_ayirici-kapali.png" />
+    <Content Include="images\temp.png" />
+    <Content Include="images\trafoImages\0000000.png" />
+    <Content Include="images\trafoImages\0000010.png" />
+    <Content Include="images\trafoImages\0000100.png" />
+    <Content Include="images\trafoImages\0001000.png" />
+    <Content Include="images\trafoImages\0001010.png" />
+    <Content Include="images\trafoImages\0010000.png" />
+    <Content Include="images\trafoImages\0010010.png" />
+    <Content Include="images\trafoImages\0010100.png" />
+    <Content Include="images\trafoImages\0100000.png" />
+    <Content Include="images\trafoImages\0100010.png" />
+    <Content Include="images\trafoImages\0101000.png" />
+    <Content Include="images\trafoImages\0101010.png" />
+    <Content Include="images\trafoImages\0101011.png" />
+    <Content Include="images\trafoImages\0110010.png" />
+    <Content Include="images\trafoImages\1000000.png" />
+    <Content Include="images\trafoImages\1000010.png" />
+    <Content Include="images\trafoImages\1000100.png" />
+    <Content Include="images\trafoImages\1001010.png" />
+    <Content Include="images\trafoImages\1010000.png" />
+    <Content Include="images\trafoImages\1010010.png" />
+    <Content Include="images\trafoImages\1010100.png" />
+    <Content Include="images\trafoImages\ekran.png" />
+    <Content Include="images\trafoImages\noCommunication.png" />
+    <Content Include="images\wago.png" />
+    <Content Include="images\WeatherImages\AyAcik.png" />
+    <Content Include="images\WeatherImages\AyBulutlu.png" />
+    <Content Include="images\WeatherImages\AyCokBulutlu.png" />
+    <Content Include="images\WeatherImages\AyKarli.png" />
+    <Content Include="images\WeatherImages\AyYagmurlu.png" />
+    <Content Include="images\WeatherImages\AyYildirim.png" />
+    <Content Include="images\WeatherImages\Bulutlu.png" />
+    <Content Include="images\WeatherImages\CokBulutlu.png" />
+    <Content Include="images\WeatherImages\CokYagmurlu.png" />
+    <Content Include="images\WeatherImages\Gunesli.png" />
+    <Content Include="images\WeatherImages\HafifYagmurlu.png" />
+    <Content Include="images\WeatherImages\hava-durumu-tahmin.png" />
+    <Content Include="images\WeatherImages\Karli.png" />
+    <Content Include="images\WeatherImages\ParcaliBulutlu.png" />
+    <Content Include="images\WeatherImages\Sisli.png" />
+    <Content Include="images\WeatherImages\Yagmurlu.png" />
+    <Content Include="images\WeatherImages\Yildirim.png" />
+    <Content Include="images\wind.png" />
+    <Content Include="js-marker-clusterer-gh-pages\docs\examples.html" />
+    <Content Include="js-marker-clusterer-gh-pages\docs\reference.html" />
+    <Content Include="js-marker-clusterer-gh-pages\examples\advanced_example.html" />
+    <Content Include="js-marker-clusterer-gh-pages\examples\events_example.html" />
+    <Content Include="js-marker-clusterer-gh-pages\examples\markerclustererplus.png" />
+    <Content Include="js-marker-clusterer-gh-pages\examples\simple_example.html" />
+    <Content Include="js-marker-clusterer-gh-pages\examples\speed_test99.js" />
+    <Content Include="js-marker-clusterer-gh-pages\examples\speed_test_example.html" />
+    <Content Include="js-marker-clusterer-gh-pages\images\conv30.png" />
+    <Content Include="js-marker-clusterer-gh-pages\images\conv40.png" />
+    <Content Include="js-marker-clusterer-gh-pages\images\conv50.png" />
+    <Content Include="js-marker-clusterer-gh-pages\images\heart30.png" />
+    <Content Include="js-marker-clusterer-gh-pages\images\heart40.png" />
+    <Content Include="js-marker-clusterer-gh-pages\images\heart50.png" />
+    <Content Include="js-marker-clusterer-gh-pages\images\m1.png" />
+    <Content Include="js-marker-clusterer-gh-pages\images\m2.png" />
+    <Content Include="js-marker-clusterer-gh-pages\images\m3.png" />
+    <Content Include="js-marker-clusterer-gh-pages\images\m4.png" />
+    <Content Include="js-marker-clusterer-gh-pages\images\m5.png" />
+    <Content Include="js-marker-clusterer-gh-pages\images\people35.png" />
+    <Content Include="js-marker-clusterer-gh-pages\images\people45.png" />
+    <Content Include="js-marker-clusterer-gh-pages\images\people55.png" />
+    <Content Include="js-marker-clusterer-gh-pages\images\pin.png" />
+    <Content Include="js-marker-clusterer-gh-pages\screenshot.png" />
+    <Content Include="js-marker-clusterer-gh-pages\src\markerclusterer.js" />
+    <Content Include="js\bootstrap-wysiwyg.min.js" />
+    <Content Include="js\bootstrap.js" />
+    <Content Include="js\bootstrap.min.js" />
+    <Content Include="js\custom.js" />
+    <Content Include="js\custom.min.js" />
+    <Content Include="js\daterangepicker.js" />
+    <Content Include="js\gauge.min.js" />
+    <Content Include="js\jquery.dataTables.min.js" />
+    <Content Include="js\jquery.js" />
+    <Content Include="js\jquery.min.js" />
+    <Content Include="js\jquery.sparkline.min.js" />
+    <Content Include="js\moment.min.js" />
+    <Content Include="js\other\autosize.min.js" />
+    <Content Include="js\other\bootstrap-progressbar.min.js" />
+    <Content Include="js\other\bootstrap-wysiwyg.min.js" />
+    <Content Include="js\other\custom.min.js" />
+    <Content Include="js\other\fastclick.js" />
+    <Content Include="js\other\icheck.min.js" />
+    <Content Include="js\other\jquery.autocomplete.min.js" />
+    <Content Include="js\other\jquery.hotkeys.js" />
+    <Content Include="js\other\jquery.tagsinput.js" />
+    <Content Include="js\other\moment.min.js" />
+    <Content Include="js\other\nprogress.js" />
+    <Content Include="js\other\parsley.min.js" />
+    <Content Include="js\other\prettify.js" />
+    <Content Include="js\other\select2.full.min.js" />
+    <Content Include="js\other\starrr.js" />
+    <Content Include="js\other\switchery.min.js" />
+    <Content Include="js\prettify.js" />
+    <Content Include="js\select2.full.min.js" />
+    <Content Include="js\site.js" />
+    <Content Include="js\switchery.min.js" />
+    <Content Include="js\validator.js" />
+    <Content Include="js\zingchart.min.js" />
+    <Content Include="markerclustererplus\docs\examples.html" />
+    <Content Include="markerclustererplus\docs\reference.html" />
+    <Content Include="markerclustererplus\examples\advanced_example.html" />
+    <Content Include="markerclustererplus\examples\events_example.html" />
+    <Content Include="markerclustererplus\examples\markerclustererplus.png" />
+    <Content Include="markerclustererplus\examples\simple_example.html" />
+    <Content Include="markerclustererplus\examples\speed_test.js" />
+    <Content Include="markerclustererplus\examples\speed_test_example.html" />
+    <Content Include="markerclustererplus\images\conv30.png" />
+    <Content Include="markerclustererplus\images\conv40.png" />
+    <Content Include="markerclustererplus\images\conv50.png" />
+    <Content Include="markerclustererplus\images\heart30.png" />
+    <Content Include="markerclustererplus\images\heart40.png" />
+    <Content Include="markerclustererplus\images\heart50.png" />
+    <Content Include="markerclustererplus\images\m1.png" />
+    <Content Include="markerclustererplus\images\m2.png" />
+    <Content Include="markerclustererplus\images\m3.png" />
+    <Content Include="markerclustererplus\images\m4.png" />
+    <Content Include="markerclustererplus\images\m5.png" />
+    <Content Include="markerclustererplus\images\people35.png" />
+    <Content Include="markerclustererplus\images\people45.png" />
+    <Content Include="markerclustererplus\images\people55.png" />
+    <Content Include="markerclustererplus\src\markerclusterer.js" />
+    <Content Include="markerclustererplus\src\markerclusterer_packed.js" />
+    <Content Include="Scripts\bootstrap-datepicker.min.js" />
+    <Content Include="Scripts\bootstrap.js" />
+    <Content Include="Scripts\bootstrap.min.js" />
+    <Content Include="Content\vendors\animate.css\.bower.json" />
+    <Content Include="Content\vendors\animate.css\animate-config.json" />
+    <Content Include="Content\vendors\animate.css\bower.json" />
+    <Content Include="Content\vendors\animate.css\package.json" />
+    <Content Include="Content\vendors\font-awesome\.bower.json" />
+    <Content Include="Content\vendors\font-awesome\.gitignore" />
+    <Content Include="Content\vendors\font-awesome\.npmignore" />
+    <Content Include="Content\vendors\font-awesome\bower.json" />
+    <Content Include="Content\vendors\font-awesome\css\font-awesome.css.map" />
+    <Content Include="Content\vendors\font-awesome\fonts\fontawesome-webfont.eot" />
+    <Content Include="Content\vendors\font-awesome\fonts\fontawesome-webfont.ttf" />
+    <Content Include="Content\vendors\font-awesome\fonts\fontawesome-webfont.woff" />
+    <Content Include="Content\vendors\font-awesome\fonts\fontawesome-webfont.woff2" />
+    <Content Include="Content\vendors\font-awesome\fonts\FontAwesome.otf" />
+    <Content Include="Content\vendors\font-awesome\less\animated.less" />
+    <Content Include="Content\vendors\font-awesome\less\bordered-pulled.less" />
+    <Content Include="Content\vendors\font-awesome\less\core.less" />
+    <Content Include="Content\vendors\font-awesome\less\fixed-width.less" />
+    <Content Include="Content\vendors\font-awesome\less\font-awesome.less" />
+    <Content Include="Content\vendors\font-awesome\less\icons.less" />
+    <Content Include="Content\vendors\font-awesome\less\larger.less" />
+    <Content Include="Content\vendors\font-awesome\less\list.less" />
+    <Content Include="Content\vendors\font-awesome\less\mixins.less" />
+    <Content Include="Content\vendors\font-awesome\less\path.less" />
+    <Content Include="Content\vendors\font-awesome\less\rotated-flipped.less" />
+    <Content Include="Content\vendors\font-awesome\less\screen-reader.less" />
+    <Content Include="Content\vendors\font-awesome\less\stacked.less" />
+    <Content Include="Content\vendors\font-awesome\less\variables.less" />
+    <Content Include="Content\vendors\font-awesome\scss\font-awesome.scss" />
+    <Content Include="Content\vendors\font-awesome\scss\_animated.scss" />
+    <Content Include="Content\vendors\font-awesome\scss\_bordered-pulled.scss" />
+    <Content Include="Content\vendors\font-awesome\scss\_core.scss" />
+    <Content Include="Content\vendors\font-awesome\scss\_fixed-width.scss" />
+    <Content Include="Content\vendors\font-awesome\scss\_icons.scss" />
+    <Content Include="Content\vendors\font-awesome\scss\_larger.scss" />
+    <Content Include="Content\vendors\font-awesome\scss\_list.scss" />
+    <Content Include="Content\vendors\font-awesome\scss\_mixins.scss" />
+    <Content Include="Content\vendors\font-awesome\scss\_path.scss" />
+    <Content Include="Content\vendors\font-awesome\scss\_rotated-flipped.scss" />
+    <Content Include="Content\vendors\font-awesome\scss\_screen-reader.scss" />
+    <Content Include="Content\vendors\font-awesome\scss\_stacked.scss" />
+    <Content Include="Content\vendors\font-awesome\scss\_variables.scss" />
+    <Content Include="Content\vendors\nprogress\.bower.json" />
+    <Content Include="Content\vendors\nprogress\bower.json" />
+    <Content Include="Content\vendors\nprogress\component.json" />
+    <Content Include="Content\vendors\nprogress\History.md" />
+    <Content Include="Content\vendors\nprogress\License.md" />
+    <Content Include="Content\vendors\nprogress\Notes.md" />
+    <Content Include="Content\vendors\nprogress\Readme.md" />
+    <Content Include="bin\Esso.Data.dll.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <None Include="bin\Esso.Web.dll.config">
+      <SubType>Designer</SubType>
+    </None>
+    <Content Include="images\EsoftLogo\Thumbs.db" />
+    <Content Include="images\logo\Thumbs.db" />
+    <Content Include="images\Thumbs.db" />
+    <Content Include="images\trafoImages\Thumbs.db" />
+    <Content Include="images\WeatherImages\Thumbs.db" />
+    <Content Include="js-marker-clusterer-gh-pages\AUTHORS" />
+    <Content Include="js-marker-clusterer-gh-pages\bower.json" />
+    <Content Include="js-marker-clusterer-gh-pages\CONTRIBUTING.md" />
+    <Content Include="js-marker-clusterer-gh-pages\CONTRIBUTORS" />
+    <Content Include="js-marker-clusterer-gh-pages\LICENSE" />
+    <Content Include="js-marker-clusterer-gh-pages\package.json" />
+    <Content Include="js-marker-clusterer-gh-pages\README.md" />
+    <Content Include="js-marker-clusterer-gh-pages\src\data.json" />
+    <Content Include="markerclustererplus\CONTRIB.md" />
+    <Content Include="markerclustererplus\package.json" />
+    <Content Include="markerclustererplus\README.md" />
+    <Content Include="markerclustererplus\src\data.json" />
+    <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
+    <None Include="Scripts\jquery-1.10.2.intellisense.js" />
+    <Content Include="Scripts\canvasjs.min.js" />
+    <Content Include="Scripts\jquery-1.10.2.js" />
+    <Content Include="Scripts\jquery-1.10.2.min.js" />
+    <None Include="Scripts\jquery-3.2.1.intellisense.js" />
+    <Content Include="Scripts\jquery-3.2.1.js" />
+    <Content Include="Scripts\jquery-3.2.1.min.js" />
+    <Content Include="Scripts\jquery-3.2.1.slim.js" />
+    <Content Include="Scripts\jquery-3.2.1.slim.min.js" />
+    <Content Include="Scripts\jquery-3.2.1.slim.min.map" />
+    <Content Include="Scripts\jquery-3.2.1.min.map" />
+    <None Include="Scripts\jquery.validate-vsdoc.js" />
+    <Content Include="Scripts\jquery-ui-1.12.1.js" />
+    <Content Include="Scripts\jquery-ui-1.12.1.min.js" />
+    <Content Include="Scripts\jquery.inputmask.min.js" />
+    <Content Include="Scripts\jquery.validate.js" />
+    <Content Include="Scripts\jquery.validate.min.js" />
+    <Content Include="Scripts\jquery.validate.unobtrusive.js" />
+    <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
+    <Content Include="Scripts\jspdf.debug.js" />
+    <Content Include="Scripts\main.js" />
+    <Content Include="Scripts\modernizr-2.6.2.js" />
+    <Content Include="Scripts\respond.js" />
+    <Content Include="Scripts\respond.min.js" />
+    <Content Include="Scripts\tableExport.js" />
+    <Content Include="Scripts\tableExport.min.js" />
+    <Content Include="TreeView\TreeView.css" />
+    <Content Include="Views\String_DC\StringDCGridPartial.cshtml" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="App_Start\Bootstrapper.cs" />
+    <Compile Include="App_Start\BundleConfig.cs" />
+    <Compile Include="App_Start\IdentityConfig.cs" />
+    <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="App_Start\Startup.Auth.cs" />
+    <Compile Include="App_Start\Startup.cs" />
+    <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\AlarmNewController.cs" />
+    <Compile Include="Controllers\BaseController.cs" />
+    <Compile Include="Controllers\CompanyAlarmController.cs" />
+    <Compile Include="Controllers\AlarmController.cs" />
+    <Compile Include="Controllers\AlarmDefinitionController.cs" />
+    <Compile Include="Controllers\DashboardAlarmController.cs" />
+    <Compile Include="Controllers\DashboardCompanyController.cs" />
+    <Compile Include="Controllers\DashboardController.cs" />
+    <Compile Include="Controllers\DashboardInverterController.cs" />
+    <Compile Include="Controllers\HESController.cs" />
+    <Compile Include="Controllers\MapController.cs" />
+    <Compile Include="Controllers\OracleProvider.cs" />
+    <Compile Include="Controllers\OsosController.cs" />
+    <Compile Include="Controllers\PanelScadaController.cs" />
+    <Compile Include="Controllers\ProfileController.cs" />
+    <Compile Include="Controllers\TekHatKayitlarController.cs" />
+    <Compile Include="Controllers\EKK_STATIONController.cs" />
+    <Compile Include="Controllers\FtpController.cs" />
+    <Compile Include="Controllers\HomePageController.cs" />
+    <Compile Include="Controllers\InverterPagesController.cs" />
+    <Compile Include="Controllers\LicensedController.cs" />
+    <Compile Include="Controllers\MVSController.cs" />
+    <Compile Include="Controllers\ReportController.cs" />
+    <Compile Include="Controllers\ReportTableController.cs" />
+    <Compile Include="Controllers\String_DCController.cs" />
+    <Compile Include="Controllers\StringController.cs" />
+    <Compile Include="Controllers\TagController.cs" />
+    <Compile Include="Controllers\TempController.cs" />
+    <Compile Include="Controllers\TagTemplateController.cs" />
+    <Compile Include="Controllers\RoleController.cs" />
+    <Compile Include="Controllers\StationGroupController.cs" />
+    <Compile Include="Controllers\StationController.cs" />
+    <Compile Include="Controllers\CompanyController.cs" />
+    <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\InverterController.cs" />
+    <Compile Include="Controllers\UnitController.cs" />
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="Helpers\ConvertNumberFormatHelper.cs" />
+    <Compile Include="Helpers\CultureHelper.cs" />
+    <Compile Include="Helpers\CultureLanguageHelper.cs" />
+    <Compile Include="Helpers\DateTimeHelper.cs" />
+    <Compile Include="Helpers\DovizKuru.cs" />
+    <Compile Include="Helpers\ExcelExportHelper.cs" />
+    <Compile Include="Helpers\GridViewExportHelper.cs" />
+    <Compile Include="Helpers\Helpers.cs" />
+    <Compile Include="Helpers\TargetHelpers.cs" />
+    <Compile Include="Helpers\weatherHelper.cs" />
+    <Compile Include="languages\Resources.de.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.de.resx</DependentUpon>
+    </Compile>
+    <Compile Include="languages\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="languages\Resources.es.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.es.resx</DependentUpon>
+    </Compile>
+    <Compile Include="languages\Resources.fr.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.fr.resx</DependentUpon>
+    </Compile>
+    <Compile Include="languages\Resources.tr.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.tr.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Mappings\AutoMapperConfiguration.cs" />
+    <Compile Include="Mappings\DomainToViewModelMappingProfile.cs" />
+    <Compile Include="Mappings\ViewModelToDomainMappingProfile.cs" />
+    <Compile Include="Migrations\201709181411149_6667.Designer.cs" />
+    <Compile Include="Migrations\201710111156259_uyt.cs" />
+    <Compile Include="Migrations\201710111156259_uyt.Designer.cs">
+      <DependentUpon>201710111156259_uyt.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201710111159051_uytnm.cs" />
+    <Compile Include="Migrations\201710111159051_uytnm.Designer.cs">
+      <DependentUpon>201710111159051_uytnm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201710111249338_uytnm7.cs" />
+    <Compile Include="Migrations\201710111249338_uytnm7.Designer.cs">
+      <DependentUpon>201710111249338_uytnm7.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201710111350457_rgdf.cs" />
+    <Compile Include="Migrations\201710111350457_rgdf.Designer.cs">
+      <DependentUpon>201710111350457_rgdf.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201710111351144_rgdfd.cs" />
+    <Compile Include="Migrations\201710111351144_rgdfd.Designer.cs">
+      <DependentUpon>201710111351144_rgdfd.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201710131048432_aaaa.cs" />
+    <Compile Include="Migrations\201710131048432_aaaa.Designer.cs">
+      <DependentUpon>201710131048432_aaaa.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201710160909596_aaaae.cs" />
+    <Compile Include="Migrations\201710160909596_aaaae.Designer.cs">
+      <DependentUpon>201710160909596_aaaae.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201710181435259_ww.cs" />
+    <Compile Include="Migrations\201710181435259_ww.Designer.cs">
+      <DependentUpon>201710181435259_ww.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201710181439465_ww1.cs" />
+    <Compile Include="Migrations\201710181439465_ww1.Designer.cs">
+      <DependentUpon>201710181439465_ww1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201710181440442_ww2.cs" />
+    <Compile Include="Migrations\201710181440442_ww2.Designer.cs">
+      <DependentUpon>201710181440442_ww2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201710181441470_ww3.cs" />
+    <Compile Include="Migrations\201710181441470_ww3.Designer.cs">
+      <DependentUpon>201710181441470_ww3.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201710190816414_string.cs" />
+    <Compile Include="Migrations\201710190816414_string.Designer.cs">
+      <DependentUpon>201710190816414_string.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201710191255515_wwwwt.cs" />
+    <Compile Include="Migrations\201710191255515_wwwwt.Designer.cs">
+      <DependentUpon>201710191255515_wwwwt.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201710191307416_wwwwrf.cs" />
+    <Compile Include="Migrations\201710191307416_wwwwrf.Designer.cs">
+      <DependentUpon>201710191307416_wwwwrf.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201711131258543_test2.cs" />
+    <Compile Include="Migrations\201711131258543_test2.Designer.cs">
+      <DependentUpon>201711131258543_test2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201711241442342_addport.cs" />
+    <Compile Include="Migrations\201711241442342_addport.Designer.cs">
+      <DependentUpon>201711241442342_addport.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201712060719292_addPR.cs" />
+    <Compile Include="Migrations\201712060719292_addPR.Designer.cs">
+      <DependentUpon>201712060719292_addPR.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201712060913033_addISINIMORT.cs" />
+    <Compile Include="Migrations\201712060913033_addISINIMORT.Designer.cs">
+      <DependentUpon>201712060913033_addISINIMORT.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Modbus\ASCII\ModbusASCIIMaster.cs" />
+    <Compile Include="Modbus\ASCII\ModbusASCIIMessage.cs" />
+    <Compile Include="Modbus\Comm\BaseMessage.cs" />
+    <Compile Include="Modbus\Comm\Conversion.cs" />
+    <Compile Include="Modbus\Comm\IModbusMaster.cs" />
+    <Compile Include="Modbus\Comm\ModbusEthernetAdapter.cs" />
+    <Compile Include="Modbus\Comm\ModbusSerialPortAdapter.cs" />
+    <Compile Include="Modbus\Comm\Mode.cs" />
+    <Compile Include="Modbus\DataType\Boolean.cs" />
+    <Compile Include="Modbus\DataType\ByteArray.cs" />
+    <Compile Include="Modbus\DataType\Conversion.cs" />
+    <Compile Include="Modbus\DataType\DataType.cs" />
+    <Compile Include="Modbus\DataType\DInt.cs" />
+    <Compile Include="Modbus\DataType\DWord.cs" />
+    <Compile Include="Modbus\DataType\Int.cs" />
+    <Compile Include="Modbus\DataType\Memory.cs" />
+    <Compile Include="Modbus\DataType\Real.cs" />
+    <Compile Include="Modbus\DataType\Word.cs" />
+    <Compile Include="Modbus\INException\AcknowledgeException.cs" />
+    <Compile Include="Modbus\INException\GatewayPathUnavailableException.cs" />
+    <Compile Include="Modbus\INException\GatewayTargetDeviceFailedToRespondException.cs" />
+    <Compile Include="Modbus\INException\IllegalDataAddressException.cs" />
+    <Compile Include="Modbus\INException\IllegalDataValueException.cs" />
+    <Compile Include="Modbus\INException\IllegalFunctionException.cs" />
+    <Compile Include="Modbus\INException\IllegalIPAddressException.cs" />
+    <Compile Include="Modbus\INException\IllegalModbusModeException.cs" />
+    <Compile Include="Modbus\INException\IMessage.cs" />
+    <Compile Include="Modbus\INException\IPAdressNotAvailableException.cs" />
+    <Compile Include="Modbus\INException\MemoryParityErrorException.cs" />
+    <Compile Include="Modbus\INException\NegativeKnowledgementException.cs" />
+    <Compile Include="Modbus\INException\SlaveDeviceBusyException.cs" />
+    <Compile Include="Modbus\INException\SlaveDeviceFailureException.cs" />
+    <Compile Include="Modbus\RTU\ModbusRTUMaster.cs" />
+    <Compile Include="Modbus\RTU\ModbusRTUMessage.cs" />
+    <Compile Include="Modbus\TCP\ModbusTCPMaster.cs" />
+    <Compile Include="Modbus\TCP\ModbusTCPMessage.cs" />
+    <Compile Include="Models\DashboardModel\DASHBOARD_COMPANY_DTO.cs" />
+    <Compile Include="Models\DashboardModel\InvDetail_DTO.cs" />
+    <Compile Include="Models\DashboardModel\Meteorology_DTO.cs" />
+    <Compile Include="Models\DashboardModel\Production_DTO.cs" />
+    <Compile Include="Models\DATE_NUMBER_MODEL\NUMBER_FORMAT_DTO.cs" />
+    <Compile Include="Models\DTO.cs" />
+    <Compile Include="Models\EXPORT_MODEL\DAILY_PRODUCTION_EXPORT_MODEL.cs" />
+    <Compile Include="Models\EXPORT_MODEL\HOURLY_EXPORT_MODEL.cs" />
+    <Compile Include="Models\HES_MODEL\GridViewFieldItem.cs" />
+    <Compile Include="Models\HES_MODEL\Hour_HES_DTO.cs" />
+    <Compile Include="Models\HES_MODEL\Meteoroloji_HES_DTO.cs" />
+    <Compile Include="Models\HES_MODEL\OZET_HES_DTO.cs" />
+    <Compile Include="Models\HES_MODEL\ReportTablePageView.cs" />
+    <Compile Include="Models\HES_MODEL\TBL_OZET_DTO_HES.cs" />
+    <Compile Include="Models\HES_MODEL\TreeViewDetail.cs" />
+    <Compile Include="Models\STRING_INV_DTO.cs" />
+    <Compile Include="obj\Debug\TemporaryGeneratedFile_036C0B5B-1481-4323-8D20-8F5ADCB23D92.cs" />
+    <Compile Include="obj\Debug\TemporaryGeneratedFile_5937a670-0e60-4077-877b-f7221da3dda1.cs" />
+    <Compile Include="obj\Debug\TemporaryGeneratedFile_E7A71F73-0F8D-4B9B-B56E-8E70B10BC5D3.cs" />
+    <Compile Include="ViewModels\AccountViewModels.cs" />
+    <Compile Include="ViewModels\RainGraph_DTO.cs" />
+    <Compile Include="ViewModels\AlarmListDTO.cs" />
+    <Compile Include="ViewModels\AlarmListVDTO.cs" />
+    <Compile Include="ViewModels\DigitalAlarm.cs" />
+    <Compile Include="ViewModels\FtpDTO.cs" />
+    <Compile Include="ViewModels\Hour_DTO.cs" />
+    <Compile Include="ViewModels\InverterDetailDTO.cs" />
+    <Compile Include="ViewModels\InvlistDTO.cs" />
+    <Compile Include="ViewModels\LayoutGroupViewModel99.cs" />
+    <Compile Include="ViewModels\Layout_Station_DTO.cs" />
+    <Compile Include="ViewModels\MailModel.cs" />
+    <Compile Include="ViewModels\Meteoroloji_DTO.cs" />
+    <Compile Include="ViewModels\Meteoroloji_DTO2.cs" />
+    <Compile Include="ViewModels\PRListModel.cs" />
+    <Compile Include="ViewModels\StationTargetDTO.cs" />
+    <Compile Include="ViewModels\STATION_GRUP_COMPANY.cs" />
+    <Compile Include="ViewModels\TagDTO.cs" />
+    <Compile Include="ViewModels\StationStringDTO.cs" />
+    <Compile Include="ViewModels\annualPR.cs" />
+    <Compile Include="ViewModels\EndProductionModel.cs" />
+    <Compile Include="ViewModels\Inv_Production_DTO.cs" />
+    <Compile Include="ViewModels\Inv_States_DTO.cs" />
+    <Compile Include="ViewModels\LayoutGroupViewModel.cs" />
+    <Compile Include="ViewModels\Mail_DTO.cs" />
+    <Compile Include="ViewModels\ProductionModel.cs" />
+    <Compile Include="ViewModels\RoleUserViewModel.cs" />
+    <Compile Include="ViewModels\CompanyUserViewModel.cs" />
+    <Compile Include="ViewModels\RoleGridModel.cs" />
+    <Compile Include="ViewModels\IdentityModels.cs" />
+    <Compile Include="ViewModels\ManageViewModels.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ViewModels\StationGridModel.cs" />
+    <Compile Include="ViewModels\InvAdressDetailModel.cs" />
+    <Compile Include="ViewModels\LayoutViewModel.cs" />
+    <Compile Include="ViewModels\TagTempDetGridModel.cs" />
+    <Compile Include="ViewModels\StationGroup.cs" />
+    <Compile Include="ViewModels\TARGET_DETAIL.cs" />
+    <Compile Include="ViewModels\AlarmStatusDTO.cs" />
+    <Compile Include="ViewModels\TBL_ALARM_LOG_DTO.cs" />
+    <Compile Include="ViewModels\TBL_OZET_DTO.cs" />
+    <Compile Include="ViewModels\TBL_PR_DTO.cs" />
+    <Compile Include="ViewModels\TBL_PR_MONTH_DTO.cs" />
+    <Compile Include="ViewModels\TBL_PR_OZET_DTO.cs" />
+    <Compile Include="ViewModels\UserStationModel.cs" />
+    <Compile Include="ViewModels\WeatherData.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\web.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="packages.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="fonts\glyphicons-halflings-regular.eot" />
+    <Content Include="fonts\glyphicons-halflings-regular.ttf" />
+    <Content Include="fonts\glyphicons-halflings-regular.woff" />
+    <Content Include="fonts\glyphicons-halflings-regular.woff2" />
+    <Content Include="Views\Shared\_Layout.cshtml" />
+    <Content Include="Views\Home\Index.cshtml" />
+    <Content Include="Views\_ViewStart.cshtml" />
+    <Content Include="Views\Account\Login.cshtml" />
+    <Content Include="Scripts\jquery-1.10.2.min.map" />
+    <Content Include="Views\Company\GridCompanyPartial.cshtml" />
+    <Content Include="Views\Company\Index.cshtml" />
+    <Content Include="Views\Station\GridStationPartial.cshtml" />
+    <Content Include="Views\Role\Index.cshtml" />
+    <Content Include="Views\Role\GridRolePartial.cshtml" />
+    <Content Include="Views\Account\GridUserPartial.cshtml" />
+    <Content Include="Views\Account\Index.cshtml" />
+    <Content Include="Views\Account\GridUserCompanyPartial.cshtml" />
+    <Content Include="Views\Account\GridUserRolePartial.cshtml" />
+    <Content Include="Views\StationGroup\CreateStationGroupPartial.cshtml" />
+    <Content Include="Views\Station\GridLookupPartial.cshtml" />
+    <Content Include="Views\TagTemplate\GridTagTemplatePartial.cshtml" />
+    <Content Include="Views\Temp\Index.cshtml" />
+    <Content Include="Views\TagTemplate\CompanyPartial.cshtml" />
+    <Content Include="Views\TagTemplate\GridTagTemplateDetPartial.cshtml" />
+    <Content Include="Views\TagTemplate\Index.cshtml" />
+    <Content Include="Views\Inverter\InvAdressDetailPartial.cshtml" />
+    <Content Include="Views\Tag\Index.cshtml" />
+    <Content Include="Views\TagTemplate\GridTagTemplateGenPartial.cshtml" />
+    <Content Include="Views\Home\MeteorolojiDetail.cshtml" />
+    <Content Include="Views\Home\StationDetail.cshtml" />
+    <Content Include="Views\AlarmDefinition\AlarmTempGridPartial.cshtml" />
+    <Content Include="Views\AlarmDefinition\Index.cshtml" />
+    <Content Include="Views\AlarmDefinition\AlarmDefinitionGridPartial.cshtml" />
+    <Content Include="Views\Home\ExcelAsDownload.cshtml" />
+    <Content Include="Views\Shared\MenuPartial.cshtml" />
+    <Content Include="Views\TagTemplate\GridTagTemplateDigPartial.cshtml" />
+    <Content Include="Views\Alarm\Index.cshtml" />
+    <Content Include="Views\Alarm\AlarmListPartial.cshtml" />
+    <Content Include="Views\Inverter\GridInverterPartial.cshtml" />
+    <Content Include="Views\Home\CentralInverterDetail.cshtml" />
+    <Content Include="Views\String\Index.cshtml" />
+    <Content Include="Views\String\StringGridPartial.cshtml" />
+    <Content Include="Views\Station\GridStationStringPartial.cshtml" />
+    <Content Include="Views\Tag\GridTagPartial.cshtml" />
+    <Content Include="Views\Home\ProductionComparison.cshtml" />
+    <Content Include="Views\Home\ExceleAktarHourlyEnergyData.cshtml" />
+    <Content Include="Views\Home\Maps.cshtml" />
+    <Content Include="Views\Home\AllStationMaps.cshtml" />
+    <Content Include="Views\Home\AllStationMaps2.cshtml" />
+    <Content Include="Views\Home\_ErrorPagePartial.cshtml" />
+    <Content Include="Views\Home\Help.cshtml" />
+    <Content Include="Views\Home\AnnualyExcelAsDownload.cshtml" />
+    <Content Include="Views\Home\Search.cshtml" />
+    <Content Include="Views\Home\ExceleAktarPrRapor.cshtml" />
+    <Content Include="Views\Home\DataMonitoring.cshtml" />
+    <Content Include="Views\Report\ChartList.cshtml" />
+    <Content Include="Views\Report\Index.cshtml" />
+    <Content Include="Views\Report\Chart.cshtml" />
+    <Content Include="Views\String_DC\Index.cshtml" />
+    <Content Include="Views\Home\InstantPR.cshtml" />
+    <Content Include="Views\CompanyAlarm\CompanyAlarmListPartial.cshtml" />
+    <Content Include="Views\CompanyAlarm\Index.cshtml" />
+    <Content Include="Views\MVS\Index.cshtml" />
+    <Content Include="Views\ReportTable\Index.cshtml" />
+    <Content Include="Views\ReportTable\Table.cshtml" />
+    <Content Include="Views\ReportTable\TableList.cshtml" />
+    <Content Include="Views\InverterPages\Detail.cshtml" />
+    <Content Include="Views\EKK_STATION\Index.cshtml" />
+    <Content Include="Views\HomePage\Index.cshtml" />
+    <Content Include="Views\InverterPages\InvPerformanceChart.cshtml" />
+    <Content Include="Views\InverterPages\OnlyInverterDetail.cshtml" />
+    <Content Include="Views\InverterPages\InvDetailReport.cshtml" />
+    <Content Include="Views\InverterPages\InvDetailReportPartial.cshtml" />
+    <Content Include="Views\InverterPages\HeatMapInverter.cshtml" />
+    <Content Include="Views\Licensed\Index.cshtml" />
+    <Content Include="Views\Licensed\MeteorolojiDetail.cshtml" />
+    <Content Include="Views\Licensed\String.cshtml" />
+    <Content Include="Views\Licensed\StringGridPartial.cshtml" />
+    <Content Include="Views\Licensed\SingleLine.cshtml" />
+    <Content Include="Views\InverterPages\HeatMapInverter2.cshtml" />
+    <Content Include="Views\HomePage\test.cshtml" />
+    <Content Include="Views\TekHatKayitlar\Index.cshtml" />
+    <Content Include="Views\Account\UserBasedInsertion.cshtml" />
+    <Content Include="Views\InverterPages\ExceleAktarInvDataTable.cshtml" />
+    <Content Include="Views\Profile\Index.cshtml" />
+    <Content Include="Views\AlarmNew\Index.cshtml" />
+    <Content Include="Views\Osos\Index.cshtml" />
+    <Content Include="Views\Shared\_LayoutDashboard.cshtml" />
+    <Content Include="Views\Dashboard\Index.cshtml" />
+    <Content Include="Views\HES\Index.cshtml" />
+    <Content Include="Views\HES\Report.cshtml" />
+    <Content Include="Views\HES\StationDetail.cshtml" />
+    <Content Include="Views\HES\MeteorolojiDetail.cshtml" />
+    <Content Include="Views\HES\chart.cshtml" />
+    <Content Include="Views\Home\ProductionComparisonGroup.cshtml" />
+    <Content Include="Views\Unit\Index.cshtml" />
+    <Content Include="Views\Map\Index2.cshtml" />
+    <Content Include="Views\Map\Index3.cshtml" />
+    <Content Include="Views\Map\Index4.cshtml" />
+    <Content Include="Views\Map\Index5.cshtml" />
+    <Content Include="Views\Map\Index6.cshtml" />
+    <Content Include="Views\Map\Index7.cshtml" />
+    <Content Include="Views\Shared\_LayoutNonMenu.cshtml" />
+    <Content Include="Views\Map\Index.cshtml" />
+    <Content Include="Views\Licensed\SingleLine2.cshtml" />
+    <Content Include="Views\ReportTable\ProductionTable.cshtml" />
+    <Content Include="Views\PanelScada\Index.cshtml" />
+    <Content Include="Views\Shared\MenuPartial2.cshtml" />
+    <Content Include="Views\Home\Detail.cshtml" />
+    <Content Include="Views\DashboardCompany\Index.cshtml" />
+    <Content Include="Views\Shared\_LayoutCompany.cshtml" />
+    <Content Include="Views\DashboardAlarm\Index.cshtml" />
+    <None Include="Web.Debug.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </None>
+    <None Include="Web.Release.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Esso.Data\Esso.Data.csproj">
+      <Project>{8745ed96-7f5a-4cb1-84e3-a2226d9a2c72}</Project>
+      <Name>Esso.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Esso.Model\Esso.Model.csproj">
+      <Project>{9388dc18-b02e-4ce2-8211-a958b7dd2df2}</Project>
+      <Name>Esso.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Esso.Service\Esso.Service.csproj">
+      <Project>{bd210642-ac0e-41f8-b954-70d52a27edeb}</Project>
+      <Name>Esso.Service</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="App_Data\UploadTemp\" />
+    <Folder Include="bin\Release\PublishOutput\" />
+    <Folder Include="DashboardContent\" />
+    <Folder Include="Fakes\" />
+    <Folder Include="Models\INV_MODEL\" />
+    <Folder Include="Views\Application\" />
+    <Folder Include="Views\Base\" />
+    <Folder Include="Views\DashboardInverter\" />
+    <Folder Include="Views\DenemeKayitlar\" />
+    <Folder Include="Views\SiteBase\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="languages\Resources.de.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.de.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="languages\Resources.es.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.es.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="languages\Resources.fr.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.fr.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="languages\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <CustomToolNamespace>language</CustomToolNamespace>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="languages\Resources.tr.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.tr.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201709181411149_6667.resx" />
+    <EmbeddedResource Include="Migrations\201710111156259_uyt.resx">
+      <DependentUpon>201710111156259_uyt.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201710111159051_uytnm.resx">
+      <DependentUpon>201710111159051_uytnm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201710111249338_uytnm7.resx">
+      <DependentUpon>201710111249338_uytnm7.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201710111350457_rgdf.resx">
+      <DependentUpon>201710111350457_rgdf.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201710111351144_rgdfd.resx">
+      <DependentUpon>201710111351144_rgdfd.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201710131048432_aaaa.resx">
+      <DependentUpon>201710131048432_aaaa.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201710160909596_aaaae.resx">
+      <DependentUpon>201710160909596_aaaae.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201710181435259_ww.resx">
+      <DependentUpon>201710181435259_ww.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201710181439465_ww1.resx">
+      <DependentUpon>201710181439465_ww1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201710181440442_ww2.resx">
+      <DependentUpon>201710181440442_ww2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201710181441470_ww3.resx">
+      <DependentUpon>201710181441470_ww3.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201710190816414_string.resx">
+      <DependentUpon>201710190816414_string.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201710191255515_wwwwt.resx">
+      <DependentUpon>201710191255515_wwwwt.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201710191307416_wwwwrf.resx">
+      <DependentUpon>201710191307416_wwwwrf.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201711131258543_test2.resx">
+      <DependentUpon>201711131258543_test2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201711241442342_addport.resx">
+      <DependentUpon>201711241442342_addport.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201712060719292_addPR.resx">
+      <DependentUpon>201712060719292_addPR.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201712060913033_addISINIMORT.resx">
+      <DependentUpon>201712060913033_addISINIMORT.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets')" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>False</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>3523</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:3523/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+    <Error Condition="!Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.4\build\EntityFramework.props'))" />
+    <Error Condition="!Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.4\build\EntityFramework.targets'))" />
+  </Target>
+  <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.targets" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

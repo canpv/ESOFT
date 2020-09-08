@@ -1,0 +1,668 @@
+﻿@{
+    ViewBag.Title = "E-SOFT";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@using language
+<link href="~/Content/DataTables/DataTables-1.10.18/css/jquery.dataTables.min.css" rel="stylesheet" />
+<style>
+    tr.group,
+    tr.group:hover {
+        background-color: #dae0e9 !important;
+    }
+
+    tr.group {
+        background-color: #dae0e9;
+    }
+
+    tr > td {
+        font-size: 11px;
+    }
+
+    tfoot tr, thead {
+        background: #005cb6;
+    }
+
+    thead {
+        font-size: 10px;
+        color: white;
+    }
+    #stationNameCss {
+        color: #00629e;
+    }
+    #example_info {
+        color: #00629e;
+    }
+
+</style>
+<style>
+
+    .progress-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: #000;
+        margin: 0 0 10px;
+    }
+
+    .progress-outer {
+        background: #fff;
+        padding: 5px 60px 5px 5px;
+        border: 5px solid #bebfbf;
+        border-radius: 45px;
+        margin-bottom: 20px;
+        position: relative;
+        width: 300px;
+        /*float:left;*/
+    }
+
+    .progress {
+        background: #bebfbf;
+        border-radius: 20px;
+        margin: 0;
+    }
+
+        .progress .progress-bar {
+            border-radius: 20px;
+            box-shadow: none;
+            animation: animate-positive 2s;
+        }
+
+        .progress .progress-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #6b7880;
+            position: absolute;
+            top: 3px;
+            right: 10px;
+        }
+
+    .btn-font {
+        color: #fff;
+        background-color: #178cff;
+        border-color: #57acff;
+    }
+</style>
+
+<div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12">
+        <div class="">
+            <div class="">
+                <div class="col-md-12">
+                    <div id="dateDiv" class="btn-group btn-group-crop btn-font" style="display:none">
+                        <a id="today" class="btn btn-font btn-xs">@Resources.Today</a>
+                        <a id="yesterday" class="btn btn-font btn-xs">@Resources.Yesterday</a>
+                        <a id="week" class="btn btn-font btn-xs">@Resources.Last_7_days</a>
+                        <a id="month" class="btn btn-font btn-xs">@Resources.Monthly</a>
+                    </div>
+                    <fieldset id="pickerDiv" style="display:none">
+                        <input type="month" id="pickerMonthYear" name="pickerMonthYear"
+                               min="2017-08" value="" />
+                        <span class="validity"></span>
+                        <div class="btn-group">
+                            <input type="button" class="btn btn-font btn-xs" id="btnList" value="@Resources.Show" />
+                        </div>
+                    </fieldset>
+                </div>
+                <br /><br />
+                <div style="text-align: center">
+                    <img id="loading" src="~/images/loaderSpinner.gif" />
+                </div>
+
+                <div id="StationTable"></div>
+
+            </div>
+        </div>
+        <input type="hidden" value="@Resources.Station" id="hdn_station" />
+        <input type="hidden" value="@Resources.Irradiation" id="hdn_irradiation" />
+        <input type="hidden" value="AC @Resources.Power" id="hdn_acPower" />
+        <input type="hidden" value="@Resources.Energy" id="hdn_energy" />
+        <input type="hidden" value="@Resources.Active / @Resources.Total Inv " id="hdn_actSumInv" />
+        <input type="hidden" value="@Resources.Specific_Yield" id="hdn_specific" />
+        <input type="hidden" value="@Resources.Communication" id="hdn_communication" />
+        <input type="hidden" value="@Resources.Installed_Power" id="hdn_installedPower" />
+        <input type="hidden" value="" id="hdn_buttonState" />
+        <input type="hidden" value="@Resources.Financial_Income" id="hdn_financialincome" />
+        <input type="hidden" value="@Resources.Alerts" id="hdn_alerts" />
+        <input type="hidden" value="@Resources.Instant" id="hdn_instantPR" />
+        <input type="hidden" value="@Resources.Maps" id="hdn_maps" />
+        <input type="hidden" value="@Resources.Production" id="hdn_production" />
+        <input type="hidden" value="@Resources.Image" id="hdn_image" />
+        <input type="hidden" value="@Resources.Download_As_Excel" id="hdn_export" />
+    </div>
+    <div class="modal fade bs-example-modal-sm" id="trgtModal" role="dialog">
+        <div class="modal-dialog modal-sm">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h2 id="stName"></h2>
+                </div>
+                <div class="modal-body">
+                    <img id="stationImages" width="100%" src="" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+
+        function NumberConvert(nStr) {
+            if (nStr != null) {
+                nStr = nStr.toFixed(2);
+                nStr += '';
+                x = nStr.split('.');
+                x1 = x[0];
+                x2 = x.length > 1 ? ',' + x[1] : '';
+                var rgx = /(\d+)(\d{3})/;
+                while (rgx.test(x1)) {
+                    x1 = x1.replace(rgx, '$1' + '.' + '$2');
+                }
+                return x1 + x2;
+            }
+            else {
+                return "-";
+            }
+        }
+        function DateFormat(vl) {      
+            var value = new Date
+                (
+                parseInt(vl.replace(/(^.*\()|([+-].*$)/g, ''))
+            );
+            var gun;
+            var gunUzunluk = value.getDate().toString().length;
+            if (gunUzunluk == 1) {
+                gun = "0" + value.getDate();
+            }
+            else {
+                gun = value.getDate();
+            }
+            var ay;
+
+            var month = (value.getMonth() + 1);
+            var ayUzunluk = month.toString().length;
+            if (ayUzunluk == 1) {
+                ay = "0" + month;
+            }
+            else {
+                ay = month;
+            }
+
+            var dat = gun +
+                "/" +
+                ay +
+                "/" +
+                value.getFullYear().toString().substring(2, 4);
+
+            var dk;
+            var dkUzunluk = value.getMinutes().toString().length;
+            if (dkUzunluk == 1) {
+                dk = "0" + value.getMinutes();
+            }
+            else {
+                dk = value.getMinutes();
+            }
+            var saat;
+            var dkUzunluk = value.getHours().toString().length;
+            if (dkUzunluk == 1) {
+                saat = "0" + value.getHours()
+            }
+            else {
+                saat = value.getHours()
+            }
+
+            var time = saat + ":" + dk
+            return dat.toString()+" "+time.toString();
+        }
+     
+        GetDataTable("today");
+
+        function GetDataTable(ddate) {
+            $("#loading").show();
+            $.ajax({
+                url: "/HomePage/GetAllStation",
+                type: "POST",
+                dataType: "json",
+                data: { date: ddate },
+                success: function (data) {
+         
+                    $("#loading").hide();
+                    $("#dateDiv").css('display', 'block');
+
+                    if (ddate == "today") {
+                        $("#hdn_buttonState").val() == "today";
+                        $("#today").css('background-color', '#1b82a0');
+                        $("#yesterday").css('background-color', '#5bc0de');
+                        $("#week").css('background-color', '#5bc0de');
+                        $("#month").css('background-color', '#5bc0de');
+                    }
+                    else if (ddate == "yesterday") {
+                        $("#hdn_buttonState").val() == "yesterday";
+                        $("#yesterday").css('background-color', '#1b82a0');
+                        $("#today").css('background-color', '#5bc0de');
+                        $("#week").css('background-color', '#5bc0de');
+                        $("#month").css('background-color', '#5bc0de');
+                    }
+                    else if (ddate == "week") {
+                        $("#hdn_buttonState").val() == "week";
+                        $("#week").css('background-color', '#1b82a0');
+                        $("#yesterday").css('background-color', '#5bc0de');
+                        $("#today").css('background-color', '#5bc0de');
+                        $("#month").css('background-color', '#5bc0de');
+                    }
+                    else if (ddate == "month") {
+                        $("#pickerDiv").css('display', 'block');
+                        $("#hdn_buttonState").val() == "month";
+                        $("#month").css('background-color', '#1b82a0');
+                        $("#yesterday").css('background-color', '#5bc0de');
+                        $("#today").css('background-color', '#5bc0de');
+                        $("#week").css('background-color', '#5bc0de');
+                    }
+                    else {
+                        $("#hdn_buttonState").val() == "2018";
+                        $("#pickerDiv").show();
+                        $("#month").css('background-color', '#1b82a0');
+                        $("#yesterday").css('background-color', '#5bc0de');
+                        $("#today").css('background-color', '#5bc0de');
+                        $("#week").css('background-color', '#5bc0de');
+                    }
+
+                    var _station = $('#hdn_station').val();
+                    var _actSumInv = $('#hdn_actSumInv').val();
+                    var _acPower = $('#hdn_acPower').val();
+                    var _actSumInv = $('#hdn_actSumInv').val();
+                    var _energy = $('#hdn_energy').val();
+                    var _irradiation = $('#hdn_irradiation').val();
+                    var _specific = $('#hdn_specific').val();
+                    var _communication = $('#hdn_communication').val();
+                    var _installedPower = $('#hdn_installedPower').val();
+                    var _financialincome = $('#hdn_financialincome').val();
+                    var _alerts = $('#hdn_alerts').val();
+                    var _instantPR = $('#hdn_instantPR').val()+" PR";
+                    var _maps = $('#hdn_maps').val();
+                    var _production = $('#hdn_production').val();
+                    var _image = $('#hdn_image').val();
+                    var _export = $('#hdn_export').val();
+
+                    var disconnect = '<span class="label label-danger">@Resources.Connection_Fail</span>';
+                    var connected = '<span class="label label-success">@Resources.Connected</span>';
+
+                    var say = 0;
+                    var rowLineStyle = "";
+                    var sparkline = "";
+                    var ChartList = [];
+                    var barColor = "";
+                    var hiddenProgres = "";
+                    var html = "<table id='example' role='grid' aria-describedby='example_info'><tbody>";
+                    $.each(data, function (i, item) {
+                        ChartList = [];
+                        sparkline = "sparkline" + item.STATION_ID;
+                        $.each(item.LIST_CHART, function (i, itemChartList) {
+                            ChartList.push({ 'stationId': item.STATION_ID, 'irradiationSum': itemChartList.HOURLY_IRRADIATION_AVG });
+                        });
+
+                        if (say % 2 == 0) {
+                            rowLineStyle = "odd";
+                        }
+                        else {
+                            rowLineStyle = "even";
+                        }
+                        var status = "";
+
+                        if (item.CON_STATUS == true) {
+                            status += connected + " " + DateFormat(item.DATE);
+                        }
+                        else if (item.CON_STATUS == false){
+                            status += disconnect + " " + DateFormat(item.DATE);
+                        }
+                        else {
+                            status = "";
+                        }
+    
+                        if (item.PR >= 0 && data[i].PR <= 50) {
+                                barColor = "progress-bar-danger";
+                        }
+                        else if (item.PR > 50 && item.PR < 100) {
+                                barColor = "";
+                        }
+                        else {
+                                barColor = "progress-bar-success";
+                        }
+                        var money_usd;
+                        var money_tl;
+                        var dailyProduction;
+                        var irradiationSum;
+                        var invErrorCss;
+                        var alarmCountCss;
+                        var invSumActiveCount;
+                        var homeDetailPage;
+                        if (item.IS_MONEY == true) {
+                            money_usd = item.FINANCIAL_USD;
+                            money_tl = item.FINANCIAL_TL;
+                        }
+                        else {
+                            money_usd = "-";
+                            money_tl = "-";
+                        }
+                        if (item.FINANCIAL_USD == null) {
+                            money_usd = "-";
+                        }
+                        if (item.ENERGY == null) {
+                            item.ENERGY = "-";
+                        }
+                        if (item.SPECIFIC_YIELD == null) {
+                            item.SPECIFIC_YIELD = "-";
+                        }
+                        if (item.DAILY_PRODUCTION == null) {
+                            dailyProduction = "-";
+                        }
+                        else {
+                            dailyProduction = item.DAILY_PRODUCTION;
+                        }
+                        if (item.IS_METEOROLOGY == true) {
+                            hiddenProgres = "";
+                            if (item.IRRADIATION == null) {
+                                irradiationSum = "-";
+                            }
+                            else {
+                                irradiationSum = item.IRRADIATION;
+                            }
+                        }
+                        else {
+                            hiddenProgres = "style='display:none'";
+                            irradiationSum = "-";
+                        }
+                        if (item.INV_ERROR == true) {
+                            invErrorCss = "style='color:#f00;font-weight:bold;'";
+                        }
+                        else {
+                            invErrorCss = "";
+                        }
+                        if (item.IS_ALARM == true) {
+                            alarmCountCss = "style='color:#ff4c4c;font-weight:bold;'";
+                        }
+                        else {
+                            alarmCountCss = "";
+                        }
+                        if (ddate == "today") {
+                            invSumActiveCount = item.INVERTER_ACTIVE_COUNT + "/" + item.INVERTER_COUNT;
+                        }
+                        else {
+                            invSumActiveCount = "-";
+                        }
+                        if (item.STATION_TYPE == 2) {
+                            homeDetailPage = '/EKK_STATION/Index?stationId=';
+                        }
+                        else if (item.STATION_TYPE == 3) {
+                            //homeDetailPage = '/Home/Detail?stationId=';
+                            homeDetailPage = '/Dashboard/Router?stationId=';
+                        }
+                        else if (item.STATION_TYPE == 5) {
+                            homeDetailPage = '/HES/Index?stationId=';
+                        }
+                        else {
+                            //homeDetailPage = '/Home/Detail?stationId=';
+                            homeDetailPage = '/Dashboard/Router?stationId=';
+                        }
+                        html += "<tr role='row' class=" + rowLineStyle + ">" +
+                          /*1*/  "<td class='item sorting_1'><a id='stationNameCss' href='" + homeDetailPage + "" + item.STATION_ID + "' >" + item.STATION_NAME + "</a><input type='hidden' value=" + item.STATION_ID + "></input>"+"</td>" +
+                          /*2*/  "<td><a data-toggle='tooltip' data-placement='left' title = '" + _production + "' href='" + homeDetailPage+"" + item.STATION_ID + "' > <i class='fa fa-area-chart'></i></a>&nbsp; " +
+                                       "<a class='stt' href = '' data-toggle='modal' data-target='#trgtModal'><i class='fa fa-camera'></i></a>&nbsp;"+
+                            "<a data-toggle='tooltip' data-placement='left' " + alarmCountCss + " title='" + item.ALARM_COUNT + " Alarm" + "' href='/Alarm/Index?stationId=" + item.STATION_ID + "'><i class='glyphicon glyphicon-bell'></i></a>&nbsp;" +
+                            "<a data-toggle='tooltip' data-placement='left' title='" + _export + "' href='/Home/ExportExcel?stationId=" + item.STATION_ID + "'><i class='fa fa-download'></i></a></td>" +
+                          /*3*/  "<td>" + item.DC_INSTALLED_POWER + "</td>" +
+                          /*4*/  "<td>" + dailyProduction + "</td>" +
+                          /*5*/  "<td>" + item.ENERGY + "</td>" +
+                          /*6*/  "<td>" + irradiationSum + "</td>" +
+                          /*7*/  "<td>" + item.SPECIFIC_YIELD + "</td>" +
+                          /*8*/  "<td " + invErrorCss + ">" + invSumActiveCount + "</td>" +
+                          /*9*/  "<td><b>" + item.COMPANY_GROUP_NAME + "</b>&nbsp;&nbsp;" +
+                                 "<a data-toggle='tooltip' data-placement='top' title='" + _maps + "' href='/Home/Maps?companyId=" + item.COMPANY_ID + "'><i class='fa fa-map-marker'></i></a>&nbsp;" +
+                                 "<a data-toggle='tooltip' data-placement='top' title='" + _production + "' href='/DashboardCompany/RouterGroup?groupId=" + item.GROUP_ID + "'><i class='fa fa-area-chart'></i></a>&nbsp;" +
+                                 "<a data-toggle='tooltip' data-placement='top' title='" + _instantPR + "' href='/Home/InstantPR?companyId=" + item.COMPANY_ID + "'><i class='fa fa-line-chart'></i></a>&nbsp;" +
+                                 "<a data-toggle='tooltip' data-placement='top' title='" + _alerts + "' href='/CompanyAlarm/Index?companyId=" + item.COMPANY_ID + "'><i class='glyphicon glyphicon-bell'></i></a></td>" +
+                         /*10*/   "<td>" + money_usd + "</td>" +
+                         /*11*/  "<td><div class='progress' " + hiddenProgres + "><div class='progress-bar " + barColor + "' role='progressbar' aria-='' valuenow='70' aria-valuemin='0' aria-valuemax='100' style='width:" + item.PR + "%'>" + item.PR + " %</div></div></td>" +
+                         /*12*/  "<td>" + status + "</td></tr>";
+                        say++;
+                    });
+                    html += '</tbody></table>';
+                    $('#StationTable').append(html);
+                    $('#example').addClass("display");
+                    $('#example').addClass("dataTable");
+                    $('#example').append("<thead>" +
+                        "<tr>" +
+                    /*1*/   "<th>" + _station + "</th>" +
+                    /*2*/   "<th></th>" +
+                    /*3*/   "<th>" + _installedPower + " [kWp]</th>" +
+                    /*4*/   "<th>" + _acPower + " [kW]</th>" +
+                    /*5*/   "<th>" + _energy + " [MWh]</th>" +
+                    /*6*/   "<th>" + _irradiation + " [Wh/m²]</th>" +
+                    /*7*/   "<th>" + _specific + "<br/>[kWh/kWp]</th>" +
+                    /*8*/   "<th>" + _actSumInv + "</th>" +
+                    /*9*/   "<th></th>" +
+                    /*10*/   "<th>" + _financialincome + "</th>" +
+                    /*11*/  "<th>PR</th>" +
+                    /*12*/  "<th>" + _communication + "</th>" +
+                        "</tr>" +
+                     "</thead>");
+
+                    $(document).on('click', '.stt', function (e) {
+                        var _stId = $(this).parent().siblings('.item').find('input').val();
+                        $('#stationImages').attr("src", "/images/StationImages/" + _stId + ".png");
+                        var _stName = $(this).parent().siblings('.item').html();
+                        $('#stName').html(_stName);
+                    });
+
+                    var groupColumn = 8;
+                    var table = $('#example').DataTable({
+                        //drawCallback: function () {
+                        //    table.column(4).data().sum();
+                        //    var api = this.api(); debugger;
+                        //    $(api.table().footer()).html(
+                        //       api.column(4, { page: 'current' }).data().sum()
+                        //    );
+                        //},
+                        responsive: true,
+                        "scrollY": true,
+                        "scrollCollapse": true,
+                        "paging": false,
+                        "language": {
+                            "decimal": ",",
+                            "thousands": ".",
+                            "search": "<div class='col-md-5 col-sm-5 col-xs-12 form-group pull-right top_search'><div class='input-group'><input type='text' placeholder='Search' class='form-control'><span class='input-group-btn'><button class='btn btn-default' type='button'><i class='fa fa-search'></i></button></span></div></div>",
+                            "lengthMenu": "@Resources.Show _MENU_",
+                            "zeroRecords": "@Resources.No_records_to_display",
+                            "paginate": {
+                                "next": "@Resources.Next",
+                                "previous": "@Resources.Previous"
+                            },
+                            "info": "_END_ / _TOTAL_"
+                        },
+                        "order": [2, "asc"],
+                        "columnDefs": [
+                            {
+                                "visible": false,
+                                "targets": groupColumn
+                            },
+                            {
+                                "targets": [0],
+                                "width": "14%"
+                            },
+                            {
+                                "targets": [1],
+                                "searchable": false,
+                                "orderable": false,
+                                "className": "dt-center",
+                                "width": "8%"
+                            },
+                            {
+                                "targets": [2],
+                                "className": "dt-center",
+                                "width": "6%",
+                                render: $.fn.dataTable.render.number('.', ',', 2, '')
+                            },
+                            {
+                                "targets": [3],
+                                "className": "dt-center",
+                                "width": "6%",
+                                render: $.fn.dataTable.render.number('.', ',', 2, '')
+                            },
+                            {
+                                "targets": [4],
+                                "className": "dt-center",
+                                "width": "6%",
+                                render: $.fn.dataTable.render.number('', ',', 2, '')
+                            },
+                            {
+                                "targets": [5],
+                                "className": "dt-center",
+                                "width": "6%",
+                                render: $.fn.dataTable.render.number('.', ',', 1, '')
+                            },
+                            {
+                                "targets": [6],
+                                "className": "dt-center vertical-align-top",
+                                "width": "6%",
+                                render: $.fn.dataTable.render.number('.', ',', 2, '')
+                            },
+                            {
+                                "targets": [7],
+                                "className": "dt-center vertical-align-top",
+                                "width": "6%"
+                            },
+                            {
+                                "targets": [9],
+                                "searchable": false,
+                                "className": "dt-center vertical-align-top",
+                                "width": "6%",
+                                render: $.fn.dataTable.render.number('.', ',', 2, '$')
+                            },
+                            {
+                                "targets": [10],
+                                "searchable": false,
+                                "className": "dt-center vertical-align-top",
+                                "width": "12%"
+                            },
+                            {
+                                "targets": [11],
+                                "searchable": false,
+                                "className": "dt-center vertical-align-top",
+                                "width": "12%"
+                            }
+                        ],
+                        "order": [[groupColumn, 'asc']],
+                        //"displayLength": 25,
+                        "drawCallback": function (settings) {
+                            var api = this.api();
+                            var rows = api.rows({ page: 'current' }).nodes();
+                            var last = null;
+
+                            api.column(groupColumn, { page: 'current' }).data().each(function (group, i) {
+                                if (last !== group) {
+                                    $(rows).eq(i).before(
+                                        '<tr class="group"><td colspan="11">' + group + '</td></tr>'
+                                    );
+                                    last = group;
+                                }
+                            });
+                        }
+                    });
+                  
+                
+                    // Order by the grouping
+                    $('#example tbody').on('click', 'tr.group', function () {
+                        var currentOrder = table.order()[0];
+                        if (currentOrder[0] === groupColumn && currentOrder[1] === 'asc') {
+
+                            table.order([groupColumn, 'desc']).draw();
+                        }
+                        else {
+
+                            table.order([groupColumn, 'asc']).draw();
+                        }
+                    });
+                    $('input[type="search"').remove();
+
+                    $('.dataTables_scrollBody').css('display', 'block');
+                    $('.dataTables_scrollBody').css('max-height', '72vh');
+                    $('.dataTables_scrollBody').css('overflow-y', 'auto');
+                }
+            });
+        }
+
+        var timer, delay = 400000;
+        timer = setInterval(function () {
+            $("#dateDiv").css('display', 'none');
+            $("#pickerDiv").css('display', 'none');
+            $('#example').remove();
+            $('#example_wrapper').remove();
+            GetDataTable("today");
+        }, delay);
+
+        $('#today').click(function () {
+            $("#dateDiv").hide();
+            $("#pickerDiv").hide();
+            $('#example').remove();
+            $('#example_wrapper').remove();
+            GetDataTable("today");
+        });
+        $('#yesterday').click(function () {
+            $("#dateDiv").hide();
+            $("#pickerDiv").hide();
+            $('#example').remove();
+            $('#example_wrapper').remove();
+            GetDataTable("yesterday");
+        });
+        $('#week').click(function () {
+            $("#dateDiv").hide();
+            $("#pickerDiv").hide();
+            $('#example').remove();
+            $('#example_wrapper').remove();
+            GetDataTable("week");
+        });
+        $('#month').click(function () {
+            $("#dateDiv").hide();
+            $("#pickerDiv").hide();
+            $('#example').remove();
+            $('#example_wrapper').remove();
+            var todayDate = "";
+            var _year = "";
+            var _month = "";
+            if (!todayDate || todayDate.length == 0) {
+                var dt = new Date($.now());
+                _year = dt.getFullYear();
+                _month = dt.getMonth() + 1;
+                todayDate = _year + "-" + _month;
+                $('[name=pickerMonthYear]').val(todayDate);
+            }
+            GetDataTable("month");
+        });
+        $('#btnList').click(function () {
+            $("#dateDiv").hide();
+            $("#pickerDiv").hide();
+            $('#example').remove();
+            $('#example_wrapper').remove();
+            var pickDate = $('#pickerMonthYear').val();
+            var _year = "";
+            var _month = "";
+            if (!pickDate || pickDate.length == 0)
+            {
+                var dt = new Date($.now());
+                _year = dt.getFullYear();
+                _month = dt.getMonth() + 1;
+                pickDate = _year + "-" + _month;
+                $('[name=pickerMonthYear]').val(pickDate);
+            }
+            GetDataTable(pickDate);
+        });
+
+    });
+</script>
+<script src="~/Content/data-table/jquery-3.3.1.js"></script>
+<script src="~/Content/DataTables/DataTables-1.10.18/js/jquery.dataTables.min.js"></script>
+<script src="~/Content/data-table/dataTables.responsive.js"></script>

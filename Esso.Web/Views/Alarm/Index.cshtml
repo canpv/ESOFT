@@ -1,0 +1,393 @@
+﻿@model int
+@using Esso.Data;
+@using Esso.Models;
+@using Microsoft.AspNet.Identity;
+@using System.Collections.Generic;
+@using language
+@using System.Threading;
+@using System.Globalization;
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    Html.EnableClientValidation();
+    Html.EnableUnobtrusiveJavaScript();
+
+    EssoEntities DB = new EssoEntities();
+    Thread.CurrentThread.CurrentCulture = new CultureInfo("tr-TR");
+    DateTime date_time = new DateTime();
+    string min_date_ = string.Empty;
+
+    var _station = DB.AlarmStatus.Where(x => x.STATION_ID == Model).Select(x => new { x.STATION_ID }).FirstOrDefault();
+
+    if (_station != null)
+    {
+        min_date_ = DB.AlarmStatus.Where(x => x.STATION_ID == Model).Select(x => new { x.START_DATE }).OrderBy(x => x.START_DATE).FirstOrDefault().ToString();
+        min_date_ = min_date_.Replace("{", "");
+        min_date_ = min_date_.Replace("}", "");
+        min_date_ = min_date_.Substring(13).TrimEnd();
+        Thread.CurrentThread.CurrentCulture = new CultureInfo("tr-TR");
+        DateTime min_date = DateTime.Parse(min_date_);
+        DateTime today = DateTime.Now.Date;
+        DateTime begin = today.AddDays(-30);
+
+        if (min_date.Date <= begin.Date)
+        {
+            date_time = begin.Date;
+        }
+        else
+        {
+            date_time = min_date.Date;
+        }
+
+    }
+    else
+    {
+        date_time = DateTime.Now.Date;
+    }
+
+
+
+    #region User yetkileri kontrol
+    TBL_STATION stat = new TBL_STATION();
+    stat = null;
+
+    var userId = User.Identity.GetUserId();
+
+    //User yetkileri kontrol ediliyor
+
+    try
+    {
+        if (User.IsInRole("M_ADMIN"))
+        {
+            stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+        }
+        else if (User.IsInRole("COMP_ADMIN"))
+        {
+            int cmpId = DB.Stations.Where(a => a.ID == Model && a.IS_DELETED == false).FirstOrDefault().COMPANY_ID;
+
+            if (DB.CompanyUsers.Any(a => a.COMPANY_ID == cmpId && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+        }
+        else if (User.IsInRole("COMP_USER"))
+        {
+
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+            }
+
+        }
+        else if (User.IsInRole("DEMO"))
+        {
+
+
+            if (DB.StationUsers.Any(a => a.STATION_ID == Model && a.USER_ID == userId && a.IS_DELETED == false))
+            {
+
+                stat = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+
+            }
+
+
+        }
+
+
+    }
+    catch (Exception)
+    {
+
+    }
+    #endregion
+}
+
+@{
+
+    if (stat == null)
+    {
+        @Html.Partial("~/Views/Home/_ErrorPagePartial.cshtml")
+    }
+    else
+    {
+        var _stationDetail = DB.Stations.Where(a => a.ID == Model).FirstOrDefault();
+
+
+        <div class="page-title">
+            <div class="title_left">
+                @if (User.IsInRole("DEMO"))
+                {
+                    <h3>@_stationDetail.DEMO_NAME</h3>
+                }
+                else
+                {
+                    <h3>@_stationDetail.NAME</h3>
+                }
+
+            </div>
+        </div>
+        @Html.Partial("MenuPartial")
+        <script type="text/javascript">
+            var filterString = "";
+            function ApplyFilter(dateFrom, dateTo) {
+                var d1 = dateFrom.GetText();
+                var d2 = dateTo.GetText();
+                if (d1 == "" || d2 == "")
+                    return;
+                filterString = d1 + "|" + d2;
+                gridViewAlarm.AutoFilterByColumn("CREATED_DATE", d1 + "|" + d2);
+            }
+
+            //function empty() {
+            //	debugger;
+            //	if (filterString != "")
+            //	{
+            //		filterString = null;
+            //		//var f = $(".dFrom").val();
+            //		//var t = $(".dTo").val();
+            //		return;
+
+            //	}
+            //}
+
+            //debugger;
+            var timeout;
+            function scheduleGridUpdate(grid) {
+                window.clearTimeout(timeout);
+                timeout = window.setTimeout(
+                    function () {
+                        grid.Refresh();
+                    }, 120000);
+            }
+
+            function grid_Init(s, e) {
+                scheduleGridUpdate(s);
+                gridViewAlarm.ExpandAll();
+            }
+
+
+
+            function EndCallback(s, e) {
+                //debugger;
+                //if (/*filterString != "" && */s.cpFilter == "filter") {
+                //	dde.SetText(filterString);
+                //	$("#gridViewAlarm_DXCTMenu0_DXI1_").hide();
+
+                //}
+                //else
+                //{
+                //	filterString = "";
+                //}
+                scheduleGridUpdate(s);
+            }
+
+        </script>
+
+        <script type="text/javascript">
+
+	function dateSelected1(s, d, f) {
+		debugger;
+			gridViewAlarm.PerformCallback();
+			gridViewAlarm.ExpandAll();
+	}
+
+	function GridBgCallBack(s, e) {
+		debugger;
+		e.customArgs["date1"] = d_From.GetValue().toLocaleDateString();
+		e.customArgs["date2"] = d_To.GetValue().toLocaleDateString();
+
+		//e.customArgs["date"] = datePck.GetValue().toLocaleDateString();
+		e.customArgs["stationId"] = @Model;
+		window.clearTimeout(timeout);
+    }
+	function OnToolbarItemClick1(s, e) {
+		debugger;
+		if ($("#gridViewAlarm_DXCTMenu0_DXI0_").click(function () { location.reload(); }));
+
+		if (!IsExportToolbarCommand1(e.item.name))
+			return;
+
+		var exportFormat = $('#exportFormat');
+		exportFormat.val(e.item.name);
+		$('form').submit();
+		window.setTimeout(function () {
+			exportFormat.val("");
+		}, 0);
+	}
+	function IsExportToolbarCommand1(command) {
+		return command == "Pdf" || command == "Xlsx" || command == "Xls";
+
+	}
+        </script>
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <h2>@Resources.Alerts</h2>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+
+                    @using (Html.BeginForm("ExportTo", "Alarm", new { stationId = Model }))
+                    {
+
+                        @*@Html.DevExpress().DateEdit(
+                                settings =>
+                                {
+                                    settings.Properties.ClientSideEvents.ValueChanged = "dateSelected1";
+                                    settings.Name = "datePck";
+                                    settings.Properties.EditFormat = EditFormat.Custom;
+                                    //settings.Properties.EditFormatString = "dd/MM/yyyy";
+                                    //settings.Properties.DisplayFormatString = "dd/MM/yyyy";
+                                    settings.Date = DateTime.Now.Date;
+                                    settings.Properties.MaxDate = DateTime.Now;
+                                    //settings.Width = Unit.Percentage(100);
+                                }
+                            ).GetHtml()*@
+                        <div class="row">
+                            <div class="col-sm-2 col-lg-2" style="min-width:230px">
+
+                                @Html.DevExpress().Label(s =>
+                                {
+                                                s.Name = "L1";
+                                                s.Text = Resources.From;
+                                }).GetHtml()
+                                @Html.DevExpress().DateEdit(s =>
+                                {
+                                s.Name = "d_From";
+                                s.Properties.EditFormat = EditFormat.Custom;
+                                s.Properties.EditFormatString = "dd/MM/yyyy";
+                                s.Properties.DisplayFormatString = "dd/MM/yyyy";
+                                                // s.Date = DateTime.Now.Date;
+                                                s.Date = date_time;
+                                s.Properties.MaxDate = DateTime.Now;
+                                }).GetHtml()
+                            </div>
+                            <div class="col-sm-2 col-lg-2" style="min-width:230px">
+                                @Html.DevExpress().Label(s =>
+                                    {
+                                    s.Name = "L2";
+                                    s.Text = Resources.To;
+                                    }).GetHtml()
+
+
+                                @Html.DevExpress().DateEdit(s =>
+                                  {
+                                      s.Name = "d_To";
+                                      s.Properties.EditFormat = EditFormat.Custom;
+                                      s.Properties.EditFormatString = "dd/MM/yyyy";
+                                      s.Properties.DisplayFormatString = "dd/MM/yyyy";
+                                      s.Date = DateTime.Now;
+                                      s.Properties.MaxDate = DateTime.Now;
+                                  }).GetHtml()
+                            </div>
+                            <div class="col-sm-2 col-lg-2" style="padding-top:15px;min-width:230px">
+                                @Html.DevExpress().Button(s =>
+                   {
+                       s.Name = "btn";
+                       s.Images.Image.IconID = IconID.ActionsApply16x16;
+                       s.UseSubmitBehavior = false;
+                       s.ClientSideEvents.Click = "dateSelected1";
+                       s.Text = Resources.Apply;
+                   }).GetHtml()
+                            </div>
+                        </div>
+                        <br /><br />
+                        <div class="row">
+                            <div class="col-sm-4 col-md-4 col-lg-4">
+                                <ul>
+                                    <li><canvas id="myCanvas" width="50" height="10" style="background-color:#f12727;"></canvas> &nbsp; @Resources.Alerts </li>
+                                    <li><canvas id="myCanvas" width="50" height="10" style="background-color:#eabb04;"></canvas> &nbsp; @Resources.Warnings </li>
+                                    <li><canvas id="myCanvas" width="50" height="10" style="background-color:#629e01;"></canvas> &nbsp;Inverter @Resources.State </li>
+                                </ul>
+                            </div>
+                        </div>
+                        @Html.Hidden("exportFormat")
+
+                        @Html.Action("AlarmListPartial", new
+                        {
+                            stationId = Model@*, date = DateTime.Now.ToString()*@,
+date1 = date_time.ToString(),
+date2 = DateTime.Now.ToString()
+})
+                    }
+                </div>
+            </div>
+        </div>
+        <style>
+            #d_To {
+                border-radius: 25px;
+                height: 30px;
+                width: 210px;
+                border-color: #adaeb1;
+            }
+
+            #d_From {
+                border-radius: 25px;
+                height: 30px;
+                width: 210px;
+                border-color: #adaeb1;
+            }
+
+            #d_From_B-1 {
+                border-radius: 30px;
+                height: 1px;
+            }
+
+            #d_To_B-1 {
+                border-radius: 40px;
+                height: 1px;
+            }
+
+            #d_From_B-1Img {
+                background-color: whitesmoke;
+                border-radius: 25px;
+            }
+
+            #btn {
+                border-color: #adaeb1;
+                color: black;
+                border-radius: 25px;
+                align-content: center;
+                width: 120px;
+                height: 30px;
+                font-size: 12px;
+                font: bold;
+            }
+
+            .dxgvDataRow td.dxgvIndentCell {
+                background-color: white !important;
+            }
+
+            #gridViewAlarm_DXCTMenu0 {
+                background-color: white !important;
+                /*border-radius : 25px;*/
+                border-color: #5482af;
+                border-bottom-width: medium;
+            }
+
+            #gridViewAlarm_DXCTMenu0_DXI1_ {
+                background-color: white !important;
+                border-radius: 25px;
+            }
+
+            #gridViewAlarm_DXCTMenu0_DXI0_ {
+                background-color: white !important;
+                border-radius: 25px;
+            }
+
+            #gridViewAlarm_DXCTMenu0_DXME1_ {
+                /*background-color: #8fbce8 !important;*/
+                border-radius: 10px;
+            }
+
+            #gridViewAlarm_DXCTMenu0_DXI1i0_Img {
+                /*background-color: #8fbce8 !important;*/
+                border-radius: 10px;
+            }
+
+            .dxgvGroupRow {
+                background: linear-gradient(90deg,#3b6792 -50%,#c0d5ea 100%);
+            }
+        </style>
+    }}

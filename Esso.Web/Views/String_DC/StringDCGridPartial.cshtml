@@ -1,0 +1,261 @@
+﻿@using System.Web.UI.WebControls;
+@using System.Data;
+@using language
+
+@model DataTable
+@{
+    string summaryText = "";
+    //DataTable dt = ViewData["dt"] != null ? (DataTable)(ViewData["dt"]) : new DataTable();
+    var _Date = ViewBag.Date;
+    var _ListMax = ViewBag.StringMax as List<Esso.Web.Controllers.String_DCController.StringDeneme>;
+    var _ListAvg = ViewBag.StringAvg as List<Esso.Web.Controllers.String_DCController.StringAvg>;
+    var _ListMin = ViewBag.StringMin as List<Esso.Web.Controllers.String_DCController.StringMin>;
+    var _StringSum = ViewBag.StringDCSum;
+    DataTable _dtSD = (DataTable)ViewBag._dtSD;
+
+    if (_Date == null)
+    {
+        _Date = "";
+    }
+
+    summaryText = Resources.Date + " : " + _Date;
+
+
+}
+
+@Html.DevExpress().GridView(
+    settings =>
+    {
+        settings.Name = "gvStringDC";
+        settings.ClientSideEvents.BeginCallback = "GridBgCallBack";
+        settings.CallbackRouteValues = new { Controller = "String_DC", Action = "StringDCGridPartial" };
+        settings.Width = Unit.Percentage(100);
+        //settings.SummaryDisplayText = (s, e) =>
+        //{
+        //    var gv = s as MVCxGridView;
+        //    if (e.Item.SummaryType == DevExpress.Data.SummaryItemType.Sum)
+        //    {
+        //        e.Text =String.Format("<b>Sum:{0}</b>", e.Value);
+
+        //    }
+        //};
+        settings.Settings.ShowTitlePanel = true;
+        settings.SettingsText.Title = summaryText.ToString();
+        settings.Settings.HorizontalScrollBarMode = ScrollBarMode.Visible;
+        settings.SettingsAdaptivity.AdaptivityMode = GridViewAdaptivityMode.HideDataCells;
+        settings.SettingsAdaptivity.AllowOnlyOneAdaptiveDetailExpanded = true;
+        settings.EditFormLayoutProperties.SettingsAdaptivity.AdaptivityMode = FormLayoutAdaptivityMode.SingleColumnWindowLimit;
+        settings.EditFormLayoutProperties.SettingsAdaptivity.SwitchToSingleColumnAtWindowInnerWidth = 600;
+        settings.SettingsBehavior.AllowEllipsisInText = true;
+        settings.Settings.ShowGroupPanel = false;
+        settings.SettingsText.EmptyHeaders = " ";
+
+        //settings.SettingsBehavior.AllowEllipsisInText = true;
+        settings.Settings.ShowGroupPanel = false;
+        settings.Settings.GridLines = System.Web.UI.WebControls.GridLines.None;
+        settings.Styles.Table.Border.BorderStyle = System.Web.UI.WebControls.BorderStyle.None;
+        settings.Styles.Header.Border.BorderColor = System.Drawing.Color.Transparent;
+
+        settings.Styles.TitlePanel.BackColor = System.Drawing.Color.FromArgb(1, 59, 103, 146);
+        settings.Styles.Header.BackColor = System.Drawing.Color.FromArgb(1, 0, 98, 158);
+        settings.Styles.Table.ForeColor = System.Drawing.Color.FromArgb(1, 0, 98, 158);
+        settings.Styles.Footer.ForeColor = System.Drawing.Color.Black;
+        settings.Styles.Header.Font.Bold = true;
+        settings.Styles.Footer.Font.Bold = true;
+        settings.SettingsText.EmptyHeaders = "";
+
+        if (Model.Columns.Count > 0)
+        {
+            for (int i = 1; i < Model.Columns.Count; i += 1)
+            {
+                settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Sum, Model.Columns[i].ColumnName);
+                settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Custom, Model.Columns[i].ColumnName).DisplayFormat = "Min={0}";
+                settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Custom, Model.Columns[i].ColumnName).DisplayFormat = "Avg={0}";
+                settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Max, Model.Columns[i].ColumnName);
+                settings.TotalSummary.Add(DevExpress.Data.SummaryItemType.Custom, Model.Columns[i].ColumnName).DisplayFormat = "SD={0}";
+            }
+        }
+
+        if (_ListAvg != null)
+        {
+            var invGrp = (from u in _ListAvg
+                          group u by u.FieldName.Substring(0, 4) into g
+                          select new { invName = g.Key, Avg = g.Average(oi => oi.Avg), count = g.Count() }).ToList();
+
+            settings.CustomSummaryCalculate = (s, e) =>
+            {
+                if (e.SummaryProcess == DevExpress.Data.CustomSummaryProcess.Start)
+                { }
+                if (e.SummaryProcess == DevExpress.Data.CustomSummaryProcess.Calculate)
+                { }
+                if (e.SummaryProcess == DevExpress.Data.CustomSummaryProcess.Finalize)
+                {
+                    ASPxSummaryItem summary = e.Item as ASPxSummaryItem;
+
+                    if (summary.DisplayFormat == "Min={0}")
+                    {
+                        MVCxGridView gridView = s as MVCxGridView;
+
+                        for (int i = 0; i < _ListMin.Count; i++)
+                        {
+                            var FieldName = ((ASPxSummaryItem)e.Item).FieldName;
+
+                            if (FieldName == _ListMin[i].FieldName)
+                            {
+                                if (e.FieldValue != DBNull.Value)
+                                {
+                                    e.TotalValue = _ListMin[i].Min;
+
+                                }
+                            }
+                        }
+
+                    }
+                    if (summary.DisplayFormat == "Avg={0}")
+                    {
+                        MVCxGridView gridView = s as MVCxGridView;
+
+                        for (int i = 0; i < _ListAvg.Count; i++)
+                        {
+                            var FieldName = ((ASPxSummaryItem)e.Item).FieldName;
+
+                            if (FieldName == _ListAvg[i].FieldName)
+                            {
+                                if (e.FieldValue != DBNull.Value)
+                                {
+                                    e.TotalValue = _ListAvg[i].Avg;
+
+                                }
+                            }
+                        }
+                    }
+                    if (summary.DisplayFormat == "SD={0}")
+                    {
+
+                        MVCxGridView gridView = s as MVCxGridView;
+
+                        for (int i = 0; i < _dtSD.Columns.Count; i++)
+                        {
+                            var FieldName = ((ASPxSummaryItem)e.Item).FieldName;
+
+                            if (FieldName == _dtSD.Columns[i].ColumnName)
+                            {
+                                if (e.FieldValue != DBNull.Value)
+                                {
+                                    e.TotalValue = Convert.ToDouble(_dtSD.Rows[0][i]);
+                                }
+                            }
+                        }
+                    }
+
+                }
+            };
+
+            settings.HtmlDataCellPrepared = (s, e) => // max ve avg değerlerine göre renklendirme
+            {
+                var currentView = s as MVCxGridView;
+
+                for (int i = 0; i < _ListMax.Count; i++)
+                {
+                    string FieldName = e.DataColumn.FieldName;
+
+                    if (FieldName == _ListMax[i].FieldName)
+                    {
+                        if (e.CellValue != DBNull.Value || e.CellValue.ToString() == "-")
+                        {
+                            decimal CellValue = 0;
+                            try
+                            {
+                                CellValue =Convert.ToDecimal(e.CellValue);
+
+                                if (CellValue == _ListMax[i].Value)
+                                {
+                                    e.Cell.BackColor = System.Drawing.Color.FromArgb(1, 159, 218, 40);
+                                }
+                                if (CellValue == 0)
+                                {
+                                    e.Cell.BackColor = System.Drawing.Color.FromArgb(1, 227, 251, 178);
+                                }
+                                if (CellValue > 0 && CellValue != _ListMax[i].Value)
+                                {
+                                    e.Cell.BackColor = System.Drawing.Color.FromArgb(1, 204, 239, 133);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                e.Cell.BackColor = System.Drawing.Color.FromArgb(1, 247, 247, 247);
+                            }
+                        }
+                    }
+
+                    if (FieldName == _ListAvg[i].FieldName)
+                    {
+                        if (e.CellValue != DBNull.Value)
+                        {
+                            decimal CellValue = 0;
+                            try
+                            {
+                                CellValue = Convert.ToDecimal(e.CellValue);
+
+
+                                foreach (var igrp in invGrp)
+                                {
+                                    decimal MinLimit = ((decimal)igrp.Avg) * Convert.ToDecimal(0.95);
+
+                                    decimal MaxLimit = ((decimal)igrp.Avg) * Convert.ToDecimal(1.05);
+
+                                    if (CellValue <= MinLimit)
+                                    {
+                                        e.Cell.BackColor = System.Drawing.Color.FromArgb(1, 238, 239, 35);
+                                    }
+                                    else if (CellValue >= MaxLimit)
+                                    {
+                                        e.Cell.BackColor = System.Drawing.Color.FromArgb(1, 101, 197, 8);
+                                    }
+                                    else if (CellValue == null)
+                                    {
+                                        e.Cell.BackColor = System.Drawing.Color.FromArgb(1, 204, 239, 133);
+                                    }
+                                    else
+                                    {
+                                        e.Cell.BackColor = System.Drawing.Color.FromArgb(1, 204, 239, 133);
+                                    }
+                                    if (CellValue == 0)
+                                    {
+                                        e.Cell.BackColor = System.Drawing.Color.FromArgb(1, 249, 156, 93);
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                e.Cell.BackColor = System.Drawing.Color.FromArgb(1, 247, 247, 247);
+                            }
+                        }
+                    }
+                }
+
+            };
+        }
+        if (Model.Columns.Count > 0)
+        {
+            for (int i = 0; i < 1; i += 1)
+            {
+                settings.Styles.Cell.BackColor = System.Drawing.Color.FromArgb(1, 247, 247, 247);
+            }
+        }
+        settings.Settings.GridLines = System.Web.UI.WebControls.GridLines.None;
+        settings.Styles.Table.Border.BorderStyle = System.Web.UI.WebControls.BorderStyle.None;
+        settings.Styles.Header.Border.BorderColor = System.Drawing.Color.Transparent;
+
+        settings.Styles.TitlePanel.BackColor = System.Drawing.Color.FromArgb(1, 59, 103, 146);
+        settings.Styles.Header.BackColor = System.Drawing.Color.FromArgb(1, 0, 98, 158);
+        settings.Styles.Table.ForeColor = System.Drawing.Color.FromArgb(1, 0, 98, 158);
+        settings.Styles.Footer.ForeColor = System.Drawing.Color.Black;
+        settings.Styles.Header.Font.Bold = true;
+        settings.Styles.Footer.Font.Bold = true;
+        //settings.Styles.Header.ForeColor = System.Drawing.Color.WhiteSmoke/*FromArgb(1, 90, 115, 142)*/;
+
+        settings.SettingsPager.PageSize = 500;
+        settings.Settings.ShowFooter = true;
+
+    }).Bind(Model).GetHtml()

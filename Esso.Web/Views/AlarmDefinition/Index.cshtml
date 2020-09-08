@@ -1,0 +1,63 @@
+﻿<script type="text/javascript">
+
+    var templateId;
+    function OnTempSelected(s, e) {
+        if (alarmDefGrid.batchEditApi.HasChanges()) {
+            alarmDefGrid.CancelEdit();
+        }
+        s.GetRowValues(s.GetFocusedRowIndex(), 'ID', OnGetTempValues);
+    }
+
+    function OnGetTempValues(values) {
+        templateId = values;
+        alarmDefGrid.Refresh();
+        //gvStation.PerformCallback();
+    }
+
+    function OnTempDetBeginCallback(s, e) {
+        e.customArgs["templateId"] = templateId;
+    }
+
+</script>
+
+
+<div class="x_panel">
+    <div class="x_title">
+        <h2>Alarm Templete</h2>
+        <ul class="nav navbar-right panel_toolbox">
+            <li>
+                <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+            </li>
+        </ul>
+        <div class="clearfix"></div>
+    </div>
+    <div class="x_content">
+        @using (Html.BeginForm())
+        {
+            @Html.Action("AlarmTempGridPartial");
+        }
+    </div>
+</div>
+
+<div class="x_panel">
+    <div class="x_title">
+        <h2>Alarm Definitions</h2>
+        <ul class="nav navbar-right panel_toolbox">
+            <li>
+                <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+            </li>
+        </ul>
+        <div class="clearfix"></div>
+    </div>
+    <div class="x_content">
+        @using (Html.BeginForm())
+        {
+            @Html.Action("AlarmDefinitionGridPartial", new { templateId = 0});
+        }
+    </div>
+</div>
+
+
+
+
+

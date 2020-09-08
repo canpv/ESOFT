@@ -1,0 +1,178 @@
+﻿@using language
+@{
+	ViewBag.Title = "Chart";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+
+	List<Esso.Models.TBL_USER_CHART> _List = (List<Esso.Models.TBL_USER_CHART>)ViewBag._List;
+	string ChartName = (string)ViewBag.ChartName;
+	string UserId = (string)ViewBag.UserId;
+
+}
+<input type="hidden" value="@_List" id="hdnList" />
+<input type="hidden" value="@UserId" id="hdnUserId" />
+
+<div class="col-md-12 col-sm-12 col-xs-12">
+	<div class="x_panel">
+		<div class="x_title">
+			<h2>@Resources.Get_Charts_Reports</h2>
+			<div class="clearfix"></div>
+		</div>
+		<div class="x_content">
+			<div class="col-md-12 col-sm-12 col-xs-12">
+
+				<div class="btn-group">
+					<div class="row">
+						<div class="col-md-3">
+							<h5 class="title" style="font:bold">@Resources.Chart_List :</h5>
+							<select id="cmbTag" name="selectedTag" class="form-control">
+								<option value="0">Select... </option>
+								@for (int i = 0; i < _List.Count; i++)
+								{
+									<option value="@_List[i].ID">@_List[i].CHART_NAME</option>
+								}
+							</select>
+						</div>
+						<div class="col-md-3">
+							<h5 class="title" style="font:bold">@Resources.Date :</h5>
+							<div class="input-group date">
+								<div class="input-group-addon">
+									<i class="fa fa-calendar"></i>
+								</div>
+								<input type="text" class="form-control pull-right" id="datepicker">
+							</div>
+						</div>
+						<div class="col-md-1">
+							<br /><br />
+							<button class="btn btn-info btn-md" id="btnChart">@Resources.Get_Chart</button>
+							<br />
+						</div>
+						<div class="col-md-5">
+						</div>
+					</div>
+				</div>
+				<div class="col-md-12">
+					<div id="echart_line2" style="height:350px;"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="ChartMessage" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="exampleModalLabel">@Resources.Warnings</h5>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				Please select chart name in list !
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">@Resources.Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<br /><br />
+<script src="~/Scripts/canvasjs.min.js"></script>
+@*<script type="text/javascript" src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>*@
+<script src="/js/daterangepicker.js"></script>
+<script>
+	$(document).ready(function () {
+		$("#datepicker").daterangepicker(
+			{
+				singleDatePicker: true,
+				showDropdowns: true,
+				locale: {
+					format: 'DD.MM.YYYY'
+				}
+			});
+
+		$('#btnChart').click(function () {
+			var _datepicker = $('#datepicker').val();
+			var _chartId = $('#cmbTag').val();
+
+			if (_chartId != 0) {
+
+				$.ajax({
+					url: '@Url.Action("ChartTemp", "Report")',
+					data: {
+						'_datepicker': _datepicker,
+						'_chartId': _chartId
+					},
+					type: "post",
+					cache: false,
+					success: function (result) {
+						if (result.ErrorMessage == "") {
+
+							ChartRefresh(result.ListChartValues);
+						}
+						else {
+							alert(result.ErrorMessage);
+						}
+					}
+				});
+			}
+			else
+				$('#ChartMessage').modal('show');
+		});
+
+		function ChartRefresh(ChartData) {
+			console.log(ChartData);
+
+			var _data = [];
+
+			var _AxisY = [];
+
+
+			var _AxisYTemplate = [
+				{ title: '0', titleFontColor: "#4F81BC", lineColor: "#4F81BC", tickColor: "#4F81BC", titleFontFamily: "Helvetica Neue", titleFontSize: "5" },
+				{ title: '1', titleFontColor: "#a04242", lineColor: "#a04242", tickColor: "#a04242", titleFontFamily: "Helvetica Neue", titleFontSize: "5" },
+				{ title: '2', titleFontColor: "#9da92c", lineColor: "#9da92c", tickColor: "#9da92c", titleFontFamily: "Helvetica Neue", titleFontSize: "5" },
+				{ title: '3', titleFontColor: "#009688", lineColor: "#009688", tickColor: "#009688", titleFontFamily: "Helvetica Neue", titleFontSize: "5" },
+				{ title: '4', titleFontColor: "#3f51b5", lineColor: "#3f51b5", tickColor: "#3f51b5", titleFontFamily: "Helvetica Neue", titleFontSize: "5" },
+				{ title: '5', titleFontColor: "#9c27b0", lineColor: "#9c27b0", tickColor: "#9c27b0", titleFontFamily: "Helvetica Neue", titleFontSize: "5" },
+				{ title: '6', titleFontColor: "#ff9800", lineColor: "#ff9800", tickColor: "#ff9800", titleFontFamily: "Helvetica Neue", titleFontSize: "5" },
+				{ title: '7', titleFontColor: "#00a4bd", lineColor: "#00a4bd", tickColor: "#00a4bd", titleFontFamily: "Helvetica Neue", titleFontSize: "5" },
+				{ title: '8', titleFontColor: "#ef343c", lineColor: "#ef343c", tickColor: "#ef343c", titleFontFamily: "Helvetica Neue", titleFontSize: "5" },
+				{ title: '9', titleFontColor: "#333", lineColor: "#333", tickColor: "#333", titleFontFamily: "Helvetica Neue", titleFontSize: "5" }
+
+			];
+
+			for (var i = 0; i < ChartData.length; i++) {
+				var _dataPoints = [];
+
+				for (var j = 0; j < ChartData[i].ListValue.length; j++) {
+					var _Tarih = parseInt(ChartData[i].ListValue[j].Tarih.substr(6, 13));
+
+					var _Date = new Date(_Tarih);
+
+					_dataPoints.push({ x: _Date, y: ChartData[i].ListValue[j].Value });
+				}
+
+				_AxisY.push({ title: ChartData[i].Name, titleFontColor: _AxisYTemplate[i].titleFontColor, lineColor: _AxisYTemplate[i].lineColor, tickColor: _AxisYTemplate[i].tickColor, titleFontFamily: _AxisYTemplate[i].titleFontFamily });
+
+				_data.push({ type: 'line', axisYIndex: i, dataPoints: _dataPoints });
+			}
+
+			console.log(_data);
+
+			var chart = new CanvasJS.Chart("echart_line2",
+				{
+
+					axisY: _AxisY,
+					data: _data
+				});
+
+			chart.render();
+		}
+
+	});
+
+
+
+
+</script>

@@ -1,0 +1,14 @@
+﻿
+@{
+    Html.EnableClientValidation(true);
+    Html.EnableUnobtrusiveJavaScript(true);
+    var gh = new Esso.Web.Controllers.TagTemplateController.TemplateGridHelper();
+    GridViewSettings gridSettings = gh.GridTagTemplateSettings;
+    var grid = @Html.DevExpress().GridView(gridSettings);
+}
+
+@grid.BindToLINQ(string.Empty, string.Empty, (s, e) =>{
+    e.KeyExpression = "ID";  
+      e.QueryableSource = Esso.Service.TagTemplateService.GetTagTemplatesAsQuery(x => x.IS_DELETED == false).OrderByDescending(x => x.NAME);    
+
+}).GetHtml()

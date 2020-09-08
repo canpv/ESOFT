@@ -1,0 +1,35 @@
+﻿@model List<Esso.Web.ViewModels.RoleUserViewModel>
+@{
+    Html.EnableClientValidation();
+    Html.EnableUnobtrusiveJavaScript();
+}
+@using System.Web.UI.WebControls;
+@{
+
+    var grid = Html.DevExpress().GridView(
+     settings =>
+     {
+         settings.Name = "gvUserRole";
+         settings.KeyFieldName = "ROLE_NAME";
+         settings.Width = Unit.Percentage(100);
+         settings.CallbackRouteValues = new { Controller = "Account", Action = "GridUserRolePartial" };
+         settings.ClientSideEvents.BeginCallback = "OnUserRoleBeginCallback";
+         settings.ClientSideEvents.EndCallback = "OnUserRoleEndCallback";
+         settings.SettingsEditing.BatchUpdateRouteValues = new { Controller = "Account", Action = "UpdateUserRoles" };
+
+         settings.SettingsEditing.Mode = GridViewEditingMode.Batch;
+         settings.SettingsEditing.BatchEditSettings.EditMode = GridViewBatchEditMode.Cell;
+         settings.SettingsEditing.BatchEditSettings.StartEditAction = GridViewBatchStartEditAction.Click;
+
+         settings.Settings.ShowFilterRow = true;
+         settings.Settings.VerticalScrollBarMode = ScrollBarMode.Visible;
+         settings.Settings.VerticalScrollableHeight = 200;
+                 //Column info
+                 settings.Columns.Add(c => { c.FieldName = "ROLE_NAME"; c.Caption = "Role Name"; c.EditFormSettings.Visible = DefaultBoolean.False; c.ReadOnly = false; c.Settings.AllowCellMerge = DefaultBoolean.True; });
+         settings.Columns.Add("AUTH", MVCxGridViewColumnType.CheckBox);
+         settings.Columns["AUTH"].Width = 50;
+     });
+
+}
+
+@grid.Bind(Model).GetHtml()

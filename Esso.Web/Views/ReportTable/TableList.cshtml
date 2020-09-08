@@ -1,0 +1,80 @@
+﻿@using language
+@{
+	ViewBag.Title = "TableList";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+
+	List<Esso.Models.TBL_USER_CHART> List = (List<Esso.Models.TBL_USER_CHART>)ViewBag.List;
+}
+
+<div class="col-md-12 col-sm-12 col-xs-12">
+	<div class="x_panel">
+		<div class="x_title">
+			<h2>@Resources.Table_Report_List</h2>
+			<div class="clearfix"></div>
+		</div>
+		<div class="x_content">
+			<div>
+				<button class="btn btn-info btn-md" id="btnNew">@Resources.New_Report</button>
+			</div>
+			<div class="col-md-12 col-sm-12 col-xs-12">
+				<table id="datatable" class="table table-striped table-bordered">
+					<thead>
+						<tr>
+							<th>@Resources.Report_Name</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody>
+						@for (int i = 0; i < List.Count; i++)
+						{
+							<tr>
+								<td>@List[i].CHART_NAME</td>
+								<td style="width:150px;">
+									<input type="hidden" value="@List[i].ID" />
+									<button class="btn btn-info btn-sm btnEdit"><i class="fa fa-pencil"></i></button>
+									<button class="btn btn-danger btn-sm btnRemove"><i class="fa fa-remove"></i></button>
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	$(document).ready(function () {
+		$('#btnNew').click(function () {
+			window.location = "/ReportTable/Index/";
+		});
+
+		$('.btnEdit').click(function () {
+			var _Id = $(this).siblings('input').val();
+
+			window.location = "/ReportTable/Index/" + _Id;
+		});
+
+		$('.btnRemove').click(function () {
+			var _Id = $(this).siblings('input').val();
+
+			$.ajax({
+                url: '@Url.Action("DeleteUserChart", "ReportTable")',
+				data: {
+					'Id': _Id
+				},
+                type: "post",
+                cache: false,
+                success: function (result) {
+					if (result == "") {
+						location.href = window.location;
+                    }
+					else {
+						alert(result.ErrorMessage);
+                    }
+                }
+            });
+		});
+	});
+</script>
+

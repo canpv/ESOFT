@@ -1,0 +1,953 @@
+﻿@using language
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    List<Esso.Models.TBL_COMPANY> ListCompany = (List<Esso.Models.TBL_COMPANY>)ViewBag.ListCompany;
+    List<Esso.Models.TBL_STATION> ListStation = (List<Esso.Models.TBL_STATION>)ViewBag.ListStation;
+    List<Esso.Models.TBL_INVERTER> ListInverter = (List<Esso.Models.TBL_INVERTER>)ViewBag.ListInverter;
+    List<Esso.Models.TBL_USER_CHART_DETAIL> ListChartDetail = (List<Esso.Models.TBL_USER_CHART_DETAIL>)ViewBag.ListChartDetail;
+    string UserId = (string)ViewBag.UserId;
+    string ChartId = (string)ViewBag.ChartId;
+    string ChartName = (string)ViewBag.ChartName;
+}
+
+@section StyleSheets
+{
+    <link href="~/TreeView/TreeView.css" rel="stylesheet" />
+}
+
+<div style="display:none" id="hdnListDetail">
+    @for (int i = 0; i < ListChartDetail.Count; i++)
+    {
+        <div class="eu-row">
+            <input type="hidden" value="@ListChartDetail[i].INVERTER_ID" class="hdnDetailInverterId" />
+            <input type="hidden" value="@ListChartDetail[i].STATION_ID" class="hdnDetailStationId" />
+            <input type="hidden" value="@ListChartDetail[i].VALUE_TYPE" class="hdnDetailDataType" />
+        </div>
+    }
+</div>
+
+<input type="hidden" value="@UserId" id="hdnUserId" />
+<input type="hidden" value="@ChartId" id="hdnChartId" />
+
+<div class="col-md-12 col-sm-12 col-xs-12">
+    <div class="x_panel">
+        <div class="x_title">
+            <h2>@Resources.Create_Your_Chart</h2>
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="eu-wrapper">
+                    <div class="eu-left">
+                        <div class="eu-treeview" style="display:none">
+                            @for (int i = 0; i < ListCompany.Count; i++)
+                            {
+                                <div class="eu-treeview-item">
+                                    <div class="eu-treeview-header">
+                                        <i class="fa fa-plus-square-o"></i><span>
+                                            @if (User.IsInRole("DEMO"))
+                                            {
+                                                @ListCompany[i].DEMO_NAME.ToUpper()
+                                            }
+                                            else
+                                            {
+                                                @ListCompany[i].NAME.ToUpper()
+                                            }
+                                        </span>
+                                    </div>
+                                    <div class="eu-treeview-child" Style="display:none;">
+                                        @for (int j = 0; j < ListStation.Count; j++)
+                                        {
+                                            if (ListStation[j].COMPANY_ID == ListCompany[i].ID)
+                                            {
+                                                <div class="eu-treeview-item">
+                                                    <div class="eu-treeview-header">
+                                                        <i class="fa fa-plus-square-o"></i><span>
+                                                            @if (User.IsInRole("DEMO"))
+                                                            {
+                                                                @ListStation[j].DEMO_NAME.ToUpper()
+                                                                }
+                                                                else
+                                                                {
+                                                                @ListStation[j].NAME.ToUpper()
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                    <div class="eu-treeview-child" Style="display:none;">
+                                                        @if (ListStation[j].IS_EKK == true)
+                                                        {
+
+                                                            <div class="eu-treeview-item">
+                                                                <div class="eu-treeview-header">
+                                                                    <i class="fa fa-plus-square-o"></i><span>EKK</span>
+                                                                </div>
+                                                                <div class="eu-treeview-child" Style="display:none;">
+                                                                    <div class="eu-treeview-item">
+                                                                        <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="Frequency" data-status="UnChecked" data-IsStation="1">
+                                                                            <i class="fa fa-square-o"></i><span> @Resources.Frequency</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="eu-treeview-item">
+                                                                        <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="H2_WP_minus" data-status="UnChecked" data-IsStation="1">
+                                                                            <i class="fa fa-square-o"></i><span> @Resources.Produced_Energy</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="eu-treeview-item">
+                                                                        <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="H2_WP_plus" data-status="UnChecked" data-IsStation="1">
+                                                                            <i class="fa fa-square-o"></i><span> @Resources.Consumed_Energy</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="eu-treeview-item">
+                                                                        <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="Current_L1" data-status="UnChecked" data-IsStation="1">
+                                                                            <i class="fa fa-square-o"></i><span> @Resources.Current</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="eu-treeview-item">
+                                                                        <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="Current_L2" data-status="UnChecked" data-IsStation="1">
+                                                                            <i class="fa fa-square-o"></i><span> @Resources.Current L2</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="eu-treeview-item">
+                                                                        <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="Current_L3" data-status="UnChecked" data-IsStation="1">
+                                                                            <i class="fa fa-square-o"></i><span>@Resources.Current L3</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="eu-treeview-item">
+                                                                        <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="Active_Power_Sum" data-status="UnChecked" data-IsStation="1">
+                                                                            <i class="fa fa-square-o"></i><span>@Resources.Active_Power_Sum</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="eu-treeview-item">
+                                                                        <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="Power_Factor" data-status="UnChecked" data-IsStation="1">
+                                                                            <i class="fa fa-square-o"></i><span>@Resources.Power_Factor</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="eu-treeview-item">
+                                                                        <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="Reactive_Power_Sum" data-status="UnChecked" data-IsStation="1">
+                                                                            <i class="fa fa-square-o"></i><span>@Resources.Reactive_Power_Sum</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="eu-treeview-item">
+                                                                        <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="Visible_Power_Sum" data-status="UnChecked" data-IsStation="1">
+                                                                            <i class="fa fa-square-o"></i><span>@Resources.Visible_Power_Sum</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="eu-treeview-item">
+                                                                        <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="Voltage_L1-L2" data-status="UnChecked" data-IsStation="1">
+                                                                            <i class="fa fa-square-o"></i><span>@Resources.Voltage L1-L2</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="eu-treeview-item">
+                                                                        <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="Voltage_L1-L3" data-status="UnChecked" data-IsStation="1">
+                                                                            <i class="fa fa-square-o"></i><span>@Resources.Voltage L1-L3</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="eu-treeview-item">
+                                                                        <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="Voltage_L2-L3" data-status="UnChecked" data-IsStation="1">
+                                                                            <i class="fa fa-square-o"></i><span>@Resources.Voltage L2-L3</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        }
+                                                        <div class="eu-treeview-item">
+                                                            <div class="eu-treeview-header">
+                                                                <i class="fa fa-plus-square-o"></i><span>INVERTER</span>
+                                                            </div>
+                                                            <div class="eu-treeview-child" Style="display:none;">
+                                                                @for (int k = 0; k < ListInverter.Count; k++)
+                                                                {
+                                                                    if (ListInverter[k].STATION_ID == ListStation[j].ID)
+                                                                    {
+                                                                        <div class="eu-treeview-item" data-value="@ListInverter[k].STATION_ID">
+                                                                            <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="Inverter_Name">
+                                                                                <i class="fa fa-plus-square-o"></i><span>@ListInverter[k].NAME.ToUpper()</span>
+                                                                            </div>
+                                                                            <div class="eu-treeview-child" Style="display:none;">
+                                                                                <div class="eu-treeview-item">
+                                                                                    <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="Current_AC" data-status="UnChecked" data-IsStation="0">
+                                                                                        <i class="fa fa-square-o"></i><span>@Resources.Current AC</span>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div class="eu-treeview-item">
+                                                                                    <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="Current_DC" data-status="UnChecked" data-IsStation="0">
+                                                                                        <i class="fa fa-square-o"></i><span>@Resources.Current DC</span>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div class="eu-treeview-item">
+                                                                                    <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="Voltage_AC" data-status="UnChecked" data-IsStation="0">
+                                                                                        <i class="fa fa-square-o"></i><span>@Resources.Voltage AC</span>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div class="eu-treeview-item">
+                                                                                    <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="Voltage_DC" data-status="UnChecked" data-IsStation="0">
+                                                                                        <i class="fa fa-square-o"></i><span>@Resources.Voltage DC</span>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div class="eu-treeview-item">
+                                                                                    <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="Power_AC" data-status="UnChecked" data-IsStation="0">
+                                                                                        <i class="fa fa-square-o"></i><span>@Resources.Power AC</span>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div class="eu-treeview-item">
+                                                                                    <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="Power_DC" data-status="UnChecked" data-IsStation="0">
+                                                                                        <i class="fa fa-square-o"></i><span>@Resources.Power DC</span>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div class="eu-treeview-item">
+                                                                                    <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="Production" data-status="UnChecked" data-IsStation="0">
+                                                                                        <i class="fa fa-square-o"></i><span>@Resources.Production</span>
+                                                                                    </div>
+                                                                                </div>
+                                                                                @if (ListStation[j].STATION_TYPE == 3)
+                                                                                {
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="HEARTBEAT" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>HEARTBEAT</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="INVERTER_MAIN_STATUS" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>INVERTER_MAIN_STATUS</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="REACTIVE_POWER" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>REACTIVE_POWER</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="GRID_VOLTAGE_VRMS" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>GRID_VOLTAGE_VRMS</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="GRID_FREQUENCY" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>GRID_FREQUENCY</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="POWER_FACTOR" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>POWER_FACTOR</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="CODE_OF_THE_ACTIVE_FAULT" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>CODE_OF_THE_ACTIVE_FAULT</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="GRID_CURRENT" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>GRID_CURRENT</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="DC_BUS_VOLTAGE" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>DC_BUS_VOLTAGE</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="GROUNDING_CURRENT" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>GROUNDING_CURRENT</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="SOLATION_RESISTANCE" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>ISOLATION_RESISTANCE</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="AMBIENT_TEMPERATURE" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>AMBIENT_TEMPERATURE</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="HIGHEST_IGBT_TEMPERATURE_PU1" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>HIGHEST_IGBT_TEMPERATURE_PU1</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="HIGHEST_IGBT_TEMPERATURE_PU2" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>HIGHEST_IGBT_TEMPERATURE_PU2</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="HIGHEST_IGBT_TEMPERATURE_PU3" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>HIGHEST_IGBT_TEMPERATURE_PU3</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="HIGHEST_IGBT_TEMPERATURE_PU4" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>HIGHEST_IGBT_TEMPERATURE_PU4</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="CONTROL_SECTION_TEMPERATURE" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>CONTROL_SECTION_TEMPERATURE</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="DAILY_KVAH_SUPPLIED" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>DAILY_KVAH_SUPPLIED</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="TOTAL_KVAH_SUPPLIED" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>TOTAL_KVAH_SUPPLIED</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="IGBT_1_T1" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>IGBT_1_T1</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="IGBT_1_T2" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>IGBT_1_T2</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="IGBT_1_T3" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>IGBT_1_T3</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="IGBT_2_T1" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>IGBT_2_T1</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="IGBT_2_T2" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>IGBT_2_T2</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="IGBT_2_T3" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>IGBT_2_T3</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="IGBT_3_T1" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>IGBT_3_T1</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="IGBT_3_T2" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>IGBT_3_T2</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="IGBT_3_T3" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>IGBT_3_T3</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="IGBT_4_T1" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>IGBT_4_T1</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="IGBT_4_T2" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>IGBT_4_T2</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="eu-treeview-item">
+                                                                                        <div class="eu-treeview-header" data-value="@ListInverter[k].ID" data-type="IGBT_4_T3" data-status="UnChecked" data-IsStation="0">
+                                                                                            <i class="fa fa-square-o"></i><span>IGBT_4_T3</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                }
+                                                                            </div>
+                                                                        </div>
+                                                                    }
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                      
+                                                        @if (ListStation[j].IS_METEOROLOGY == true)
+                                                        {
+
+                                                            if (ListStation[j].STATION_TYPE == 3)
+                                                            {
+                                                                <div class="eu-treeview-item">
+                                                                    <div class="eu-treeview-header">
+                                                                        <i class="fa fa-plus-square-o"></i><span>@Resources.Meteorology</span>
+                                                                    </div>
+                                                                    <div class="eu-treeview-child" Style="display:none;">
+                                                                        <div class="eu-treeview-item">
+                                                                            <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="Irradiation" data-status="UnChecked" data-IsStation="1">
+                                                                                <i class="fa fa-square-o"></i><span>Master @Resources.Irradiation (W/m²)</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="eu-treeview-item">
+                                                                            <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="Wind_Speed" data-status="UnChecked" data-IsStation="1">
+                                                                                <i class="fa fa-square-o"></i><span>Master @Resources.Wind_Speed (M/s)</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="eu-treeview-item">
+                                                                            <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="Cell_Temperature" data-status="UnChecked" data-IsStation="1">
+                                                                                <i class="fa fa-square-o"></i><span>Master @Resources.Cell_Temp (°C )</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="eu-treeview-item">
+                                                                            <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="External_Temperature" data-status="UnChecked" data-IsStation="1">
+                                                                                <i class="fa fa-square-o"></i><span>Master @Resources.External_Temp (°C )</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="eu-treeview-item">
+                                                                            <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="Pyranometer" data-status="UnChecked" data-IsStation="1">
+                                                                                <i class="fa fa-square-o"></i><span>Master @Resources.Pyranometer</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="eu-treeview-item">
+                                                                            <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="MEAN_WIND_DIRECTION_1" data-status="UnChecked" data-IsStation="1">
+                                                                                <i class="fa fa-square-o"></i><span>Master @Resources.Wind_direction</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="eu-treeview-item">
+                                                                            <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="AIR_TEMPERATURE_1" data-status="UnChecked" data-IsStation="1">
+                                                                                <i class="fa fa-square-o"></i><span>Master @Resources.Air_Temperature</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="eu-treeview-item">
+                                                                            <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="RELATIVE_HUMIDITY_1" data-status="UnChecked" data-IsStation="1">
+                                                                                <i class="fa fa-square-o"></i><span>Master @Resources.Relative_Humidity</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="eu-treeview-item">
+                                                                            <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="ABSOLUTE_HUMIDITY_1" data-status="UnChecked" data-IsStation="1">
+                                                                                <i class="fa fa-square-o"></i><span>Master @Resources.Absolute_Humidity</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="eu-treeview-item">
+                                                                            <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="ABSOLUTE_AIR_PRESSURE_1" data-status="UnChecked" data-IsStation="1">
+                                                                                <i class="fa fa-square-o"></i><span>Master @Resources.Absolute_Air_Pressure</span>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div class="eu-treeview-item">
+                                                                            <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="ISINIM_2" data-status="UnChecked" data-IsStation="1">
+                                                                                <i class="fa fa-square-o"></i><span>Slave @Resources.Irradiation (W/m²)</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="eu-treeview-item">
+                                                                            <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="RUZGARHIZI_2" data-status="UnChecked" data-IsStation="1">
+                                                                                <i class="fa fa-square-o"></i><span>Slave @Resources.Wind_Speed (M/s)</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="eu-treeview-item">
+                                                                            <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="HUCRESICAKLIGI_2" data-status="UnChecked" data-IsStation="1">
+                                                                                <i class="fa fa-square-o"></i><span>Slave @Resources.Cell_Temp (°C )</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="eu-treeview-item">
+                                                                            <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="SICAKLIK_2" data-status="UnChecked" data-IsStation="1">
+                                                                                <i class="fa fa-square-o"></i><span>Slave @Resources.External_Temp (°C )</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="eu-treeview-item">
+                                                                            <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="PYRANOMETER_2" data-status="UnChecked" data-IsStation="1">
+                                                                                <i class="fa fa-square-o"></i><span>Slave @Resources.Pyranometer</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="eu-treeview-item">
+                                                                            <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="MEAN_WIND_DIRECTION_2" data-status="UnChecked" data-IsStation="1">
+                                                                                <i class="fa fa-square-o"></i><span>Slave @Resources.Wind_direction</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="eu-treeview-item">
+                                                                            <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="AIR_TEMPERATURE_2" data-status="UnChecked" data-IsStation="1">
+                                                                                <i class="fa fa-square-o"></i><span>Slave @Resources.Air_Temperature</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="eu-treeview-item">
+                                                                            <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="RELATIVE_HUMIDITY_2" data-status="UnChecked" data-IsStation="1">
+                                                                                <i class="fa fa-square-o"></i><span>Slave @Resources.Relative_Humidity</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="eu-treeview-item">
+                                                                            <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="ABSOLUTE_HUMIDITY_2" data-status="UnChecked" data-IsStation="1">
+                                                                                <i class="fa fa-square-o"></i><span>Slave @Resources.Absolute_Humidity</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="eu-treeview-item">
+                                                                            <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="ABSOLUTE_AIR_PRESSURE_2" data-status="UnChecked" data-IsStation="1">
+                                                                                <i class="fa fa-square-o"></i><span>Slave @Resources.Absolute_Air_Pressure</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                            }
+                                                            else if (ListStation[j].STATION_TYPE == 4 || ListStation[j].STATION_TYPE == 2)
+                                                            {
+                                                                //Meteoroloji Yok!
+                                                            }
+                                                            else
+                                                            {
+                                                                <div class="eu-treeview-item">
+                                                                    <div class="eu-treeview-header">
+                                                                        <i class="fa fa-plus-square-o"></i><span>@Resources.Meteorology</span>
+                                                                    </div>
+                                                                    <div class="eu-treeview-child" Style="display:none;">
+                                                                        <div class="eu-treeview-item">
+                                                                            <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="Irradiation" data-status="UnChecked" data-IsStation="1">
+                                                                                <i class="fa fa-square-o"></i><span> @Resources.Irradiation (W/m²)</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="eu-treeview-item">
+                                                                            <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="Wind_Speed" data-status="UnChecked" data-IsStation="1">
+                                                                                <i class="fa fa-square-o"></i><span> @Resources.Wind_Speed (M/s)</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="eu-treeview-item">
+                                                                            <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="Cell_Temperature" data-status="UnChecked" data-IsStation="1">
+                                                                                <i class="fa fa-square-o"></i><span> @Resources.Cell_Temp (°C )</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="eu-treeview-item">
+                                                                            <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="External_Temperature" data-status="UnChecked" data-IsStation="1">
+                                                                                <i class="fa fa-square-o"></i><span> @Resources.External_Temp (°C )</span>
+                                                                            </div>
+                                                                        </div>
+                                                                        @if (ListStation[j].IS_PYRANOMETER == true)
+                                                                        {
+                                                                            <div class="eu-treeview-item">
+                                                                                <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="Pyranometer" data-status="UnChecked" data-IsStation="1">
+                                                                                    <i class="fa fa-square-o"></i><span> @Resources.Pyranometer</span>
+                                                                                </div>
+                                                                            </div>
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                            }
+                                                        }
+
+                                                        <div class="eu-treeview-item">
+                                                            <div class="eu-treeview-header">
+                                                                <i class="fa fa-plus-square-o"></i><span>@Resources.Production</span>
+                                                            </div>
+                                                            <div class="eu-treeview-child" Style="display:none;">
+                                                                <div class="eu-treeview-item">
+                                                                    <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="Daily_Production" data-status="UnChecked" data-IsStation="1">
+                                                                        <i class="fa fa-square-o"></i><span> @Resources.Daily_Production (kW)</span>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="eu-treeview-item">
+                                                                    <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="Total_Energy" data-status="UnChecked" data-IsStation="1">
+                                                                        <i class="fa fa-square-o"></i><span> @Resources.Energy (MWh)</span>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="eu-treeview-item">
+                                                                    <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="Total_Power_AC" data-status="UnChecked" data-IsStation="1">
+                                                                        <i class="fa fa-square-o"></i><span> @Resources.Power AC (W)</span>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="eu-treeview-item">
+                                                                    <div class="eu-treeview-header" data-value="@ListStation[j].ID" data-type="Total_Power_DC" data-status="UnChecked" data-IsStation="1">
+                                                                        <i class="fa fa-square-o"></i><span> @Resources.Power DC (W)</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="eu-right">
+                        @*<div class="btn-group">
+                                <select id="cmbTag" name="selectedTag" class="form-control" style="width:200px;">
+                                    <option value="0">Select</option>
+                                </select>
+                            </div>*@
+                        <div class="btn-group">
+                            <h5 class="title" id="exampleModalLabel">@Resources.Chart_Name :</h5>
+                            <input type="text" id="txtChartName" class="form-control" placeholder="@Resources.Enter ..." value="@ChartName" />
+                        </div>
+                        <div id="echart_line2" style="height:350px;"></div>
+                        <div class="btn-group">
+                            <button class="btn btn-info" id="btnRefresh">@Resources.Get_Chart</button>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-info" id="btnSave">@Resources.Save_Chart</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="SelectErorMessage" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">@Resources.Warning</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                @Resources.You_can_choose_up_to_3 !
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">@Resources.Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="SelectErorMessageChartName" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">@Resources.Warning</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                @Resources.Please_enter_chart_name !
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">@Resources.Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="SelectErorMessageChart" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">@Resources.Warning</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                @Resources.Please_select_item !
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">@Resources.Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="SelectErorMessageChartList" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">@Resources.Warning</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                @Resources.Please_select_item_and_enter_chart_name !
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">@Resources.Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<br /><br />
+<script src="~/Scripts/canvasjs.min.js"></script>
+@*<script type="text/javascript" src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>*@
+<script>
+	$(document).ready(function () {
+		$('.eu-treeview').show();
+
+		ApplyActiveChartDetail();
+
+
+		function ApplyActiveChartDetail() {
+			var _DetailItems = $('#hdnListDetail').find('.eu-row');
+
+			for (var i = 0; i < _DetailItems.length; i++) {
+				var _InverterId = $(_DetailItems[i]).find('.hdnDetailInverterId').val();
+				var _StationId = $(_DetailItems[i]).find('.hdnDetailStationId').val();
+				var _DataTye = $(_DetailItems[i]).find('.hdnDetailDataType').val();
+
+				if (_InverterId != "0") {
+					var Item = $('.eu-treeview-header[data-value="' + _InverterId + '"][data-type="' + _DataTye + '"]');
+
+					$(Item).attr('data-status', 'Checked');
+
+					$(Item).find('i').removeClass('fa-square-o').addClass('fa-check-square-o');
+
+					var Parents = $(Item).parents('.eu-treeview-child');
+
+					for (var j = 0; j < Parents.length; j++) {
+						$(Parents[j]).show();
+						$(Parents[j]).siblings('.eu-treeview-header').find('i').removeClass('fa-plus-square-o').addClass('fa-minus-square-o');
+
+					}
+
+				}
+				else {
+					var Item = $('.eu-treeview-header[data-value="' + _StationId + '"][data-type="' + _DataTye + '"]');
+
+					$(Item).attr('data-status', 'Checked');
+
+					$(Item).find('i').removeClass('fa-square-o').addClass('fa-check-square-o');
+
+					var Parents = $(Item).parents('.eu-treeview-child');
+
+					for (var j = 0; j < Parents.length; j++) {
+						$(Parents[j]).show();
+						$(Parents[j]).siblings('.eu-treeview-header').find('i').removeClass('fa-plus-square-o').addClass('fa-minus-square-o');
+
+					}
+
+				}
+			}
+
+			ChartDataRefresh();
+		}
+
+		function ChartDataRefresh()
+		{
+			var UserId = $('#hdnUserId').val();
+
+			var Checked = $('.eu-treeview-header[data-status="Checked"]');
+
+			var data = [];
+
+			for (var i = 0; i < Checked.length; i++) {
+				var IsStation = $(Checked[i]).attr('data-IsStation');
+				var StationId = "0";
+				var InverterId = "0";
+				var DataType = $(Checked[i]).attr('data-type');
+
+				if (IsStation == "1") {
+					StationId = $(Checked[i]).attr('data-value');
+				}
+				else {
+					StationId = $(Checked[i]).parent().parent().parent().attr('data-value');
+					InverterId = $(Checked[i]).attr('data-value');
+				}
+
+				data.push({
+					'StationId': StationId,
+					'InverterId': InverterId,
+					'DataType': DataType
+				});
+			}
+			debugger;
+			ShowLoading();
+			$.ajax({
+                url: '@Url.Action("GetChartValues", "Report")',
+				data: {
+					'data': data
+				},
+                type: "post",
+                cache: false,
+                success: function (result) {
+					if (result.ErrorMessage == "") {
+						HideLoading();
+						ChartRefresh(result.ListChartValues);
+                    }
+					else {
+						alert(result.ErrorMessage);
+                    }
+                }
+            });
+		};
+
+		function ChartRefresh(ChartData) {
+			console.log(ChartData);
+
+			var _data = [];
+
+			var _AxisY = [];
+
+
+			var _AxisYTemplate = [
+				{ title: '0', titleFontColor: "#4F81BC", lineColor: "#4F81BC", tickColor: "#4F81BC", titleFontFamily: "Helvetica Neue", titleFontSize :"5"},
+				{ title: '1', titleFontColor: "#a04242", lineColor: "#a04242", tickColor: "#a04242", titleFontFamily: "Helvetica Neue", titleFontSize: "5" },
+				{ title: '2', titleFontColor: "#9da92c", lineColor: "#9da92c", tickColor: "#9da92c", titleFontFamily: "Helvetica Neue", titleFontSize: "5" },
+				{ title: '3', titleFontColor: "#009688", lineColor: "#009688", tickColor: "#009688", titleFontFamily: "Helvetica Neue", titleFontSize: "5"},
+				{ title: '4', titleFontColor: "#3f51b5", lineColor: "#3f51b5", tickColor: "#3f51b5", titleFontFamily: "Helvetica Neue", titleFontSize: "5"},
+				{ title: '5', titleFontColor: "#9c27b0", lineColor: "#9c27b0", tickColor: "#9c27b0", titleFontFamily: "Helvetica Neue", titleFontSize: "5"},
+				{ title: '6', titleFontColor: "#ff9800", lineColor: "#ff9800", tickColor: "#ff9800", titleFontFamily: "Helvetica Neue", titleFontSize: "5"},
+				{ title: '7', titleFontColor: "#00a4bd", lineColor: "#00a4bd", tickColor: "#00a4bd", titleFontFamily: "Helvetica Neue", titleFontSize: "5" },
+				{ title: '8', titleFontColor: "#ef343c", lineColor: "#ef343c", tickColor: "#ef343c", titleFontFamily: "Helvetica Neue", titleFontSize: "5"},
+				{ title: '9', titleFontColor: "#333", lineColor: "#333", tickColor: "#333", titleFontFamily: "Helvetica Neue", titleFontSize: "5" }
+
+			];
+
+			for (var i = 0; i < ChartData.length; i++) {
+				var _dataPoints = [];
+
+				for (var j = 0; j < ChartData[i].ListValue.length; j++) {
+					var _Tarih = parseInt(ChartData[i].ListValue[j].Tarih.substr(6, 13));
+
+					var _Date = new Date(_Tarih);
+
+					_dataPoints.push({ x: _Date, y: ChartData[i].ListValue[j].Value });
+				}
+
+				_AxisY.push({ title: ChartData[i].Name, titleFontColor: _AxisYTemplate[i].titleFontColor, lineColor: _AxisYTemplate[i].lineColor, tickColor: _AxisYTemplate[i].tickColor, titleFontFamily: _AxisYTemplate[i].titleFontFamily});
+
+				_data.push({ type: 'line', axisYIndex: i, dataPoints: _dataPoints });
+			}
+
+			console.log(_data);
+
+			var chart = new CanvasJS.Chart("echart_line2",
+			{
+
+				axisY: _AxisY,
+				data: _data
+			});
+
+			chart.render();
+		}
+
+		$('.eu-treeview-header').click(function () {
+			var _text = $(this).find('span').html();
+			var _DataValue = $(this).attr('data-value');
+			var _DataType = $(this).attr('data-type');
+
+			if ($(this).find('i').hasClass('fa-plus-square-o')) {
+				$(this).find('i').removeClass('fa-plus-square-o').addClass('fa-minus-square-o');
+
+				$(this).siblings('.eu-treeview-child').slideDown();
+			}
+			else if ($(this).find('i').hasClass('fa-minus-square-o')) {
+				$(this).find('i').removeClass('fa-minus-square-o').addClass('fa-plus-square-o');
+
+				$(this).siblings('.eu-treeview-child').slideUp();
+			}
+			else if ($(this).find('i').hasClass('fa-square-o')) {
+				var Checked = $('.eu-treeview-header[data-status="Checked"]');
+
+				if (Checked.length < 3) {
+					$(this).find('i').removeClass('fa-square-o').addClass('fa-check-square-o');
+					$(this).attr('data-status', 'Checked');
+
+					//$('#cmbTag').append('<option value="' + _DataType + '½' + _DataValue +'">' + _text + '</option>');
+				}
+				else
+					$('#SelectErorMessage').modal('show');
+
+			}
+			else if ($(this).find('i').hasClass('fa-check-square-o')) {
+				$(this).find('i').removeClass('fa-check-square-o').addClass('fa-square-o');
+				$(this).attr('data-status', 'UnChecked');
+
+				//$('#cmbTag').find('option[value="' + _DataType + '½' + _DataValue + '"]').remove();
+			}
+		});
+
+		$('#btnRefresh').click(function () {
+			ChartDataRefresh();
+		});
+
+		$('#btnSave').click(function () {
+			debugger;
+			var UserId = $('#hdnUserId').val();
+			var ChartId = $('#hdnChartId').val();
+			var ChartName = $('#txtChartName').val();
+
+			var Checked = $('.eu-treeview-header[data-status="Checked"]');
+
+			var data = [];
+
+			if ( ChartName !="" && Checked.length > 0 ) {
+
+
+
+				for (var i = 0; i < Checked.length; i++) {
+					var IsStation = $(Checked[i]).attr('data-IsStation');
+					var StationId = "0";
+					var InverterId = "0";
+					var DataType = $(Checked[i]).attr('data-type');
+
+					if (IsStation == "1") {
+						StationId = $(Checked[i]).attr('data-value');
+					}
+					else {
+						StationId = $(Checked[i]).parent().parent().parent().attr('data-value');
+						InverterId = $(Checked[i]).attr('data-value');
+					}
+
+					data.push({
+						'StationId': StationId,
+						'InverterId': InverterId,
+						'DataType': DataType
+					});
+				}
+
+				$.ajax({
+					url: '@Url.Action("SaveUserChart", "Report")',
+					data: {
+						'data': data,
+						'UserId': UserId,
+						'ChartName': ChartName,
+						'ChartId': ChartId
+					},
+					type: "post",
+					cache: false,
+					success: function (result) {
+						if (result.ErrorMessage == "") {
+							window.location = "/Report/ChartList";
+						}
+						else {
+							alert(result.ErrorMessage);
+						}
+					}
+				});
+			} else
+			{
+				debugger;
+				if ( ChartName == ""  &&  Checked.length == 0)
+				{
+					$('#SelectErorMessageChartList').modal('show');
+
+				}
+				else
+				{
+					if ( ChartName == "")
+					{
+						$('#SelectErorMessageChartName').modal('show');
+					}
+					else {
+
+						$('#SelectErorMessageChart').modal('show');
+
+					}
+				}
+			}
+		});
+	});
+</script>
+<style>
+    .Loading {
+        position: absolute;
+        top: 0;
+        z-index: 1000;
+        background: rgba(255,255,255,0.7);
+        overflow: hidden;
+        display: none;
+    }
+
+    #Gif img {
+        width: 100%;
+        height: 50px;
+    }
+
+    #Gif {
+        width: 50px;
+        margin: 0 auto;
+    }
+</style>

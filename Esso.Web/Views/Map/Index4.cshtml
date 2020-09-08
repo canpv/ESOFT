@@ -1,0 +1,193 @@
+﻿
+@{
+    ViewBag.Title = "Index4";
+    Layout = null;// "~/Views/Shared/_Layout.cshtml";
+}
+<!doctype html>
+<html>
+<head>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px 20px 20px;
+            font-family: Arial;
+            font-size: 16px;
+        }
+
+        #map-container {
+            padding: 6px;
+            border-width: 1px;
+            border-style: solid;
+            border-color: #ccc #ccc #999 #ccc;
+            -webkit-box-shadow: rgba(64, 64, 64, 0.5) 0 2px 5px;
+            -moz-box-shadow: rgba(64, 64, 64, 0.5) 0 2px 5px;
+            box-shadow: rgba(64, 64, 64, 0.1) 0 2px 5px;
+            width: 600px;
+        }
+
+        #map {
+            width: 1080px;
+            height: 720px;
+        }
+
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?key=&v=3.0&sensor=true&language=ee&dummy=dummy.js"></script>
+    @*<script src="https://maps.googleapis.com/maps/api/js"></script>*@
+    <script type="text/javascript" src="https://googlemaps.github.io/js-marker-clusterer/src/markerclusterer.js"></script>
+</head>
+<body>
+    <div id="map-container"><div id="map"></div></div>
+    <select id="type" onchange="filterMarkers(this.value);">
+        <option value="">Please select category</option>
+        <option value="second">second</option>
+        <option value="car">car</option>
+        <option value="third">third</option>
+    </select>
+</body>
+</html>
+
+
+
+<script>
+    var gmarkers1 = [];
+    var markers = [];
+    var infowindow = new google.maps.InfoWindow({
+        content: ''
+    });
+
+    // Our markers
+    markers = [
+        ['0', 'Title', 52.4357808, 4.991315699999973, 'car'],
+        ['1', 'Title', 52.4357808, 4.981315699999973, 'third'],
+        ['2', 'Title', 52.4555687, 5.039231599999994, 'car'],
+        ['3', 'Title', 52.4555687, 5.029231599999994, 'second']
+    ];
+
+    /**
+     * Function to init map
+     */
+
+    function initialize() {
+        var center = new google.maps.LatLng(52.4357808, 4.991315699999973);
+        var mapOptions = {
+            zoom: 3,
+            center: center,
+            mapTypeId: google.maps.MapTypeId.TERRAIN
+        };
+
+        map = new google.maps.Map(document.getElementById('map'), mapOptions);
+        for (i = 0; i < markers.length; i++) {
+            addMarker(markers[i]);
+        }
+        
+
+    }
+
+
+
+    //var mcOptions = {
+    //    //imagePath: 'https://googlemaps.github.io/js-marker-clusterer/images/m',
+    //    styles: [{
+
+    //        url: "https://googlemaps.github.io/js-marker-clusterer/images/m1.png",
+    //        width: 53,
+    //        height: 53,
+    //        fontFamily: "comic sans ms",
+    //        textSize: 15,
+    //        textColor: "red",
+    //        //color: #00FF00,
+    //    }]
+
+    //};
+    //var markerCluster = new MarkerClusterer(map, markers, mcOptions);
+
+    //debugger;
+    //MarkerClusterer.CALCULATOR = function (markers, numStyles) {
+    //    var index = 0;
+    //    var title = "";
+    //    var count = markers.length.toString();
+
+    //    var valueToSum = 0;
+
+    //    for (var m = 0; m < markers.length; m++) {
+    //        //This is the custom property called MyValue
+    //        valueToSum += Number(markers[m].MyValue);
+    //    }
+
+    //    var dv = val;
+
+    //    while (dv !== 0) {
+    //        dv = parseInt(dv / 10, 10);  //you could define your own rules
+    //        index++;
+    //    }
+
+    //    index = Math.min(index, numStyles);
+    //    return {
+    //        text: valueToSum,
+    //        index: index,
+    //        title: title
+    //    };
+    //};
+    /**
+     * Function to add marker to map
+     */
+
+    function addMarker(marker) {
+        var category = marker[4];
+        var title = marker[1];
+        var pos = new google.maps.LatLng(marker[2], marker[3]);
+        var content = marker[1];
+
+        marker1 = new google.maps.Marker({
+            title: title,
+            position: pos,
+            category: category,
+            map: map
+        });
+
+        gmarkers1.push(marker1);
+
+        // Marker click listener
+        google.maps.event.addListener(marker1, 'click', (function (marker1, content) {
+            return function () {
+                console.log('Gmarker 1 gets pushed');
+                infowindow.setContent(content);
+                infowindow.open(map, marker1);
+                map.panTo(this.getPosition());
+                map.setZoom(15);
+            }
+        })(marker1, content));
+    }
+
+    /**
+     * Function to filter markers by category
+     */
+
+    filterMarkers = function (category) {
+        debugger;
+        for (i = 0; i < markers.length; i++) {
+            marker = gmarkers1[i];
+            // If is same category or category not picked
+            if (marker.category == category || category.length === 0) {
+                marker.setVisible(true);
+            }
+            // Categories don't match
+            else {
+                marker.setVisible(false);
+            }
+        }
+    }
+
+    // Init map
+    google.maps.event.addDomListener(window, 'load', initialize);
+        //initialize();
+</script>
+
+
+<script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCl_zXhq0Qz4_hKotMC4H64zNo6KGPlDCY&callback=initMap">
+</script>
+
+
+
+

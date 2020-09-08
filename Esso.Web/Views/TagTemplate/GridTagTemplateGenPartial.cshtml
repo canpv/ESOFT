@@ -1,0 +1,9 @@
+﻿@model List<Esso.ViewModels.TagTempDetGridModel>
+@{
+    
+    Html.EnableClientValidation(true);
+    Html.EnableUnobtrusiveJavaScript(true);
+    var grid = Html.DevExpress().GridView(Esso.Web.Controllers.TagTemplateController.TemplateDetGridHelper.GridTagTemplateGenSettings);
+}
+
+@grid.Bind(Model).GetHtml()

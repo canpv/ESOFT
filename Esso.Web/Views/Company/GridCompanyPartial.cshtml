@@ -1,0 +1,101 @@
+﻿@using System.Web.UI.WebControls;
+@using Microsoft.AspNet.Identity;
+@using Esso.Data
+@{
+	GridViewSettings gridSettings = Esso.Web.Controllers.CompanyController.GridCompanySettings;
+	EssoEntities DB = new EssoEntities();
+	var curUserId = User.Identity.GetUserId();
+
+	var DEVELOPER = DB.UserEntity.Where(X => X.USER_ID == curUserId).Select(X => X.DEVELOPER).FirstOrDefault();
+
+	gridSettings.CommandColumn.Visible = true;
+	gridSettings.CommandColumn.ShowNewButtonInHeader = true;
+	gridSettings.CommandColumn.ShowEditButton = true;
+
+	if (DEVELOPER == 1)
+	{
+		gridSettings.CommandColumn.ShowDeleteButton = true;
+	}
+	else
+	{
+		gridSettings.CommandColumn.ShowDeleteButton = false;
+	}
+
+	gridSettings.CommandColumn.ButtonRenderMode = GridCommandButtonRenderMode.Image;
+	gridSettings.SettingsCommandButton.NewButton.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ActionsAdd16x16;
+	gridSettings.SettingsCommandButton.DeleteButton.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ActionsTrash16x16;
+	gridSettings.SettingsCommandButton.EditButton.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ActionsEditname16x16;
+
+	gridSettings.CommandColumn.Width = Unit.Point(75);
+
+	gridSettings.SetEditFormTemplateContent(c =>
+	{
+		Html.DevExpress().FormLayout(formLayoutSettings =>
+		{
+			formLayoutSettings.Name = "FormLayoutProducts";
+			formLayoutSettings.Width = Unit.Percentage(100);
+			formLayoutSettings.ColCount = 2;
+			formLayoutSettings.Items.Add(i =>
+			{
+				i.FieldName = "NAME";
+				i.Caption = " Company Name";
+				i.NestedExtension().TextBox(s =>
+				{
+					s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+					s.ShowModelErrors = true;
+					s.Width = Unit.Percentage(50);
+				});
+			});
+
+			formLayoutSettings.Items.AddEmptyItem();
+			formLayoutSettings.Items.Add(i =>
+			{
+				i.ShowCaption = DefaultBoolean.False;
+			}).SetNestedContent(() =>
+			{
+				ViewContext.Writer.Write("<div style='float:right'>");
+				Html.DevExpress().Button(
+					btnSettings =>
+					{
+						btnSettings.Name = "btnUpdate";
+						btnSettings.Text = "Save";
+						btnSettings.ClientSideEvents.Click = "function(s, e){ gvCompany.UpdateEdit(); }";
+					}).Render();
+				Html.DevExpress().Button(
+					btnSettings =>
+					{
+						btnSettings.Name = "btnCancel";
+						btnSettings.Text = "Cancel";
+						btnSettings.Style[HtmlTextWriterStyle.MarginLeft] = "5px";
+						btnSettings.ClientSideEvents.Click = "function(s, e){ gvCompany.CancelEdit(); }";
+					}).Render();
+				ViewContext.Writer.Write("</div>");
+			});
+		})
+		.Bind(ViewData["EditableProduct"] ?? c.DataItem)
+		.Render();
+	});
+
+	var grid = @Html.DevExpress().GridView(gridSettings);
+
+	if (ViewData["EditError"] != null)
+		grid.SetEditErrorText((string)ViewData["EditError"]);
+}
+@grid.BindToLINQ(string.Empty, string.Empty, (s, e) =>
+{
+	e.KeyExpression = "ID";
+	var curUserId_ = User.Identity.GetUserId();
+	if (User.IsInRole("M_ADMIN"))
+	{
+		e.QueryableSource = Esso.Service.CompanyService.GetCompaniesAsQuery().OrderByDescending(x => x.NAME);
+	}
+	else
+	{
+		e.QueryableSource = Esso.Service.CompanyService.GetCompaniesAsQuery().Where(x => x.UPDATE_USER == curUserId_).OrderByDescending(x => x.NAME);
+	}
+}).GetHtml()
+
+
+
+
+

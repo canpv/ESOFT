@@ -1,0 +1,141 @@
+﻿@using Esso.Web.ViewModels
+@model LoginViewModel
+@using language
+@{
+    Layout = null;
+    var culture = System.Threading.Thread.CurrentThread.CurrentUICulture.Name.ToLowerInvariant();
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Meta, title, CSS, favicons, etc. -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=9; IE=8; IE=7; IE=6; IE=5; IE=EDGE">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>E-SOFT </title>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+
+    <!-- Gentello Start -->
+    <link href="~/Content/vendors/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <link href="~/Content/vendors/nprogress/nprogress.css" rel="stylesheet">
+    <link href="~/css/custom.min.css" rel="stylesheet">
+    <link href="~/Content/vendors/animate.css/animate.min.css" rel="stylesheet" />
+    <!-- Gentello End -->
+
+    <link rel="icon" href="@Url.Content("~/images/EsoftLogo/esoft_icon1.png")" type="image/x-icon" />
+    <link rel="shortcut icon" href="@Url.Content("~/images/EsoftLogo/esoft_icon1.png")" type="image/x-icon" />
+
+    <style>
+        body {
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+    </style>
+
+</head>
+@helper selected(string c, string culture)
+{
+
+    if (c == culture)
+    {
+        @:checked="checked"
+    }
+}
+<body class="login">
+    <div>
+        <a class="hiddenanchor" id="signup"></a>
+        <a class="hiddenanchor" id="signin"></a>
+        <div class="login_wrapper">
+            <div class="animate form login_form">
+                <section class="login_content">
+                    @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <h1>
+                            <i class="fa">
+                                <img src="~/images/EsoftLogo/esoftImage.png" />
+                            </i>
+                        </h1>
+
+                        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                        <div>
+                            @Html.ValidationMessageFor(m => m.UserName, "", new { @class = "text-danger" })
+                            @Html.TextBoxFor(x => x.UserName, new { @class = "form-control", @placeholder = Resources.UserName, @autofocus = "" })
+                        </div>
+                        <div>
+                            @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+                            @Html.PasswordFor(x => x.Password, new { @class = "form-control", @placeholder = Resources.Password })
+                        </div>
+                        <div>
+                            <button type="submit" class="btn btn-lg btn-success btn-block">@Resources.Login</button>
+                        </div>
+
+                        <div class="clearfix"></div>
+                        <div class="">
+                            @Html.CheckBoxFor(m => m.RememberMe)
+                            @Resources.Remember_me?
+                            <div class="clearfix"></div>
+                        </div>
+                    }
+                    @*<img src="@Url.Content("~/images/languages/"+culture+".png")" alt="">
+                        @{
+                                if (culture == "en-us")
+                                {
+                                    <button onclick="location.href = '@Url.Action("SetCulture", "Account",new { culture = "tr" })'" class="btn btn-primary" style="margin-right: 5px;">@Resources.Turkish</button>
+                                }
+                                else if (true)
+                                {
+                                    <button onclick="location.href = '@Url.Action("SetCulture", "Account",new { culture = "en-us" })'" class="btn btn-primary" style="margin-right: 5px;">@Resources.English</button>
+                                }
+                            }*@
+
+                    @using (Html.BeginForm("SetCulture", "Account"))
+                    {
+                    <div>
+                        <label for="en-us">
+                            <input name="culture" id="en-us" value="en-us" type="radio" @selected("en-us", culture) />
+                            <img src="~/images/languages/en-US.png" />
+                            @Resources.English
+                        </label>
+                        <label for="en-us">
+                            <input name="culture" id="tr" value="tr" type="radio" @selected("tr", culture) />
+                            <img src="~/images/languages/tr.png" />
+                            @Resources.Turkish
+                        </label>
+                    </div>
+                    }
+
+                    <div>
+                        <p>©2016 @Resources.All_Rights_Reserved. E-SOFT</p>
+                    </div>
+                </section>
+
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
+<script type="text/javascript">
+    (function ($) {
+        $("input[type = 'radio']").click(function () {
+            debugger;
+            $(this).parents("form").submit(); //Languages click radio button post form
+        });
+
+    })(jQuery);
+</script>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+}
+

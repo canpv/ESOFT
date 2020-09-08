@@ -1,0 +1,185 @@
+﻿@using Esso.Web.ViewModels
+@using System.Web.UI.WebControls;
+@using DevExpress.Web.Mvc;
+@using Esso.Data;
+@using Microsoft.AspNet.Identity;
+
+@model List<RegisterViewModel>
+
+@{
+
+	GridViewSettings gridSettings = Esso.Web.Controllers.AccountController.GridUsersSettings;
+	EssoEntities DB = new EssoEntities();
+	string curUserId = User.Identity.GetUserId();
+
+	var DEVELOPER = DB.UserEntity.Where(X => X.USER_ID == curUserId).Select(X => X.DEVELOPER).FirstOrDefault();
+
+	gridSettings.CommandColumn.ButtonRenderMode = GridCommandButtonRenderMode.Image;
+
+	gridSettings.SettingsCommandButton.NewButton.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ActionsAdd16x16;
+	gridSettings.SettingsCommandButton.DeleteButton.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ActionsTrash16x16;
+	gridSettings.SettingsCommandButton.EditButton.Image.IconID = DevExpress.Web.ASPxThemes.IconID.ActionsEditname16x16;
+
+	gridSettings.CommandColumn.ShowNewButtonInHeader = true;
+
+	if (DEVELOPER == 1)
+	{
+		gridSettings.CommandColumn.ShowDeleteButton = true;
+	}
+	else
+	{
+		gridSettings.CommandColumn.ShowDeleteButton = false;
+	}
+
+	gridSettings.CommandColumn.Width = Unit.Point(75);
+
+	gridSettings.SetEditFormTemplateContent(c =>
+	{
+
+
+		Html.DevExpress().FormLayout(formLayoutSettings =>
+		{
+			formLayoutSettings.Name = "FormLayoutProducts";
+			formLayoutSettings.Width = Unit.Percentage(100);
+			formLayoutSettings.ColCount = 2;
+			formLayoutSettings.Items.Add(i =>
+			{
+				i.FieldName = "UserName";
+				i.NestedExtension().TextBox(s =>
+				{
+					s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+					s.ShowModelErrors = true;
+					s.Width = Unit.Pixel(200);
+
+				});
+			});
+			formLayoutSettings.Items.Add(i =>
+			{
+				i.FieldName = "Email";
+				i.NestedExtension().TextBox(s =>
+				{
+					s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+					s.ShowModelErrors = true;
+					s.Width = Unit.Pixel(200);
+				});
+			});
+			formLayoutSettings.Items.Add(i =>
+			{
+				i.FieldName = "Password";
+				i.Caption = "Password";
+				i.NestedExtension().TextBox(s =>
+				{
+					s.Properties.ValidationSettings.ErrorDisplayMode = ErrorDisplayMode.ImageWithTooltip;
+					s.ShowModelErrors = true;
+					s.Width = Unit.Pixel(200);
+				});
+			});
+
+			formLayoutSettings.Items.Add(i =>
+
+			{
+				i.FieldName = "SHOW_MONEY";
+				i.Caption = "Display Money";
+				i.NestedExtension().ComboBox(s =>
+				{
+					s.Properties.Items.Add(new ListEditItem { Text = "Show", Value = null });
+					s.Properties.Items.Add(new ListEditItem { Text = "Not Show", Value = 1 });
+				});
+				i.Width = Unit.Pixel(50);
+			});
+			formLayoutSettings.Items.Add(i =>
+
+			{
+				i.FieldName = "SEND_MAIL";
+				i.Caption = "Send Alarm Mail";
+				i.NestedExtension().ComboBox(s =>
+				{
+					s.Properties.Items.Add(new ListEditItem { Text = "Not Send", Value = null });
+					s.Properties.Items.Add(new ListEditItem { Text = "Send", Value = 1 });
+				});
+				i.Width = Unit.Pixel(50);
+			});
+
+
+			formLayoutSettings.Items.Add(i =>
+			{
+				i.FieldName = "PUSH_NOT";
+				i.Caption = "Push Notification";
+				i.NestedExtension().CheckBox(s =>
+				{
+					s.Properties.ValueType = typeof(bool);
+
+				});
+			});
+			formLayoutSettings.Items.Add(i =>
+			{
+				i.FieldName = "IS_DEMO";
+				i.Caption = "Demo";
+				i.NestedExtension().CheckBox(s =>
+				{
+					s.Properties.ValueType = typeof(bool);
+
+				});
+			});
+
+			formLayoutSettings.Items.Add(i =>
+			{
+				i.Caption = "";
+				i.FieldName = "CREATED_DATE";
+				i.NestedExtension().DateEdit(s =>
+				{
+					s.ClientVisible = false;
+					s.Properties.UseMaskBehavior = true;
+					// s.Properties.EditFormat = EditFormat.Custom;
+					s.Properties.EditFormatString = "d/M/yyyy HH:mm:ss";
+					s.Width = Unit.Percentage(100);
+					s.ReadOnly = true;
+
+				});
+
+			});
+
+
+
+
+			formLayoutSettings.Items.AddEmptyItem();
+			formLayoutSettings.Items.AddEmptyItem();
+			formLayoutSettings.Items.Add(i =>
+			{
+				i.ShowCaption = DefaultBoolean.False;
+			}).SetNestedContent(() =>
+			{
+				ViewContext.Writer.Write("<div style='float:right'>");
+				Html.DevExpress().Button(
+					btnSettings =>
+					{
+						btnSettings.Name = "btnUpdate";
+						btnSettings.Text = "Update";
+						btnSettings.ClientSideEvents.Click = "function(s, e){ gvUser.UpdateEdit(); }";
+					}).Render();
+				Html.DevExpress().Button(
+					btnSettings =>
+					{
+						btnSettings.Name = "btnCancel";
+						btnSettings.Text = "Cancel";
+						btnSettings.Style[HtmlTextWriterStyle.MarginLeft] = "5px";
+						btnSettings.ClientSideEvents.Click = "function(s, e){ gvUser.CancelEdit(); }";
+					}).Render();
+				ViewContext.Writer.Write("</div>");
+			});
+		})
+		.Bind(ViewData["EditableProduct"] ?? c.DataItem)
+		.Render();
+	});
+
+	var grid = @Html.DevExpress().GridView(gridSettings);
+
+	if (ViewData["EditError"] != null)
+		grid.SetEditErrorText((string)ViewData["EditError"]);
+}
+@grid.Bind(Model).GetHtml()
+
+
+
+
+
